@@ -13,6 +13,7 @@ use App\Http\Requests\GiftRequest;
 use DB;
 use App\Models\TokenGift;
 
+
 class DataController extends Controller
 {
 
@@ -52,7 +53,7 @@ class DataController extends Controller
 
     public function updateUser($address, UserRequest $request): JsonResponse
     {
-        $user = User::byAddress($address)->first();
+        $user = $request->user;
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
@@ -62,17 +63,14 @@ class DataController extends Controller
 
     public function updateGifts($address, GiftRequest $request): JsonResponse
     {
-        $user = User::byAddress($address)->first();
-        if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
-
-        $gifts = $request->get('gifts');
+        $user = $request->user;
+        $gifts = $request->gifts;
         $addresses = [];
+
         foreach($gifts as $gift) {
             $addresses[] = $gift['recipient_address'];
         }
         $users = User::whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
-        $toInsert = [];
         $token_used = 0;
         $toKeep = [];
         foreach($gifts as $gift) {
@@ -83,11 +81,9 @@ class DataController extends Controller
 
                 $gift['sender_id'] = $user->id;
                 $gift['sender_address'] = strtolower($address);
-                $gift['circle_id'] = $request->get('circle_id');
                 $gift['recipient_address'] = strtolower($gift['recipient_address']);
                 $gift['recipient_id'] = $users[$gift['recipient_address']]->id;
 
-                $toInsert[] = $gift;
                 $token_used+= $gift['tokens'];
                 $pendingGift = $user->pendingSentGifts()->where('recipient_id',$gift['recipient_id'])->first();
 
@@ -97,6 +93,8 @@ class DataController extends Controller
                         $pendingGift->delete();
 
                     $pendingGift->tokens = $gift['tokens'];
+                    $pendingGift->note = $gift['note'];
+
                     $pendingGift->save();
                 }
                 else
@@ -120,7 +118,7 @@ class DataController extends Controller
 
         $user->give_token_remaining = 100-$token_used;
         $user->save();
-
+        $user->load('pendingSentGifts');
         return response()->json($user);
     }
 

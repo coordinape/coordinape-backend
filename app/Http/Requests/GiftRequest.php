@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use App\Models\User;
 
@@ -16,8 +16,21 @@ class GiftRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        $data = $this->get('data');
+        $signature = $this->get('signature');
+        $address  = $this->get('address');
+        $recoveredAddress = EcRecover::personalEcRecover($data,$signature);
+        $is_user = User::byAddress($address)->first();
+        return $is_user && strtolower($recoveredAddress)==strtolower($address);
     }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'gifts' => json_decode($this->get('data'), true)
+        ]);
+    }
+
 
     /**
      * Get the validation rules that apply to the request.
@@ -27,28 +40,28 @@ class GiftRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'circle_id' => 'required|integer',
-            'gifts' => 'required',
+            'data' => 'required',
+            'signature' => 'required',
+            'address' => 'required',
             'gifts.*.recipient_address' => 'required|string|size:42',
             'gifts.*.tokens' => 'required|integer|max:100'
         ];
 
-        $gifts = $this->get('gifts');
+        $gifts = $this->gifts;
         if(!$gifts)
-            throw new ConflictHttpException('Gift cannot be null');
-
-//        if(!$this->address)
-//            throw new ConflictHttpException('Address cannot be null');
+            throw new ConflictHttpException('data cannot be null');
 
         $sum = array_reduce($gifts, function($carry, $item)
         {
             return $carry + $item['tokens'];
         });
 
-//        $user = User::byAddress($this->address)->first();
-//        if(!$user)
-//            throw new ConflictHttpException('User cannot be found');
-//
+        $user = User::byAddress($this->address)->first();
+        if(!$user)
+            throw new ConflictHttpException('User cannot be found');
+
+        $this->merge(['user' => $user]);
+
         if($sum > 100) {
             throw new ConflictHttpException('Sum of tokens is more than 100');
         }

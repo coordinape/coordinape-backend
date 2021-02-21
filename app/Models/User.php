@@ -54,6 +54,10 @@ class User extends Authenticatable
         return $query;
     }
 
+    public function scopeIsAdmin($query) {
+        return $query->where('role',1);
+    }
+
     public function scopeByAddress($query, $address) {
         return $query->whereRaw( 'LOWER(`address`) LIKE ?', [ $address ] );
     }

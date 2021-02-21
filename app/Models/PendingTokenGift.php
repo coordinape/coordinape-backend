@@ -19,6 +19,7 @@ class PendingTokenGift extends Model
         'sender_address',
         'recipient_address',
         'recipient_id',
+        'note',
         'sender_id',
         'tokens',
         'circle_id',

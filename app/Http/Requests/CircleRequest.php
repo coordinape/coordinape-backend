@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
+use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CircleRequest extends FormRequest
@@ -13,7 +15,21 @@ class CircleRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        $data = $this->get('data');
+        $signature = $this->get('signature');
+        $address  = $this->get('address');
+        $recoveredAddress = EcRecover::personalEcRecover($data,$signature);
+        $is_admin = User::byAddress($address)->isAdmin()->first();
+        return $is_admin && strtolower($recoveredAddress)==strtolower($address);
+    }
+
+    protected function prepareForValidation()
+    {
+        $data = json_decode($this->get('data'), true);
+        $this->merge([
+            'data' => $data,
+            'name' => !empty($data['name']) ? $data['name']:null
+        ]);
     }
 
     /**
@@ -24,7 +40,8 @@ class CircleRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required'
+            'data' => 'required',
+            'name' => 'required|string'
         ];
     }
 }
