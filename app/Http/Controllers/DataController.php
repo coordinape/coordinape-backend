@@ -57,7 +57,9 @@ class DataController extends Controller
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
-        $user->update($request->all());
+        $data = $request->all();
+        $data['address'] =  strtolower($data['address']);
+        $user->update($data);
         return response()->json($user);
     }
 
@@ -68,21 +70,22 @@ class DataController extends Controller
         $addresses = [];
 
         foreach($gifts as $gift) {
-            $addresses[] = $gift['recipient_address'];
+            $addresses[] = strtolower($gift['recipient_address']);
         }
         $users = User::whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
         $token_used = 0;
         $toKeep = [];
         foreach($gifts as $gift) {
-            if($users->has($gift['recipient_address']))
+            $recipient_address = strtolower($gift['recipient_address']);
+            if($users->has($recipient_address))
             {
-                if($user->id==$users[$gift['recipient_address']]->id)
+                if($user->id==$users[$recipient_address]->id)
                     continue;
 
                 $gift['sender_id'] = $user->id;
                 $gift['sender_address'] = strtolower($address);
-                $gift['recipient_address'] = strtolower($gift['recipient_address']);
-                $gift['recipient_id'] = $users[$gift['recipient_address']]->id;
+                $gift['recipient_address'] = $recipient_address;
+                $gift['recipient_id'] = $users[$recipient_address]->id;
 
                 $token_used+= $gift['tokens'];
                 $pendingGift = $user->pendingSentGifts()->where('recipient_id',$gift['recipient_id'])->first();
