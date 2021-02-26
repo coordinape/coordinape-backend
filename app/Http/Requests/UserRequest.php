@@ -26,7 +26,7 @@ class UserRequest extends FormRequest
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $existing_user = !empty($data['address'])? User::byAddress($data['address'])->first(): null;
+        $existing_user = $this->route('address') ? User::byAddress($this->route('address'))->first(): null;
         $this->merge([
             'data' => $data,
             'user' => $existing_user,
