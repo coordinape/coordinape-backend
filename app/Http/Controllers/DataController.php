@@ -45,8 +45,9 @@ class DataController extends Controller
     }
 
     public function createUser(UserRequest $request): JsonResponse {
-
-        $user = new User($request->all());
+        $data = $request->all();
+        $data['address'] =  strtolower($data['address']);
+        $user = new User($data);
         $user->save();
         return response()->json($user);
     }
@@ -106,8 +107,8 @@ class DataController extends Controller
                 }
 
                 $toKeep[] = $pendingGift->id;
-                $users[$gift['recipient_address']]->give_token_received = $users[$gift['recipient_address']]->pendingReceivedGifts()->get()->SUM('tokens');
-                $users[$gift['recipient_address']]->save();
+                $users[$recipient_address]->give_token_received = $users[$recipient_address]->pendingReceivedGifts()->get()->SUM('tokens');
+                $users[$recipient_address]->save();
             }
         }
 
