@@ -21,7 +21,7 @@ class CreateUsersTable extends Migration
             $table->integer('give_token_remaining')->default(100);
             $table->integer('role')->default(0);
             $table->unsignedBigInteger('circle_id');
-
+            $table->string('avatar')->nullable();
             $table->foreign('circle_id')->references('id')->on('circles');
             $table->rememberToken();
             $table->timestamps();

@@ -18,10 +18,21 @@ class GiftRequest extends FormRequest
     {
         $data = $this->get('data');
         $signature = $this->get('signature');
-        $address  = $this->get('address');
-        $recoveredAddress = EcRecover::personalEcRecover($data,$signature);
-        $is_user = User::byAddress($address)->first();
-        return $is_user && strtolower($recoveredAddress)==strtolower($address);
+        $address  = strtolower($this->get('address'));
+        $msgHash  = $this->get('msgHash');
+
+        if($msgHash) {
+            $ret_address = EcRecover::phpEcRecover($msgHash,  $signature);
+            if($address != strtolower($ret_address))
+                return false;
+        }
+        else {
+            $recoveredAddress = EcRecover::personalEcRecover($data,$signature);
+            $is_user = User::byAddress($address)->first();
+            return $is_user && strtolower($recoveredAddress)==$address;
+        }
+
+        return User::byAddress($address)->first();
     }
 
     protected function prepareForValidation()
