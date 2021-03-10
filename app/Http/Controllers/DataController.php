@@ -80,7 +80,7 @@ class DataController extends Controller
             $recipient_address = strtolower($gift['recipient_address']);
             if($users->has($recipient_address))
             {
-                if($user->id==$users[$recipient_address]->id || $users[$recipient_address]->non_receiver == 1)
+                if($user->id==$users[$recipient_address]->id)
                     continue;
 
                 $gift['sender_id'] = $user->id;
