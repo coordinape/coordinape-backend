@@ -93,17 +93,21 @@ class DataController extends Controller
 
                 if($pendingGift)
                 {
-                    if($gift['tokens']==0 && !$gift['note'] )
+                    if($gift['tokens']==0 && $gift['note']='' )
+                    {
                         $pendingGift->delete();
 
-                    $pendingGift->tokens = $gift['tokens'];
-                    $pendingGift->note = $gift['note'];
-
-                    $pendingGift->save();
+                    }
+                    else
+                    {
+                        $pendingGift->tokens = $gift['tokens'];
+                        $pendingGift->note = $gift['note'];
+                        $pendingGift->save();
+                    }
                 }
                 else
                 {
-                    if($gift['tokens']==0 && !$gift['note'] )
+                    if($gift['tokens']==0 && $gift['note']='' )
                         continue;
 
                     $pendingGift = $user->pendingSentGifts()->create($gift);
