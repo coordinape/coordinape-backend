@@ -6,6 +6,7 @@ use App\Models\PendingTokenGift;
 use App\Models\TokenGift;
 use App\Models\Epoch;
 use DB;
+use App\Models\User;
 
 class EpochRepository
 {
@@ -32,6 +33,7 @@ class EpochRepository
                 $tokenGift->save();
             }
             $this->model->where('circle_id',$circle_id)->delete();
+            User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>100]);
         });
     }
 }

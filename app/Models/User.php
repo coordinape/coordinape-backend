@@ -25,6 +25,8 @@ class User extends Authenticatable
         'name',
         'address',
         'circle_id',
+        'give_token_received',
+        'give_token_remaining'
     ];
 
     /**
