@@ -32,6 +32,6 @@ Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
 Route::get('/token-gifts', [DataController::class, 'getGifts']);
 Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts']);
 
-Route::post('/teammates/{address}', [DataController::class, 'updateTeammates']);
+Route::post('/teammates', [DataController::class, 'updateTeammates']);
 
 Route::get('/csv', [DataController::class, 'generateCsv']);

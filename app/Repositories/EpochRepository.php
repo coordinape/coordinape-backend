@@ -37,6 +37,19 @@ class EpochRepository
         });
     }
 
+    public function resetGifts($user, $toKeep) {
+        $existingGifts = $user->pendingSentGifts()->whereNotIn('recipient_id',$toKeep)->get();
+        foreach($existingGifts as $existingGift) {
+            $rUser = $existingGift->recipient;
+            $existingGift->delete();
+            $rUser->give_token_received = $rUser->pendingReceivedGifts()->get()->SUM('tokens');
+            $rUser->save();
+        }
+        $token_used = $user->pendingSentGifts()->get()->SUM('tokens');
+        $user->give_token_remaining = 100-$token_used;
+        $user->save();
+    }
+
     public function getEpochCsv($epochNumber, $circle_id) {
 
         $users = User::orderBy('name','asc')->get();
@@ -69,10 +82,6 @@ class EpochRepository
             }
             fclose($FH);
         };
-//        $response = new StreamedResponse();
-//
-//        $response->setStatusCode(Response::HTTP_OK);
-
         return response()->stream($callback, 200, $headers);
     }
 }

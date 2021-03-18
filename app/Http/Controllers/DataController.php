@@ -14,6 +14,7 @@ use DB;
 use App\Models\TokenGift;
 use App\Repositories\EpochRepository;
 use App\Http\Requests\CsvRequest;
+use App\Http\Requests\TeammatesRequest;
 
 class DataController extends Controller
 {
@@ -44,6 +45,8 @@ class DataController extends Controller
 
     public function getUser($address): JsonResponse {
         $user = User::byAddress($address)->first();
+        $user->load(['teammates','pendingSentGifts','sentGifts']);
+
         return response()->json($user);
     }
 
@@ -120,23 +123,14 @@ class DataController extends Controller
                     $pendingGift = $user->pendingSentGifts()->create($gift);
                 }
 
-                $toKeep[] = $pendingGift->id;
+                $toKeep[] = $pendingGift->recipient_id;
                 $users[$recipient_address]->give_token_received = $users[$recipient_address]->pendingReceivedGifts()->get()->SUM('tokens');
                 $users[$recipient_address]->save();
             }
         }
 
-        $existingGifts = $user->pendingSentGifts()->whereNotIn('id',$toKeep)->get();
-        foreach($existingGifts as $existingGift) {
-            $rUser = $existingGift->recipient;
-            $existingGift->delete();
-            $rUser->give_token_received = $rUser->pendingReceivedGifts()->get()->SUM('tokens');
-            $rUser->save();
-        }
-
-        $user->give_token_remaining = 100-$token_used;
-        $user->save();
-        $user->load('pendingSentGifts');
+        $this->repo->resetGifts($user,$toKeep);
+        $user->load(['teammates','pendingSentGifts','sentGifts']);
         return response()->json($user);
     }
 
@@ -149,12 +143,16 @@ class DataController extends Controller
         return response()->json(TokenGift::filter($request->all())->get());
     }
 
-    public function updateTeammates(Request $request, $address) : JsonResponse {
+    public function updateTeammates(TeammatesRequest $request) : JsonResponse {
+        $address = $request->address;
         $user = User::byAddress($address)->first();
-        $teammates = $request->get('teammates');
+        $teammates = $request->teammates;
+        $this->repo->resetGifts($user,$teammates);
         if($teammates) {
-            $user->teammates()->attach($teammates);
+            $user->teammates()->sync($teammates);
         }
+        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        return response()->json($user);
     }
 
     public function generateCsv(CsvRequest $request) {

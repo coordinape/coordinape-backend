@@ -81,6 +81,6 @@ class User extends Authenticatable
     }
 
     public function teammates() {
-        return $this->hasMany('App\Models\User','team_mate_id','id');
+        return $this->belongsToMany('App\Models\User','teammates','user_id','team_mate_id');
     }
 }
