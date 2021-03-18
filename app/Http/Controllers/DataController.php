@@ -12,10 +12,17 @@ use App\Http\Requests\UserRequest;
 use App\Http\Requests\GiftRequest;
 use DB;
 use App\Models\TokenGift;
-
+use App\Repositories\EpochRepository;
+use App\Http\Requests\CsvRequest;
 
 class DataController extends Controller
 {
+    protected $repo ;
+
+    public function __construct(EpochRepository $repo)
+    {
+        $this->repo = $repo;
+    }
 
     public function getCircles(Request $request): JsonResponse
     {
@@ -140,5 +147,17 @@ class DataController extends Controller
 
     public function getGifts(Request $request): JsonResponse {
         return response()->json(TokenGift::filter($request->all())->get());
+    }
+
+    public function updateTeammates(Request $request, $address) : JsonResponse {
+        $user = User::byAddress($address)->first();
+        $teammates = $request->get('teammates');
+        if($teammates) {
+            $user->teammates()->attach($teammates);
+        }
+    }
+
+    public function generateCsv(CsvRequest $request) {
+        return $this->repo->getEpochCsv($request->epoch, $request->circle_id);
     }
 }

@@ -36,4 +36,43 @@ class EpochRepository
             User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>100]);
         });
     }
+
+    public function getEpochCsv($epochNumber, $circle_id) {
+
+        $users = User::orderBy('name','asc')->get();
+        $header = ['No.','name','address','received','sent','epoch_number'];
+        $list = [];
+        $list[]= $header;
+        $epoch = Epoch::where('number',$epochNumber)->where('circle_id',1)->first();
+        foreach($users as $idx=>$user) {
+            $col = [];
+            $col[] = $idx +1;
+            $col[]= $user->name;
+            $col[]= $user->address;
+            $col[]= $user->receivedGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
+            $col[]= $user->sentGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
+            $col[]= $epochNumber;
+            $list[]= $col;
+        }
+
+        $headers = [
+               'Content-type'        => 'text/csv'
+           ,   'Content-Disposition' => 'attachment; filename=receipts.csv'
+        ];
+
+
+        $callback = function() use ($list)
+        {
+            $FH = fopen('php://output', 'w');
+            foreach ($list as $row) {
+                fputcsv($FH, $row);
+            }
+            fclose($FH);
+        };
+//        $response = new StreamedResponse();
+//
+//        $response->setStatusCode(Response::HTTP_OK);
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

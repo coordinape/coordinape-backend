@@ -22,8 +22,8 @@ class TokenGift extends Model
         'sender_id',
         'tokens',
         'circle_id',
-        'id',
-        'note'
+        'note',
+        'dts_created'
     ];
 
     public function scopeFilter($query, $filters) {

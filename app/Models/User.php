@@ -79,4 +79,8 @@ class User extends Authenticatable
     public function sentGifts() {
         return $this->hasMany('App\Models\TokenGift','sender_id','id');
     }
+
+    public function teammates() {
+        return $this->hasMany('App\Models\User','team_mate_id','id');
+    }
 }
