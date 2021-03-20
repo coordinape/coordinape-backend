@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pcntl gmp
+RUN docker-php-ext-install pcntl gmp pdo_mysql
 
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -g www -ms /bin/bash www
@@ -27,4 +27,4 @@ USER www
 RUN composer install
 
 EXPOSE 9000
-CMD ["php-fpm"]
+CMD ["./services/start.sh"]
