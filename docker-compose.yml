@@ -1,0 +1,58 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+    volumes:
+      - ./:/var/www
+      - ./services/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - default
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./services/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - default
+    depends_on: 
+      - app
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+        MYSQL_ROOT_USER: root
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_DATABASE: laravel
+    volumes:
+      - database:/var/lib/mysql/
+    networks:
+      - default
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+
+networks:
+  default:
+    driver: bridge
+volumes:
+  database:
+    driver: local
