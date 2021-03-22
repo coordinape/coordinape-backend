@@ -27,7 +27,8 @@ class User extends Authenticatable
         'circle_id',
         'give_token_received',
         'give_token_remaining',
-        'bio'
+        'bio',
+        'avatar'
     ];
 
     /**

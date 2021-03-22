@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Helper\Utils;
 use App\Models\User;
 use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,9 +19,8 @@ class UserRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = $this->get('address');
-        $recoveredAddress = EcRecover::personalEcRecover($data,$signature);
-        $is_admin = User::byAddress($address)->isAdmin()->first();
-        return $is_admin && strtolower($recoveredAddress)==strtolower($address);
+        $recoveredAddress = Utils::personalEcRecover($data,$signature);
+        return  strtolower($recoveredAddress)==strtolower($address);
     }
 
     protected function prepareForValidation()
@@ -43,6 +43,7 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
+
         $address = 'required|string|size:42';
 
         if($this->method()=="POST") {

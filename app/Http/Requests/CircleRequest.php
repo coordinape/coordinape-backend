@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Helper\Utils;
 use App\Models\User;
 use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,7 +19,7 @@ class CircleRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = $this->get('address');
-        $recoveredAddress = EcRecover::personalEcRecover($data,$signature);
+        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $is_admin = User::byAddress($address)->isAdmin()->first();
         return $is_admin && strtolower($recoveredAddress)==strtolower($address);
     }

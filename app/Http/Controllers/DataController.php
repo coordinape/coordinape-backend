@@ -69,6 +69,7 @@ class DataController extends Controller
             return response()->json(['error'=> 'Address not found'],422);
 
         $data = $request->all();
+        $data = $data['data'];
         $data['address'] =  strtolower($data['address']);
         $user->update($data);
         return response()->json($user);
