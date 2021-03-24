@@ -38,4 +38,8 @@ class PendingTokenGift extends Model
     public function recipient() {
         return $this->belongsTo('App\Models\User','recipient_id','id');
     }
+
+    public function sender() {
+        return $this->belongsTo('App\Models\User','sender_id','id');
+    }
 }

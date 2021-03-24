@@ -84,4 +84,25 @@ class EpochRepository
         };
         return response()->stream($callback, 200, $headers);
     }
+
+    public function removeAllPendingGiftsReceived($user, $updateData = []) {
+        $pendingGifts = $user->pendingReceivedGifts();
+        DB::transaction(function () use ($user, $updateData, $pendingGifts) {
+           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver)
+           {
+               foreach($pendingGifts as $gift) {
+                   $sender = $gift->sender;
+                   $gift->delete();
+                   $token_used = $sender->pendingSentGifts()->get()->SUM('tokens');
+                   $sender->give_token_remaining = 100-$token_used;
+                   $sender->save();
+               }
+               $updateData['give_token_received'] = 0;
+           }
+            $user->update($updateData);
+            return $user;
+        });
+
+        return $user;
+    }
 }

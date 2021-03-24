@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration
             $table->integer('give_token_received')->default(0);
             $table->integer('give_token_remaining')->default(100);
             $table->integer('role')->default(0);
+            $table->boolean('non_receiver')->default(1);
             $table->unsignedBigInteger('circle_id');
             $table->string('avatar')->nullable();
             $table->foreign('circle_id')->references('id')->on('circles');
