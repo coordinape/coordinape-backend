@@ -88,7 +88,7 @@ class EpochRepository
     public function removeAllPendingGiftsReceived($user, $updateData = []) {
         $pendingGifts = $user->pendingReceivedGifts();
         DB::transaction(function () use ($user, $updateData, $pendingGifts) {
-           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver)
+           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
            {
                foreach($pendingGifts as $gift) {
                    $sender = $gift->sender;
