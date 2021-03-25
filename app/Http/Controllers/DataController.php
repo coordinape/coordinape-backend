@@ -15,6 +15,11 @@ use App\Models\TokenGift;
 use App\Repositories\EpochRepository;
 use App\Http\Requests\CsvRequest;
 use App\Http\Requests\TeammatesRequest;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
+use App\Http\Requests\FileUploadRequest;
+
 
 class DataController extends Controller
 {
@@ -159,4 +164,28 @@ class DataController extends Controller
     public function generateCsv(CsvRequest $request) {
         return $this->repo->getEpochCsv($request->epoch, $request->circle_id);
     }
+
+    public function uploadAvatar(FileUploadRequest $request) : JsonResponse {
+
+        $file = $request->file('file');
+        $resized = Image::make($request->file('file'))
+            ->resize(100, null, function ($constraint) { $constraint->aspectRatio(); } )
+            ->encode($file->getCLientOriginalExtension(),80);
+        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
+        $ret = Storage::put($new_file_name, $resized);
+        if($ret) {
+            $user = User::byAddress($request->get('address'))->first();
+            if($user->avatar && Storage::exists($user->avatar)) {
+                Storage::delete($user->avatar);
+            }
+
+            $user->avatar = $new_file_name;
+            $user->save();
+            return response()->json($user);
+        }
+
+        return response()->json(['error' => 'File Upload Failed' ,422]);
+//        dd(Storage::disk('s3')->allFiles(''));
+    }
+
 }

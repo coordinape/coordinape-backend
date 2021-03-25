@@ -33,5 +33,6 @@ Route::get('/token-gifts', [DataController::class, 'getGifts']);
 Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts']);
 
 Route::post('/teammates', [DataController::class, 'updateTeammates']);
+Route::post('/upload', [DataController::class, 'uploadAvatar']);
 
 Route::get('/csv', [DataController::class, 'generateCsv']);
