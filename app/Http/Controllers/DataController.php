@@ -50,8 +50,10 @@ class DataController extends Controller
 
     public function getUser($address): JsonResponse {
         $user = User::byAddress($address)->first();
-        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        if(!$user)
+            return response()->json(['error'=> 'Address not found'],422);
 
+        $user->load(['teammates','pendingSentGifts','sentGifts']);
         return response()->json($user);
     }
 
