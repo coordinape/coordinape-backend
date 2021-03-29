@@ -89,6 +89,20 @@ class DataController extends Controller
         return response()->json($user);
     }
 
+    public function updateUser2(UserRequest $request, $subdomain, $address): JsonResponse
+    {
+        $user = $request->user;
+        if(!$user)
+            return response()->json(['error'=> 'Address not found'],422);
+
+        $data = $request->all();
+        $data = $data['data'];
+        $data['address'] =  strtolower($data['address']);
+        $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
+        return response()->json($user);
+    }
+
+
     public function updateUser($address, UserRequest $request, $subdomain = null): JsonResponse
     {
         $user = $request->user;
