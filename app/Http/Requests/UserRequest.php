@@ -30,7 +30,8 @@ class UserRequest extends FormRequest
         if($this->route('address')) {
             $existing_user =  User::byAddress($this->route('address'));
             if($this->route('subdomain')) {
-                $existing_user = $existing_user->where('circle_id', $this->route('subdomain'));
+                $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
+                $existing_user = $existing_user->where('circle_id', $circle_id);
             }
             $existing_user = $existing_user->first();
         }
