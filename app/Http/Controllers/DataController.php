@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use App\Http\Requests\FileUploadRequest;
+use App\Helper\Utils;
 
 
 class DataController extends Controller
@@ -30,7 +31,7 @@ class DataController extends Controller
         $this->repo = $repo;
     }
 
-    public function getCircles(Request $request): JsonResponse
+    public function getCircles(Request $request, $subdomain = null): JsonResponse
     {
         return response()->json(Circle::all());
     }
@@ -48,8 +49,12 @@ class DataController extends Controller
         return response()->json($circle);
     }
 
-    public function getUser($address): JsonResponse {
-        $user = User::byAddress($address)->first();
+    public function getUser($address, $subdomain = null): JsonResponse {
+        $circle_id = Utils::getCircleIdByName($subdomain);
+        $user = User::byAddress($address);
+        if($subdomain)
+            $user->where('circle_id',$circle_id);
+        $user = $user->first();
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
@@ -57,8 +62,14 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function getUsers(Request $request): JsonResponse {
-        return response()->json(User::filter($request->all())->get());
+    public function getUsers(Request $request, $subdomain = null): JsonResponse {
+        $circle_id = Utils::getCircleIdByName($subdomain);
+        $users = User::filter($request->all());
+        if($subdomain)
+            $users->where('circle_id',$circle_id);
+
+        $users = $users->get();
+        return response()->json($users);
     }
 
     public function createUser(UserRequest $request): JsonResponse {
@@ -69,8 +80,9 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function updateUser($address, UserRequest $request): JsonResponse
+    public function updateUser($address, UserRequest $request, $subdomain = null): JsonResponse
     {
+//        $circle_id = Utils::getCircleIdByName($subdomain);
         $user = $request->user;
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);

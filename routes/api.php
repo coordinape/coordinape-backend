@@ -19,6 +19,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::domain('{subdomain}.'.env('APP_DOMAIN'))->group(function () {
+
+    Route::get('/circles', [DataController::class, 'getCircles']);
+    Route::get('/users/{address}', [DataController::class, 'getUser']);
+
+});
+
 Route::get('/circles', [DataController::class, 'getCircles']);
 Route::post('/circles', [DataController::class, 'createCircle']);
 Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
@@ -36,3 +43,4 @@ Route::post('/teammates', [DataController::class, 'updateTeammates']);
 Route::post('/upload', [DataController::class, 'uploadAvatar']);
 
 Route::get('/csv', [DataController::class, 'generateCsv']);
+
