@@ -82,7 +82,6 @@ class DataController extends Controller
 
     public function updateUser($address, UserRequest $request, $subdomain = null): JsonResponse
     {
-//        $circle_id = Utils::getCircleIdByName($subdomain);
         $user = $request->user;
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
