@@ -58,7 +58,7 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function getUser2($address, $subdomain = null): JsonResponse {
+    public function getUser2($subdomain, $address): JsonResponse {
         $circle_id = Utils::getCircleIdByName($subdomain);
         $user = User::byAddress($address);
         if($subdomain)
