@@ -22,7 +22,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::domain('{subdomain}.'.env('APP_DOMAIN'))->group(function () {
 
     Route::get('/circles', [DataController::class, 'getCircles']);
-    Route::get('/users/{address}', [DataController::class, 'getUser']);
+    Route::get('/users/{address}', [DataController::class, 'getUser2']);
     Route::get('/users', [DataController::class, 'getUsers']);
     Route::put('/users/{address}', [DataController::class, 'updateUser']);
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);

@@ -49,7 +49,16 @@ class DataController extends Controller
         return response()->json($circle);
     }
 
-    public function getUser($address, $subdomain = null): JsonResponse {
+    public function getUser($address): JsonResponse {
+        $user = User::byAddress($address)->first();
+        if(!$user)
+            return response()->json(['error'=> 'Address not found'],422);
+
+        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        return response()->json($user);
+    }
+
+    public function getUser2($address, $subdomain = null): JsonResponse {
         $circle_id = Utils::getCircleIdByName($subdomain);
         $user = User::byAddress($address);
         if($subdomain)
