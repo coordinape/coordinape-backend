@@ -24,7 +24,7 @@ class CsvRequest extends FormRequest
     public function rules()
     {
         return [
-            'circle_id' => 'required|integer|exists:circles,id',
+//            'circle_id' => 'required|integer|exists:circles,id',
             'epoch' => 'required|integer|exists:epoches,number',
         ];
     }

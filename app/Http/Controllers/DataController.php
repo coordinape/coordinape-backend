@@ -231,13 +231,22 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function getPendingGifts(Request $request): JsonResponse {
-
-        return response()->json(PendingTokenGift::filter($request->all())->get());
+    public function getPendingGifts(Request $request, $subdomain = null): JsonResponse {
+        $filters = $request->all();
+        $circle_id = Utils::getCircleIdByName($subdomain);
+        if($circle_id) {
+            $filters['circle_id'] = $circle_id;
+        }
+        return response()->json(PendingTokenGift::filter($filters)->get());
     }
 
-    public function getGifts(Request $request): JsonResponse {
-        return response()->json(TokenGift::filter($request->all())->get());
+    public function getGifts(Request $request, $subdomain = null): JsonResponse {
+        $filters = $request->all();
+        $circle_id = Utils::getCircleIdByName($subdomain);
+        if($circle_id) {
+            $filters['circle_id'] = $circle_id;
+        }
+        return response()->json(TokenGift::filter($filters)->get());
     }
 
     public function updateTeammates(TeammatesRequest $request) : JsonResponse {
@@ -255,8 +264,16 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function generateCsv(CsvRequest $request) {
-        return $this->repo->getEpochCsv($request->epoch, $request->circle_id);
+    public function generateCsv(CsvRequest $request, $subdomain = null) {
+        $circle_id = Utils::getCircleIdByName($subdomain);
+        if(!$circle_id) {
+          if(!$request->circle_id)
+              return response()->json(['error'=> 'Circle not Found'],422);
+
+            $circle_id = $request->circle_id;
+        }
+        
+        return $this->repo->getEpochCsv($request->epoch, $circle_id);
     }
 
     public function uploadAvatar(FileUploadRequest $request) : JsonResponse {
