@@ -233,18 +233,29 @@ class DataController extends Controller
 
     public function getPendingGifts(Request $request, $subdomain = null): JsonResponse {
         $filters = $request->all();
-        $circle_id = Utils::getCircleIdByName($subdomain);
-        if($circle_id) {
-            $filters['circle_id'] = $circle_id;
+        if($subdomain) {
+            $circle_id = Utils::getCircleIdByName($subdomain);
+            if($circle_id) {
+                $filters['circle_id'] = $circle_id;
+            }
+            else {
+               return response()->json([]);
+            }
         }
+
         return response()->json(PendingTokenGift::filter($filters)->get());
     }
 
     public function getGifts(Request $request, $subdomain = null): JsonResponse {
         $filters = $request->all();
-        $circle_id = Utils::getCircleIdByName($subdomain);
-        if($circle_id) {
-            $filters['circle_id'] = $circle_id;
+        if($subdomain) {
+            $circle_id = Utils::getCircleIdByName($subdomain);
+            if($circle_id) {
+                $filters['circle_id'] = $circle_id;
+            }
+            else {
+                return response()->json([]);
+            }
         }
         return response()->json(TokenGift::filter($filters)->get());
     }
@@ -272,7 +283,7 @@ class DataController extends Controller
 
             $circle_id = $request->circle_id;
         }
-        
+
         return $this->repo->getEpochCsv($request->epoch, $circle_id);
     }
 
