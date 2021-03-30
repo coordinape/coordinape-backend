@@ -29,7 +29,9 @@ class User extends Authenticatable
         'give_token_remaining',
         'bio',
         'avatar',
-        'non_receiver'
+        'non_receiver',
+        'epoch_first_visit',
+        'non_giver'
     ];
 
     /**
