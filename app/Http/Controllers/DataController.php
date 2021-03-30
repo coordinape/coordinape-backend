@@ -260,9 +260,8 @@ class DataController extends Controller
         return response()->json(TokenGift::filter($filters)->get());
     }
 
-    public function updateTeammates(TeammatesRequest $request) : JsonResponse {
-        $address = $request->address;
-        $user = User::byAddress($address)->first();
+    public function updateTeammates(TeammatesRequest $request, $subdomain=null) : JsonResponse {
+        $user = $request->user;
         $teammates = $request->teammates;
         DB::transaction(function () use ($teammates, $user) {
             $this->repo->resetGifts($user, $teammates);
@@ -270,7 +269,6 @@ class DataController extends Controller
                 $user->teammates()->sync($teammates);
             }
         });
-
         $user->load(['teammates','pendingSentGifts','sentGifts']);
         return response()->json($user);
     }
@@ -280,14 +278,13 @@ class DataController extends Controller
         if(!$circle_id) {
           if(!$request->circle_id)
               return response()->json(['error'=> 'Circle not Found'],422);
-
             $circle_id = $request->circle_id;
         }
 
         return $this->repo->getEpochCsv($request->epoch, $circle_id);
     }
 
-    public function uploadAvatar(FileUploadRequest $request) : JsonResponse {
+    public function uploadAvatar(FileUploadRequest $request, $subdomain=null) : JsonResponse {
 
         $file = $request->file('file');
         $resized = Image::make($request->file('file'))

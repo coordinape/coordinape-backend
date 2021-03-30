@@ -21,7 +21,6 @@ class GiftRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = strtolower($this->get('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-//        $is_user = User::byAddress($address)->first();
         $existing_user = null;
         $circle_id = null;
         if($this->route('address')) {
