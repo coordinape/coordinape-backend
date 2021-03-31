@@ -20,6 +20,8 @@ use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use App\Http\Requests\FileUploadRequest;
 use App\Helper\Utils;
+use App\Http\Requests\AdminCreateUserRequest;
+use App\Http\Requests\AdminUserRequest;
 
 
 class DataController extends Controller
@@ -43,7 +45,7 @@ class DataController extends Controller
         return response()->json($circle);
     }
 
-    public function updateCircle(Circle $circle, CircleRequest $request): JsonResponse
+    public function updateCircle(Circle $circle, CircleRequest $request, $subdomain=null): JsonResponse
     {
         $circle->update($request->all());
         return response()->json($circle);
@@ -81,7 +83,7 @@ class DataController extends Controller
         return response()->json($users);
     }
 
-    public function createUser(UserRequest $request): JsonResponse {
+    public function createUser(AdminCreateUserRequest $request, $subdomain): JsonResponse {
         $data = $request->all();
         $data['address'] =  strtolower($data['address']);
         $user = new User($data);
@@ -90,6 +92,19 @@ class DataController extends Controller
     }
 
     public function updateUser2(UserRequest $request, $subdomain, $address): JsonResponse
+    {
+        $user = $request->user;
+        if(!$user)
+            return response()->json(['error'=> 'Address not found'],422);
+
+        $data = $request->all();
+        $data = $data['data'];
+        $data['address'] =  strtolower($data['address']);
+        $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
+        return response()->json($user);
+    }
+
+    public function adminUpdateUser(AdminUserRequest $request, $subdomain, $address): JsonResponse
     {
         $user = $request->user;
         if(!$user)

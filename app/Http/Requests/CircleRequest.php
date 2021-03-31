@@ -20,8 +20,18 @@ class CircleRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = $this->get('address');
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $is_admin = User::byAddress($address)->isAdmin()->first();
-        return $is_admin && strtolower($recoveredAddress)==strtolower($address);
+        $circle_id = null;
+        $existing_user =  User::byAddress($address)->isAdmin();
+        if($this->route('subdomain')) {
+            $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
+            $existing_user = $existing_user->where('circle_id', $circle_id);
+        }
+        $existing_user = $existing_user->first();
+        $this->merge([
+            'user' => $existing_user,
+            'circle_id' => $circle_id
+        ]);
+        return $existing_user && strtolower($recoveredAddress)==strtolower($address);
     }
 
     protected function prepareForValidation()
