@@ -164,7 +164,7 @@ class DataController extends Controller
     }
 
     public function generateCsv(CsvRequest $request) {
-        return $this->repo->getEpochCsv($request->epoch, $request->circle_id);
+        return $this->repo->getEpochCsv($request->epoch, $request->circle_id, $request->grant);
     }
 
     public function uploadAvatar(FileUploadRequest $request) : JsonResponse {

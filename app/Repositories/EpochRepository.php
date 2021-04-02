@@ -50,21 +50,35 @@ class EpochRepository
         $user->save();
     }
 
-    public function getEpochCsv($epochNumber, $circle_id) {
+    public function getEpochCsv($epochNumber, $circle_id, $grant=0) {
+
+        $client = new \GuzzleHttp\Client();
+        $response = $client->get( "https://api.coingecko.com/api/v3/simple/price?ids=yearn-finance&vs_currencies=usd"
+        );
+
+        $ret = json_decode( (string)$response->getBody());
+        $yfi_price = $ret->{'yearn-finance'}->usd;
+        //dd($yfi_price);
 
         $users = User::orderBy('name','asc')->get();
-        $header = ['No.','name','address','received','sent','epoch_number'];
+        $header = ['No.','name','address','received','sent','epoch_number', '($) Est grant',' Est YFI'];
         $list = [];
         $list[]= $header;
         $epoch = Epoch::where('number',$epochNumber)->where('circle_id',1)->first();
+        $total_sent = TokenGift::where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
         foreach($users as $idx=>$user) {
+            $received = $user->receivedGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
+            $usd_received = $grant && $received ? (floor(($received * $grant / $total_sent) * 100) / 100):0;
+            $yfi_received = $usd_received ? $usd_received/ $yfi_price : 0;
             $col = [];
             $col[] = $idx +1;
             $col[]= $user->name;
             $col[]= $user->address;
-            $col[]= $user->receivedGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
+            $col[]= $received;
             $col[]= $user->sentGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
             $col[]= $epochNumber;
+            $col[] = $usd_received ;
+            $col[] = $yfi_received ;
             $list[]= $col;
         }
 
