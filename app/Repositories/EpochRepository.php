@@ -33,7 +33,7 @@ class EpochRepository
                 $tokenGift->save();
             }
             $this->model->where('circle_id',$circle_id)->delete();
-            User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>100, 'epoch_first_visit' => 1]);
+            User::where('circle_id',$circle_id)->update(['non_receiver'=>1, 'give_token_received'=>0, 'give_token_remaining'=>100, 'epoch_first_visit' => 1]);
         });
     }
 
