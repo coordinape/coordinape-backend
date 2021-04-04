@@ -21,8 +21,21 @@ class GiftRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = strtolower($this->get('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $is_user = User::byAddress($address)->first();
-        return $is_user && strtolower($recoveredAddress)==$address;
+        $existing_user = null;
+        $circle_id = null;
+        if($this->route('address')) {
+            $existing_user =  User::byAddress($this->route('address'));
+            if($this->route('subdomain')) {
+                $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
+                $existing_user = $existing_user->where('circle_id', $circle_id);
+            }
+            $existing_user = $existing_user->first();
+        }
+        $this->merge([
+            'user' => $existing_user,
+            'circle_id' => $circle_id
+        ]);
+        return $existing_user && strtolower($recoveredAddress)==$address;
     }
 
     protected function prepareForValidation()
@@ -57,11 +70,11 @@ class GiftRequest extends FormRequest
             return $carry + $item['tokens'];
         });
 
-        $user = User::byAddress($this->address)->first();
+        $user = $this->user;
         if(!$user)
             throw new ConflictHttpException('User cannot be found');
 
-        $this->merge(['user' => $user]);
+//        $this->merge(['user' => $user]);
 
         if($sum > 100) {
             throw new ConflictHttpException('Sum of tokens is more than 100');

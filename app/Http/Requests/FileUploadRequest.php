@@ -19,8 +19,19 @@ class FileUploadRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = strtolower($this->get('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $is_user = User::byAddress($address)->first();
-        return $is_user && strtolower($recoveredAddress)==$address;
+        $existing_user = null;
+        $circle_id = null;
+        $existing_user =  User::byAddress($address);
+        if($this->route('subdomain')) {
+            $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
+            $existing_user = $existing_user->where('circle_id', $circle_id);
+        }
+        $existing_user = $existing_user->first();
+        $this->merge([
+            'user' => $existing_user,
+            'circle_id' => $circle_id
+        ]);
+        return $existing_user && strtolower($recoveredAddress)==$address;
     }
 
     /**

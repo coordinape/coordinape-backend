@@ -5,9 +5,12 @@ namespace App\Helper;
 
 use Elliptic\EC;
 use kornrunner\Keccak;
+use App\Models\Circle;
 
 class Utils
 {
+
+    const circleMap = ['yearn'=>1 ];
 
     public static function personalEcRecover(string $message, string $signature)
     {
@@ -36,6 +39,16 @@ class Utils
     {
         // MUST be double quotes.
         return "\x19Ethereum Signed Message:\n" . strlen($message) . $message;
+    }
+
+    public static function getCircleIdByName($name) {
+
+        if(array_key_exists($name,Utils::circleMap))
+            return Utils::circleMap[$name];
+
+        $circle = Circle::where('name',$name )->first();
+        return $circle ? $circle->id : null;
+
     }
 
 }
