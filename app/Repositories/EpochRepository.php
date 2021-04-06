@@ -60,7 +60,7 @@ class EpochRepository
         $yfi_price = $ret->{'yearn-finance'}->usd;
         //dd($yfi_price);
 
-        $users = User::orderBy('name','asc')->where('circle_id',$circle_id)->get();
+        $users = User::where('circle_id',$circle_id)->orderBy('name','asc')->get();
         $header = ['No.','name','address','received','sent','epoch_number', '($) Est grant',' Est YFI'];
         $list = [];
         $list[]= $header;
