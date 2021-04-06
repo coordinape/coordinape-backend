@@ -60,11 +60,11 @@ class EpochRepository
         $yfi_price = $ret->{'yearn-finance'}->usd;
         //dd($yfi_price);
 
-        $users = User::orderBy('name','asc')->get();
+        $users = User::orderBy('name','asc')->where('circle_id',$circle_id)->get();
         $header = ['No.','name','address','received','sent','epoch_number', '($) Est grant',' Est YFI'];
         $list = [];
         $list[]= $header;
-        $epoch = Epoch::where('number',$epochNumber)->where('circle_id',1)->first();
+        $epoch = Epoch::where('number',$epochNumber)->where('circle_id',$circle_id)->first();
         $total_sent = TokenGift::where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
         foreach($users as $idx=>$user) {
             $received = $user->receivedGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
