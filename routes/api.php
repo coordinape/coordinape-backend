@@ -32,7 +32,7 @@ Route::domain('{subdomain}.'.env('APP_DOMAIN'))->group(function () {
     Route::post('/teammates', [DataController::class, 'updateTeammates']);
     Route::post('/upload', [DataController::class, 'uploadAvatar']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
-
+    Route::get('/epoches',[DataController::class, 'epoches']);
     Route::prefix('admin')->group(function () {
         Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
         Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);

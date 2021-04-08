@@ -22,6 +22,8 @@ use App\Http\Requests\FileUploadRequest;
 use App\Helper\Utils;
 use App\Http\Requests\AdminCreateUserRequest;
 use App\Http\Requests\AdminUserRequest;
+use App\Models\Epoch;
+use Carbon\Carbon;
 
 
 class DataController extends Controller
@@ -322,4 +324,17 @@ class DataController extends Controller
 //        dd(Storage::disk('s3')->allFiles(''));
     }
 
+    public function epoches(Request $request, $subdomain) {
+        $circle_id = Utils::getCircleIdByName($subdomain);
+        if (!$circle_id) {
+            return response()->json(['error' => 'Circle not Found'], 422);
+        }
+        $epoches = Epoch::where('circle_id', $circle_id);
+        if($request->current) {
+            $today = Carbon::today();
+            $epoches->whereDate('start_date', '>=', $today)->whereDate('end_date','<=', $today);
+        }
+        $epoches = $epoches->get();
+        return response()->json($epoches);
+    }
 }
