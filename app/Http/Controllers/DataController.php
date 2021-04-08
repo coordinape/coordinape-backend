@@ -332,7 +332,7 @@ class DataController extends Controller
         $epoches = Epoch::where('circle_id', $circle_id);
         if($request->current) {
             $today = Carbon::today()->toDateString();
-            $epoches->whereDate('start_date', '>=', $today)->whereDate('end_date','<=', $today);
+            $epoches->whereDate('start_date', '<=', $today)->whereDate('end_date','>=', $today);
         }
         $epoches = $epoches->get();
         return response()->json($epoches);
