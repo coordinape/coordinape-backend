@@ -298,7 +298,7 @@ class DataController extends Controller
         }
         return $this->repo->getEpochCsv($request->epoch, $circle_id, $request->grant);
     }
-    
+
     public function uploadAvatar(FileUploadRequest $request, $subdomain=null) : JsonResponse {
 
         $file = $request->file('file');
@@ -308,7 +308,7 @@ class DataController extends Controller
         $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
         $ret = Storage::put($new_file_name, $resized);
         if($ret) {
-            $user = User::byAddress($request->get('address'))->first();
+            $user = User::byAddress($request->get('address'))->where('circle_id',$request->circle_id)->first();
             if($user->avatar && Storage::exists($user->avatar)) {
                 Storage::delete($user->avatar);
             }
