@@ -58,7 +58,7 @@ class DataController extends Controller
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
-        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
 
@@ -71,7 +71,7 @@ class DataController extends Controller
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
-        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
 
@@ -187,7 +187,7 @@ class DataController extends Controller
             $this->repo->resetGifts($user, $toKeep);
         });
 
-        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
 
@@ -244,7 +244,7 @@ class DataController extends Controller
             $this->repo->resetGifts($user, $toKeep);
         });
 
-        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
 
@@ -286,7 +286,7 @@ class DataController extends Controller
                 $user->teammates()->sync($teammates);
             }
         });
-        $user->load(['teammates','pendingSentGifts','sentGifts']);
+        $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
 
