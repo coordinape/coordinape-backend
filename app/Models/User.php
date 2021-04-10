@@ -13,7 +13,8 @@ class User extends Authenticatable
     protected $searchable = [
       'circle_id',
       'address',
-      'id'
+      'id',
+      'is_hidden'
     ];
 
     /**

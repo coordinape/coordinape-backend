@@ -77,7 +77,9 @@ class DataController extends Controller
 
     public function getUsers(Request $request, $subdomain = null): JsonResponse {
         $circle_id = Utils::getCircleIdByName($subdomain);
-        $users = User::filter($request->all());
+        $data = $request->all();
+        $data['is_hidden'] = 0;
+        $users = User::filter($data);
         if($subdomain)
             $users->where('circle_id',$circle_id);
 
