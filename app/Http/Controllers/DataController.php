@@ -78,7 +78,6 @@ class DataController extends Controller
     public function getUsers(Request $request, $subdomain = null): JsonResponse {
         $circle_id = Utils::getCircleIdByName($subdomain);
         $data = $request->all();
-        $data['is_hidden'] = 0;
         $users = User::filter($data);
         if($subdomain)
             $users->where('circle_id',$circle_id);
@@ -145,7 +144,7 @@ class DataController extends Controller
             $addresses[] = strtolower($gift['recipient_address']);
         }
 
-        $users = User::where('circle_id',$request->circle_id)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
+        $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
 
         DB::transaction(function () use ($users, $user, $gifts, $address) {
             $token_used = 0;
@@ -280,12 +279,14 @@ class DataController extends Controller
     }
 
     public function updateTeammates(TeammatesRequest $request, $subdomain=null) : JsonResponse {
+
         $user = $request->user;
         $teammates = $request->teammates;
-        DB::transaction(function () use ($teammates, $user) {
-            $this->repo->resetGifts($user, $teammates);
-            if ($teammates) {
-                $user->teammates()->sync($teammates);
+        $circle_teammates = User::where('circle_id', $request->circle_id)->where('is_hidden',0)->whereIn('id',$teammates)->pluck('id');
+        DB::transaction(function () use ($circle_teammates, $user) {
+            $this->repo->resetGifts($user, $circle_teammates);
+            if ($circle_teammates) {
+                $user->teammates()->sync($circle_teammates);
             }
         });
         $user->load(['teammates','pendingSentGifts']);
