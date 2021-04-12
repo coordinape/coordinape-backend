@@ -24,6 +24,7 @@ use App\Http\Requests\AdminCreateUserRequest;
 use App\Http\Requests\AdminUserRequest;
 use App\Models\Epoch;
 use Carbon\Carbon;
+use App\Models\Protocol;
 
 
 class DataController extends Controller
@@ -38,6 +39,11 @@ class DataController extends Controller
     public function getCircles(Request $request, $subdomain = null): JsonResponse
     {
         return response()->json(Circle::all());
+    }
+
+    public function getProtocols(Request $request, $subdomain = null): JsonResponse
+    {
+        return response()->json(Protocol::all());
     }
 
     public function createCircle(CircleRequest $request)
@@ -78,7 +84,8 @@ class DataController extends Controller
     public function getUsers(Request $request, $subdomain = null): JsonResponse {
         $circle_id = Utils::getCircleIdByName($subdomain);
         $data = $request->all();
-        $users = User::filter($data);
+
+        $users = !empty($data['protocol_id']) ? User::protocolFilter($data) : User::filter($data);
         if($subdomain)
             $users->where('circle_id',$circle_id);
 

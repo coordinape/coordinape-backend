@@ -52,6 +52,29 @@ class User extends Authenticatable
 //    protected $casts = [
 //        'email_verified_at' => 'datetime',
 //    ];
+    public function scopeProtocolFilter($query, $filters) {
+
+        $query->leftJoin('circles as c','c.id', 'users.circle_id');
+        $query->leftJoin('protocols as p','c.protocol_id', 'p.id');
+        foreach($filters as $key=>$filter) {
+            if(in_array($key,$this->searchable)) {
+                $query->where("users.$key", $filter);
+            }
+        }
+        $query->where('c.protocol_id', $filters['protocol_id']);
+        $query->select(['users.name',
+            'users.address',
+            'users.circle_id',
+            'users.give_token_received',
+            'users.give_token_remaining',
+            'users.bio',
+            'users.avatar',
+            'users.non_receiver',
+            'users.epoch_first_visit',
+            'users.non_giver', 'c.protocol_id']);
+
+        return $query;
+    }
 
     public function scopeFilter($query, $filters) {
         foreach($filters as $key=>$filter) {
