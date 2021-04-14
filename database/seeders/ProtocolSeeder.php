@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Protocol;
 use App\Models\Circle;
+use App\Models\Epoch;
 
 class ProtocolSeeder extends Seeder
 {
@@ -26,5 +27,7 @@ class ProtocolSeeder extends Seeder
 
         $cream = new Protocol(['name'=>'cream']);
         $cream->save();
+
+        Epoch::where('id','>=',5)->update(['ended'=>0]);
     }
 }

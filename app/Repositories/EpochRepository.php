@@ -7,6 +7,7 @@ use App\Models\TokenGift;
 use App\Models\Epoch;
 use DB;
 use App\Models\User;
+use Carbon\Carbon;
 
 class EpochRepository
 {
@@ -18,23 +19,27 @@ class EpochRepository
 
     public function endEpoch($circle_id) {
 
+        $now = Carbon::now();
         $pending_gifts = $this->model->where(function($q) {
             $q->where('tokens','!=', 0)->orWhere('note','!=','');
-        })->get();
-        $epoch = Epoch::where('circle_id',$circle_id)->orderBy('id','desc')->first();
-        $epoch_number = $epoch ? $epoch->number + 1 : 1;
-        DB::transaction(function () use ($pending_gifts, $epoch_number, $circle_id) {
+        })->where('circle_id',$circle_id)->get();
 
-            $epoch = new Epoch(['number'=>$epoch_number, 'circle_id' => $circle_id]);
-            $epoch->save();
-            foreach($pending_gifts as $gift) {
-                $tokenGift = new TokenGift($gift->replicate()->toArray());
-                $tokenGift->epoch_id = $epoch->id;
-                $tokenGift->save();
-            }
-            $this->model->where('circle_id',$circle_id)->delete();
-            User::where('circle_id',$circle_id)->update(['non_receiver'=>1, 'give_token_received'=>0, 'give_token_remaining'=>100, 'epoch_first_visit' => 1]);
-        });
+        $epoch = Epoch::where('ended',0)->where('circle_id',$circle_id)->where('end_date','<=', $now)->orderBy('id','desc')->first();
+        if($epoch) {
+            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id) {
+                foreach($pending_gifts as $gift) {
+                    $tokenGift = new TokenGift($gift->replicate()->toArray());
+                    $tokenGift->epoch_id = $epoch->id;
+                    $tokenGift->save();
+                }
+
+                $this->model->where('circle_id',$circle_id)->delete();
+                User::where('circle_id',$circle_id)->where('non_giver',0)->where('give_token_remaining',100)->update(['non_receiver'=>1]);
+                User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>100, 'epoch_first_visit' => 1]);
+                $epoch->ended = 1;
+                $epoch->save();
+            });
+        }
     }
 
     public function resetGifts($user, $toKeep) {
@@ -58,7 +63,6 @@ class EpochRepository
 
         $ret = json_decode( (string)$response->getBody());
         $yfi_price = $ret->{'yearn-finance'}->usd;
-        //dd($yfi_price);
 
         $users = User::where('circle_id',$circle_id)->orderBy('name','asc')->get();
         $header = ['No.','name','address','received','sent','epoch_number', '($) Est grant',' Est YFI'];
@@ -105,6 +109,9 @@ class EpochRepository
            if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
            {
                foreach($pendingGifts as $gift) {
+                   if(!$gift->tokens && $gift->note)
+                       continue;
+
                    $sender = $gift->sender;
                    $gift->delete();
                    $token_used = $sender->pendingSentGifts()->get()->SUM('tokens');
