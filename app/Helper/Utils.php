@@ -43,6 +43,7 @@ class Utils
 
     public static function getCircleIdByName($name) {
 
+        return $name;
         if(array_key_exists($name,Utils::circleMap))
             return Utils::circleMap[$name];
 

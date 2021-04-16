@@ -12,4 +12,8 @@ class Circle extends Model
         'name',
         'protocol_id'
     ];
+
+    public function protocol() {
+        return $this->belongsTo('App\Models\Protocol','protocol_id','id');
+    }
 }
