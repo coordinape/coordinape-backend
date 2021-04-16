@@ -13,7 +13,8 @@ class TokenGift extends Model
         'sender_address',
         'recipient_address',
         'circle_id',
-        'id'
+        'id',
+        'epoch_id'
     ];
     protected $fillable = [
         'sender_address',
@@ -23,7 +24,8 @@ class TokenGift extends Model
         'tokens',
         'circle_id',
         'note',
-        'dts_created'
+        'dts_created',
+        'epoch_id'
     ];
 
     public function scopeFilter($query, $filters) {
