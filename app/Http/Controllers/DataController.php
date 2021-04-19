@@ -38,7 +38,7 @@ class DataController extends Controller
 
     public function getCircles(Request $request, $subdomain = null): JsonResponse
     {
-        return response()->json(Circle::with('protocol')->get());
+        return response()->json(Circle::filter($request->all())->with('protocol')->get());
     }
 
     public function getProtocols(Request $request, $subdomain = null): JsonResponse
