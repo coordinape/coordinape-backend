@@ -4,10 +4,9 @@ namespace App\Http\Requests;
 
 use App\Helper\Utils;
 use App\Models\User;
-use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CircleRequest extends FormRequest
+class EpochRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -20,13 +19,13 @@ class CircleRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = $this->get('address');
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $circle_id = null;
         $existing_user =  User::byAddress($address)->isAdmin();
-        if($this->route('subdomain')) {
-            $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
-            $existing_user = $existing_user->where('circle_id', $circle_id);
-        }
-        $existing_user = $existing_user->first();
+        if(!$this->route('circle_id'))
+            return false;
+
+        $circle_id = $this->route('circle_id');
+        $existing_user = $existing_user->where('circle_id', $circle_id)->first();
+
         $this->merge([
             'user' => $existing_user,
             'circle_id' => $circle_id
@@ -34,15 +33,13 @@ class CircleRequest extends FormRequest
         return $existing_user && strtolower($recoveredAddress)==strtolower($address);
     }
 
-    protected function prepareForValidation()
-    {
+    protected function prepareForValidation() {
+
         $data = json_decode($this->get('data'), true);
         $this->merge([
             'data' => $data,
-            'name' => !empty($data['name']) ? $data['name']:null,
-            'token_name' => !empty($data['token_name']) ? $data['token_name']:null,
-            'team_sel_text' => !empty($data['team_sel_text']) ? $data['team_sel_text']:null,
-            'alloc_text' => !empty($data['alloc_text']) ? $data['alloc_text']:null
+            'start_date' => !empty($data['start_date']) ? $data['start_date']:null,
+            'end_date' => !empty($data['end_date']) ? $data['end_date']:null
         ]);
     }
 
@@ -54,9 +51,8 @@ class CircleRequest extends FormRequest
     public function rules()
     {
         return [
-            'data' => 'required',
-            'name' => 'required|string|max:255',
-            'token_name' => 'required|string|max:255'
+            'start_date' => 'required|date|after:today',
+            'end_date' => 'required|date|after:start_date'
         ];
     }
 }

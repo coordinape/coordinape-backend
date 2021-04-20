@@ -19,36 +19,36 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::domain('{subdomain}.'.env('APP_DOMAIN'))->group(function () {
-
-    Route::get('/circles', [DataController::class, 'getCircles']);
-    Route::get('/users/{address}', [DataController::class, 'getUser2']);
-    Route::get('/users', [DataController::class, 'getUsers']);
-    Route::put('/users/{address}', [DataController::class, 'updateUser2']);
-
-    Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
-    Route::get('/token-gifts', [DataController::class, 'getGifts']);
-    Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts2']);
-    Route::post('/teammates', [DataController::class, 'updateTeammates']);
-    Route::post('/upload', [DataController::class, 'uploadAvatar']);
-    Route::get('/csv', [DataController::class, 'generateCsv']);
-    Route::get('/epoches',[DataController::class, 'epoches']);
-    Route::prefix('admin')->group(function () {
-        Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
-        Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
-        Route::post('/users', [DataController::class, 'createUser']);
-    });
-});
+//Route::domain('{subdomain}.'.env('APP_DOMAIN'))->group(function () {
+//
+//    Route::get('/circles', [DataController::class, 'getCircles']);
+//    Route::get('/users/{address}', [DataController::class, 'getUser2']);
+//    Route::get('/users', [DataController::class, 'getUsers']);
+//    Route::put('/users/{address}', [DataController::class, 'updateUser2']);
+//
+//    Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
+//    Route::get('/token-gifts', [DataController::class, 'getGifts']);
+//    Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts2']);
+//    Route::post('/teammates', [DataController::class, 'updateTeammates']);
+//    Route::post('/upload', [DataController::class, 'uploadAvatar']);
+//    Route::get('/csv', [DataController::class, 'generateCsv']);
+//    Route::get('/epoches',[DataController::class, 'epoches']);
+//    Route::prefix('admin')->group(function () {
+//        Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
+//        Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
+//        Route::post('/users', [DataController::class, 'createUser']);
+//    });
+//});
 
 Route::prefix('{subdomain}')->group(function () {
     Route::get('/circles', [DataController::class, 'getCircles']);
     Route::get('/users/{address}', [DataController::class, 'getUser2']);
     Route::get('/users', [DataController::class, 'getUsers']);
-    Route::put('/users/{address}', [DataController::class, 'updateUser2']);
+    Route::put('/users/{address}', [DataController::class, 'updateUser']);
 
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
-    Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts2']);
+    Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts']);
     Route::post('/teammates', [DataController::class, 'updateTeammates']);
     Route::post('/upload', [DataController::class, 'uploadAvatar']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
@@ -57,32 +57,33 @@ Route::prefix('{subdomain}')->group(function () {
         Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
         Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
         Route::post('/users', [DataController::class, 'createUser']);
+        Route::post('/epoches', [DataController::class, 'createEpoch']);
+        Route::delete('/epoches/{epoch}', [DataController::class, 'deleteEpoch']);
+        Route::delete('/users/{address}', [DataController::class, 'deleteUser']);
     });
 });
 
 
 Route::get('/protocols', [DataController::class, 'getProtocols']);
-
 Route::get('/circles', [DataController::class, 'getCircles']);
 //// not used for now
-Route::post('/circles', [DataController::class, 'createCircle']);
+//Route::post('/circles', [DataController::class, 'createCircle']);
 //Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
 ////
 
 Route::get('/users/{address}', [DataController::class, 'getUser']);
 Route::get('/users', [DataController::class, 'getUsers']);
-
-////not used for now
-Route::post('/users', [DataController::class, 'createUser']);
-////
-Route::put('/users/{address}', [DataController::class, 'updateUser']);
-
-Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
 Route::get('/token-gifts', [DataController::class, 'getGifts']);
-Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts']);
+Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
 
-Route::post('/teammates', [DataController::class, 'updateTeammates']);
-Route::post('/upload', [DataController::class, 'uploadAvatar']);
+// phased out
+//Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
+//Route::post('/teammates', [DataController::class, 'updateTeammates']);
+//Route::post('/upload', [DataController::class, 'uploadAvatar']);
+//Route::get('/csv', [DataController::class, 'generateCsv']);
+//Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts']);
+// phased out
 
-Route::get('/csv', [DataController::class, 'generateCsv']);
+
+
 

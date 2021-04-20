@@ -6,6 +6,7 @@ use App\Helper\Utils;
 use App\Models\User;
 use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
@@ -26,21 +27,18 @@ class UserRequest extends FormRequest
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $existing_user = null;
-        if($this->route('address')) {
-            $existing_user =  User::byAddress($this->route('address'));
-            if($this->route('subdomain')) {
-                $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
-                $existing_user = $existing_user->where('circle_id', $circle_id);
-            }
-            $existing_user = $existing_user->first();
+        $subdomain = $this->route('subdomain');
+        $circle_id = Utils::getCircleIdByName($subdomain);
+        $existing_user =  User::byAddress($this->route('address'));
+        if($circle_id) {
+            $existing_user = $existing_user->where('circle_id', $circle_id);
         }
-
+        $existing_user = $existing_user->first();
         $this->merge([
             'data' => $data,
             'user' => $existing_user,
             'name' => !empty($data['name']) ? $data['name']:null,
-            'circle_id' => !empty($data['circle_id']) ? $data['circle_id']:null,
+            'circle_id' => $circle_id,
             'address' => !empty($data['address']) ? $data['address']:null
         ]);
     }
@@ -52,21 +50,14 @@ class UserRequest extends FormRequest
      */
     public function rules()
     {
-
-        $address = 'required|string|size:42';
-
-        if($this->method()=="POST") {
-            $address .= '|unique:users';
-        }
-        else if($this->user) {
-            $address .= '|unique:users,id,'.$this->user->id;
-        }
-
+        $circle_id = $this->circle_id;
         return [
             'data' => 'required',
             'name' => 'required',
             'circle_id' => 'required|integer|exists:circles,id',
-            'address' => $address
+            'address' => ['required', 'string', 'size:42', Rule::unique('users')->ignore($this->user->id)->where(function ($query) use ($circle_id) {
+                return $query->where('circle_id', $circle_id);
+            })]
         ];
     }
 }

@@ -10,7 +10,10 @@ class Circle extends Model
     use HasFactory;
     protected $fillable = [
         'name',
-        'protocol_id'
+        'protocol_id',
+        'token_name',
+        'team_sel_text',
+        'alloc_text'
     ];
     protected $searchable = [
         'protocol_id',

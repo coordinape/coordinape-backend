@@ -25,7 +25,8 @@ class CsvRequest extends FormRequest
     {
         return [
 //            'circle_id' => 'required|integer|exists:circles,id',
-            'epoch' => 'required|integer|exists:epoches,number',
+            'epoch' => 'required_if:epoch_id,=,null|integer',
+            'epoch_id'=>'required_if:epoch,=,null|integer',
         ];
     }
 }

@@ -17,6 +17,7 @@ use App\Http\Requests\CsvRequest;
 use App\Http\Requests\TeammatesRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Intervention\Image\Facades\Image;
 use App\Http\Requests\FileUploadRequest;
 use App\Helper\Utils;
@@ -25,7 +26,9 @@ use App\Http\Requests\AdminUserRequest;
 use App\Models\Epoch;
 use Carbon\Carbon;
 use App\Models\Protocol;
-
+use App\Http\Requests\EpochRequest;
+use App\Http\Requests\DeleteEpochRequest;
+use App\Models\Teammate;
 
 class DataController extends Controller
 {
@@ -101,7 +104,7 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function updateUser2(UserRequest $request, $subdomain, $address): JsonResponse
+    public function updateUser(UserRequest $request, $subdomain, $address): JsonResponse
     {
         $user = $request->user;
         if(!$user)
@@ -114,7 +117,7 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function adminUpdateUser(AdminUserRequest $request, $subdomain, $address): JsonResponse
+    public function adminUpdateUser(AdminUserRequest $request, $circle_id, $address): JsonResponse
     {
         $user = $request->user;
         if(!$user)
@@ -127,21 +130,7 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-
-    public function updateUser($address, UserRequest $request): JsonResponse
-    {
-        $user = $request->user;
-        if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
-
-        $data = $request->all();
-        $data = $data['data'];
-        $data['address'] =  strtolower($data['address']);
-        $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
-        return response()->json($user);
-    }
-
-    public function updateGifts2(GiftRequest $request, $subdomain, $address): JsonResponse
+    public function updateGifts(GiftRequest $request, $subdomain, $address): JsonResponse
     {
         $user = $request->user;
         $gifts = $request->gifts;
@@ -152,63 +141,6 @@ class DataController extends Controller
         }
 
         $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
-
-        DB::transaction(function () use ($users, $user, $gifts, $address) {
-            $token_used = 0;
-            $toKeep = [];
-            foreach ($gifts as $gift) {
-                $recipient_address = strtolower($gift['recipient_address']);
-                if ($users->has($recipient_address)) {
-                    if ($user->id == $users[$recipient_address]->id)
-                        continue;
-
-                    $gift['sender_id'] = $user->id;
-                    $gift['sender_address'] = strtolower($address);
-                    $gift['recipient_address'] = $recipient_address;
-                    $gift['recipient_id'] = $users[$recipient_address]->id;
-
-                    $token_used += $gift['tokens'];
-                    $pendingGift = $user->pendingSentGifts()->where('recipient_id', $gift['recipient_id'])->first();
-
-                    if ($pendingGift) {
-                        if ($gift['tokens'] == 0 && $gift['note'] == '') {
-                            $pendingGift->delete();
-
-                        } else {
-                            $pendingGift->tokens = $gift['tokens'];
-                            $pendingGift->note = $gift['note'];
-                            $pendingGift->save();
-                        }
-                    } else {
-                        if ($gift['tokens'] == 0 && $gift['note'] == '')
-                            continue;
-
-                        $pendingGift = $user->pendingSentGifts()->create($gift);
-                    }
-
-                    $toKeep[] = $pendingGift->recipient_id;
-                    $users[$recipient_address]->give_token_received = $users[$recipient_address]->pendingReceivedGifts()->get()->SUM('tokens');
-                    $users[$recipient_address]->save();
-                }
-            }
-
-            $this->repo->resetGifts($user, $toKeep);
-        });
-
-        $user->load(['teammates','pendingSentGifts']);
-        return response()->json($user);
-    }
-
-    public function updateGifts($address, GiftRequest $request): JsonResponse
-    {
-        $user = $request->user;
-        $gifts = $request->gifts;
-        $addresses = [];
-
-        foreach($gifts as $gift) {
-            $addresses[] = strtolower($gift['recipient_address']);
-        }
-        $users = User::whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
 
         DB::transaction(function () use ($users, $user, $gifts, $address) {
             $token_used = 0;
@@ -282,7 +214,7 @@ class DataController extends Controller
                 return response()->json([]);
             }
         }
-        return response()->json(TokenGift::filter($filters)->get());
+        return response()->json(TokenGift::filter($filters)->limit(10000)->get());
     }
 
     public function updateTeammates(TeammatesRequest $request, $subdomain=null) : JsonResponse {
@@ -308,7 +240,18 @@ class DataController extends Controller
                 return response()->json(['error' => 'Circle not Found'], 422);
             $circle_id = $request->circle_id;
         }
-        return $this->repo->getEpochCsv($request->epoch, $circle_id, $request->grant);
+
+        $epoch = null;
+        if($request->epoch_id) {
+            $epoch = Epoch::where('circle_id',$circle_id)->where('id',$request->epoch_id )->first();
+
+        } else if ($request->epoch) {
+            $epoch = Epoch::where('circle_id',$circle_id)->orderBy('end_date')->skip($request->epoch-1)->first();
+        }
+        if(!$epoch)
+            return 'Epoch Not found';
+
+        return $this->repo->getEpochCsv($epoch, $circle_id, $request->grant);
     }
 
     public function uploadAvatar(FileUploadRequest $request, $subdomain=null) : JsonResponse {
@@ -334,7 +277,7 @@ class DataController extends Controller
 //        dd(Storage::disk('s3')->allFiles(''));
     }
 
-    public function epoches(Request $request, $subdomain) {
+    public function epoches(Request $request, $subdomain) : JsonResponse  {
         $circle_id = Utils::getCircleIdByName($subdomain);
         if (!$circle_id) {
             return response()->json(['error' => 'Circle not Found'], 422);
@@ -346,5 +289,72 @@ class DataController extends Controller
         }
         $epoches = $epoches->get();
         return response()->json($epoches);
+    }
+
+    public function createEpoch(EpochRequest $request, $subdomain) : JsonResponse  {
+        $data = $request->all();
+        $circle_id = $request->circle_id;
+        $exist = Epoch::where('circle_id',$circle_id)->whereDate('start_date', '<=', $data['end_date'])->whereDate('end_date', '>=', $data['start_date'])->exists();
+        if($exist)  {
+            $error = ValidationException::withMessages([
+                'start_date' => ['Has overlapping date with existing epoch'],
+                'end_date' => ['Has overlapping date with existing epoch'],
+            ]);
+            throw $error;
+        }
+        $data['circle_id'] = $circle_id;
+        $epoch = new Epoch($data);
+        $epoch->save();
+        return response()->json($epoch);
+    }
+
+    public function deleteEpoch(DeleteEpochRequest $request, $circle_id, Epoch $epoch) : JsonResponse {
+        $today = Carbon::today();
+        if($epoch->circle_id != $circle_id) {
+            $error = ValidationException::withMessages([
+                'epoch' => ['You are not authorized to delete this epoch'],
+            ]);
+            throw $error;
+        }
+        else if ($epoch->start_date <= $today || $epoch->ended == 1) {
+            $error = ValidationException::withMessages([
+                'epoch' => ['You cannot delete an epoch that has started or ended'],
+            ]);
+            throw $error;
+        }
+
+        $epoch->delete();
+
+        return response()->json($epoch);
+    }
+
+    public function deleteUser(AdminUserRequest $request, $circle_id, $address) : JsonResponse  {
+
+        $user = User::byAddress($address)->where('circle_id',$circle_id)->first();
+        //$user = $request->user;
+        $ret = $this->repo->removeAllPendingGiftsReceived($user);
+        if(is_null($ret)) {
+            $error = ValidationException::withMessages([
+                'failed' => ['Delete user failed please try again'],
+            ]);
+            throw $error;
+        }
+        $data = DB::transaction(function () use($user) {
+            Teammate::where('team_mate_id', $user->id)->delete();
+            $user->teammates()->delete();
+            $user->delete();
+
+            return response()->json($user);
+
+        });
+
+        if(is_null($data)) {
+            $error = ValidationException::withMessages([
+                'failed' => ['Delete user failed please try again'],
+            ]);
+            throw $error;
+        } else {
+            return $data;
+        }
     }
 }

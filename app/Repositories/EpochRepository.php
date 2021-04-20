@@ -55,7 +55,7 @@ class EpochRepository
         $user->save();
     }
 
-    public function getEpochCsv($epochNumber, $circle_id, $grant=0) {
+    public function getEpochCsv($epoch, $circle_id, $grant=0) {
 
         $client = new \GuzzleHttp\Client();
         $response = $client->get( "https://api.coingecko.com/api/v3/simple/price?ids=yearn-finance&vs_currencies=usd"
@@ -65,10 +65,9 @@ class EpochRepository
         $yfi_price = $ret->{'yearn-finance'}->usd;
 
         $users = User::where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
-        $header = ['No.','name','address','received','sent','epoch_number', '($) Est grant',' Est YFI'];
+        $header = ['No.','name','address','received','sent','epoch', '($) Est grant',' Est YFI'];
         $list = [];
         $list[]= $header;
-        $epoch = Epoch::where('number',$epochNumber)->where('circle_id',$circle_id)->first();
         $total_sent = TokenGift::where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
         foreach($users as $idx=>$user) {
             $received = $user->receivedGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
@@ -80,7 +79,7 @@ class EpochRepository
             $col[]= $user->address;
             $col[]= $received;
             $col[]= $user->sentGifts()->where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
-            $col[]= $epochNumber;
+            $col[]= $epoch->start_date->format('Y/m/d') . ' - ' . $epoch->end_date->format('Y/m/d');
             $col[] = $usd_received ;
             $col[] = $yfi_received ;
             $list[]= $col;
@@ -105,7 +104,7 @@ class EpochRepository
 
     public function removeAllPendingGiftsReceived($user, $updateData = []) {
         $pendingGifts = $user->pendingReceivedGifts;
-        DB::transaction(function () use ($user, $updateData, $pendingGifts) {
+        return DB::transaction(function () use ($user, $updateData, $pendingGifts) {
            if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
            {
                foreach($pendingGifts as $gift) {
@@ -123,7 +122,5 @@ class EpochRepository
             $user->update($updateData);
             return $user;
         });
-
-        return $user;
     }
 }

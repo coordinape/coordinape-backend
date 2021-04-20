@@ -10,4 +10,5 @@ class Epoch extends Model
     use HasFactory;
 
     protected $fillable = ['number','start_date','end_date','circle_id','ended'];
+    protected $dates = ['start_date','end_date'];
 }

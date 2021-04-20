@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
     protected $searchable = [
       'circle_id',
       'address',
       'id',
-      'is_hidden'
+      'is_hidden',
+      'non_giver'
     ];
 
     /**
@@ -86,7 +88,7 @@ class User extends Authenticatable
     }
 
     public function scopeIsAdmin($query) {
-        return $query->where('role',1);
+        return $query->where('role', 1);
     }
 
     public function scopeByAddress($query, $address) {

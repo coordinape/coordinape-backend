@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Helper\Utils;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class AdminUserRequest extends FormRequest
 {
@@ -18,12 +19,11 @@ class AdminUserRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = $this->get('address');
-        $subdomain = $this->route('subdomain');
-        $circle_id = Utils::getCircleIdByName($subdomain);
+        $circle_id =  $this->route('circle_id');
         $updating_user = null;
         $admin_user = null;
         if($circle_id) {
-            $admin_user = User::byAddress($this->get('address'))->isAdmin()->where('circle_id', $circle_id)->first();
+            $admin_user = User::byAddress($address)->isAdmin()->where('circle_id', $circle_id)->first();
             $updating_user = User::byAddress($this->route('address'))->where('circle_id', $circle_id)->first();
         }
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
@@ -40,7 +40,8 @@ class AdminUserRequest extends FormRequest
         $this->merge([
             'data' => $data,
             'name' => !empty($data['name']) ? $data['name']:null,
-            'address' => !empty($data['address']) ? $data['address']:null
+            'address' => !empty($data['address']) ? $data['address']:null,
+            'non_giver'  => !empty($data['non_giver']) ? $data['non_giver']:0,
         ]);
     }
 
@@ -52,20 +53,13 @@ class AdminUserRequest extends FormRequest
     public function rules()
     {
 
-        $address = 'required|string|size:42';
-
-//        if($this->method()=="POST") {
-//            $address .= '|unique:users';
-//        }
-//        else if($this->user) {
-//            $address .= '|unique:users,id,'.$this->user->id;
-//        }
-
+        $circle_id = $this->circle_id;
         return [
             'data' => 'required',
             'name' => 'required',
-//            'circle_id' => 'required|integer|exists:circles,id',
-            'address' => $address
+            'address' => ['required', 'string', 'size:42',Rule::unique('users')->ignore($this->user->id)->where(function ($query) use ($circle_id) {
+                return $query->where('circle_id', $circle_id);
+            })]
         ];
     }
 }
