@@ -39,7 +39,7 @@ class UserRequest extends FormRequest
             'user' => $existing_user,
             'name' => !empty($data['name']) ? $data['name']:null,
             'circle_id' => $circle_id,
-            'address' => !empty($data['address']) ? $data['address']:null
+            'address' => !empty($data['address']) ? strtolower($data['address']):null
         ]);
     }
 

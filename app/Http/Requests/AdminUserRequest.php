@@ -40,7 +40,7 @@ class AdminUserRequest extends FormRequest
         $this->merge([
             'data' => $data,
             'name' => !empty($data['name']) ? $data['name']:null,
-            'address' => !empty($data['address']) ? $data['address']:null,
+            'address' => !empty($data['address']) ? strtolower($data['address']):null,
             'non_giver'  => !empty($data['non_giver']) ? $data['non_giver']:0,
         ]);
     }
