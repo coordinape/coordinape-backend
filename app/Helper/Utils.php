@@ -70,10 +70,10 @@ class Utils
 
     }
 
-    public static function purgeCache($tags)
+    public static function purgeCache($tag)
     {
         if(env('CACHE_DRIVER')=='redis')
-            Cache::tags($tags)->flush();
+            Cache::tags([$tag,'default'])->flush();
     }
 
 }
