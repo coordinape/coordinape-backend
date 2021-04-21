@@ -141,8 +141,8 @@ class DataController extends Controller
         }
 
         $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
-
-        DB::transaction(function () use ($users, $user, $gifts, $address) {
+        $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
+        DB::transaction(function () use ($users, $user, $gifts, $address, $pendingSentGiftsMap) {
             $token_used = 0;
             $toKeep = [];
             foreach ($gifts as $gift) {
@@ -157,7 +157,7 @@ class DataController extends Controller
                     $gift['recipient_id'] = $users[$recipient_address]->id;
 
                     $token_used += $gift['tokens'];
-                    $pendingGift = $user->pendingSentGifts()->where('recipient_id', $gift['recipient_id'])->first();
+                    $pendingGift = $pendingSentGiftsMap->has($gift['recipient_id']) ? $pendingSentGiftsMap[$gift['recipient_id']] : null  ;
 
                     if ($pendingGift) {
                         if ($gift['tokens'] == 0 && $gift['note'] == '') {
@@ -182,7 +182,7 @@ class DataController extends Controller
             }
 
             $this->repo->resetGifts($user, $toKeep);
-        });
+        },2);
 
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
@@ -214,7 +214,10 @@ class DataController extends Controller
                 return response()->json([]);
             }
         }
-        return response()->json(TokenGift::filter($filters)->limit(10000)->get());
+
+        return response()->json( Utils::queryCache($request,function () use($filters,$request) {
+            return TokenGift::filter($filters)->limit(20000)->get();
+        }, 10, $filters['circle_id']));
     }
 
     public function updateTeammates(TeammatesRequest $request, $subdomain=null) : JsonResponse {
@@ -246,7 +249,7 @@ class DataController extends Controller
             $epoch = Epoch::where('circle_id',$circle_id)->where('id',$request->epoch_id )->first();
 
         } else if ($request->epoch) {
-            $epoch = Epoch::where('circle_id',$circle_id)->orderBy('end_date')->skip($request->epoch-1)->first();
+            $epoch = Epoch::where('circle_id',$circle_id)->where('number', $request->epoch)->first();
         }
         if(!$epoch)
             return 'Epoch Not found';

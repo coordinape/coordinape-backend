@@ -4,6 +4,7 @@ namespace App\Helper;
 
 
 use Elliptic\EC;
+use Illuminate\Support\Facades\Cache;
 use kornrunner\Keccak;
 use App\Models\Circle;
 
@@ -50,6 +51,29 @@ class Utils
         $circle = Circle::where('name',$name )->first();
         return $circle ? $circle->id : null;
 
+    }
+
+    public static function queryCache($request,$callback,$minutes=1,$tags='default')
+    {
+
+        $url = $request->url();
+        $queryParams = $request->query();
+
+        ksort($queryParams);
+        $queryString = http_build_query($queryParams);
+
+        $fullUrl = "{$url}?{$queryString}";
+        if(env('CACHE_DRIVER')=='redis')
+            return Cache::tags($tags)->remember($fullUrl, $minutes, $callback);
+
+        return Cache::remember($fullUrl, $minutes, $callback);
+
+    }
+
+    public static function purgeCache($tags)
+    {
+        if(env('CACHE_DRIVER')=='redis')
+            Cache::tags($tags)->flush();
     }
 
 }
