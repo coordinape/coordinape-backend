@@ -29,6 +29,7 @@ use App\Models\Protocol;
 use App\Http\Requests\EpochRequest;
 use App\Http\Requests\DeleteEpochRequest;
 use App\Models\Teammate;
+use App\Http\Requests\DeleteUserRequest;
 
 class DataController extends Controller
 {
@@ -325,10 +326,10 @@ class DataController extends Controller
         return response()->json($epoch);
     }
 
-    public function deleteUser(AdminUserRequest $request, $circle_id, $address) : JsonResponse  {
+    public function deleteUser(DeleteUserRequest $request, $circle_id, $address) : JsonResponse  {
 
-        $user = User::byAddress($address)->where('circle_id',$circle_id)->first();
-        //$user = $request->user;
+        //$user = User::byAddress($address)->where('circle_id',$circle_id)->first();
+        $user = $request->user;
         $ret = $this->repo->removeAllPendingGiftsReceived($user);
         if(is_null($ret)) {
             $error = ValidationException::withMessages([
@@ -342,7 +343,6 @@ class DataController extends Controller
             $user->delete();
 
             return response()->json($user);
-
         });
 
         if(is_null($data)) {
