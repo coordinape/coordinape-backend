@@ -203,21 +203,15 @@ class DataController extends Controller
         return response()->json(PendingTokenGift::filter($filters)->get());
     }
 
-    public function getGifts(Request $request, $subdomain = null): JsonResponse {
+    public function getGifts(Request $request, $circle_id = null): JsonResponse {
         $filters = $request->all();
-        if($subdomain) {
-            $circle_id = Utils::getCircleIdByName($subdomain);
-            if($circle_id) {
-                $filters['circle_id'] = $circle_id;
-            }
-            else {
-                return response()->json([]);
-            }
+        if($circle_id) {
+            $filters['circle_id'] = $circle_id;
         }
 
         return response()->json( Utils::queryCache($request,function () use($filters,$request) {
             return TokenGift::filter($filters)->limit(20000)->get();
-        }, 10, $filters['circle_id']));
+        }, 10, $circle_id));
     }
 
     public function updateTeammates(TeammatesRequest $request, $subdomain=null) : JsonResponse {
