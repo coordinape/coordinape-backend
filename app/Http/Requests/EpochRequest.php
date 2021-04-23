@@ -51,7 +51,7 @@ class EpochRequest extends FormRequest
     public function rules()
     {
         return [
-            'start_date' => 'required|date|after:today',
+            'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after:start_date'
         ];
     }
