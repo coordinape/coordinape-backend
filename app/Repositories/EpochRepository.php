@@ -3,6 +3,7 @@
 
 namespace App\Repositories;
 use App\Models\PendingTokenGift;
+use App\Models\Teammate;
 use App\Models\TokenGift;
 use App\Models\Epoch;
 use DB;
@@ -135,5 +136,33 @@ class EpochRepository
             $user->update($updateData);
             return $user;
         });
+    }
+
+    public function deleteUser($user) {
+        $pendingGifts = $user->pendingReceivedGifts;
+        $pendingGifts->load(['sender.pendingSentGifts']);
+        $existingGifts = $user->pendingSentGifts()->with('recipient')->get();
+
+        return DB::transaction(function () use ($user, $pendingGifts, $existingGifts) {
+            foreach($existingGifts as $existingGift) {
+                $rUser = $existingGift->recipient;
+                $existingGift->delete();
+                $rUser->give_token_received = $rUser->pendingReceivedGifts()->get()->SUM('tokens');
+                $rUser->save();
+            }
+            foreach($pendingGifts as $gift) {
+                $sender = $gift->sender;
+                $gift_token = $gift->tokens;
+                $gift->delete();
+                $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
+                $sender->give_token_remaining = 100-$token_used;
+                $sender->save();
+            }
+
+            Teammate::where('team_mate_id', $user->id)->delete();
+            $user->teammates()->delete();
+            $user->delete();
+            return $user;
+        },2);
     }
 }

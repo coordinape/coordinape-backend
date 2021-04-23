@@ -330,28 +330,14 @@ class DataController extends Controller
 
         //$user = User::byAddress($address)->where('circle_id',$circle_id)->first();
         $user = $request->user;
-        $ret = $this->repo->removeAllPendingGiftsReceived($user);
-        if(is_null($ret)) {
-            $error = ValidationException::withMessages([
-                'failed' => ['Delete user failed please try again'],
-            ]);
-            throw $error;
-        }
-        $data = DB::transaction(function () use($user) {
-            Teammate::where('team_mate_id', $user->id)->delete();
-            $user->teammates()->delete();
-            $user->delete();
-
-            return response()->json($user);
-        });
-
+        $data = $this->repo->deleteUser($user);
         if(is_null($data)) {
             $error = ValidationException::withMessages([
                 'failed' => ['Delete user failed please try again'],
             ]);
             throw $error;
         } else {
-            return $data;
+            return response()->json($data);
         }
     }
 }
