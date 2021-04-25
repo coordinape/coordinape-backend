@@ -46,7 +46,7 @@ class EpochStart extends Notification
             // Optional recipient user id.
             ->to($notifiable->telegram_id)
             // Markdown supported.
-            ->content("A new $name epoch is active !\n$usersCount will be participating and the duration of the epoch will be between:\n$start_date - $end_date")
+            ->content("A new $name epoch is active !\n$usersCount users will be participating and the duration of the epoch will be between:\n$start_date - $end_date")
             ->button('Start Allocating GIVES', 'https://coordinape.com/'.$name);
     }
 
