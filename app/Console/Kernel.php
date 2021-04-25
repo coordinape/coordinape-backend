@@ -24,7 +24,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-         $schedule->command('close:epochs')->everyFiveMinutes();
+        $schedule->command('close:epochs')->everyFiveMinutes();
+        $schedule->command('check:enotifications')->everyFiveMinutes();
+
     }
 
     /**

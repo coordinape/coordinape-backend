@@ -114,4 +114,8 @@ class User extends Authenticatable
     public function teammates() {
         return $this->belongsToMany('App\Models\User','teammates','user_id','team_mate_id');
     }
+
+    public function circle() {
+        return $this->belongsTo('App\Models\Circle','circle_id','id');
+    }
 }

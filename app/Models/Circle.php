@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Circle extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
     protected $fillable = [
         'name',
         'protocol_id',
@@ -29,5 +30,9 @@ class Circle extends Model
     }
     public function protocol() {
         return $this->belongsTo('App\Models\Protocol','protocol_id','id');
+    }
+
+    public function users() {
+        return $this->hasMany('App\Models\User', 'circle_id', 'id');
     }
 }
