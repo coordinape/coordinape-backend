@@ -17,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 //Route::get('/', function () {
 //    return abort(404);
 //});
+
+//Route::post('/<token>/webhook', function () {
+//    $updates = Telegram::getWebhookUpdates();
+//
+//    return 'ok';
+//});
