@@ -183,9 +183,9 @@ class DataController extends Controller
                 }
             }
             $this->repo->resetGifts($user, $toKeep);
-            if($token_used>0) {
-                $user->circle->notify(new NewAllocation($user, $token_used));
-            }
+//            if($token_used>0) {
+//                $user->circle->notify(new NewAllocation($user, $token_used));
+//            }
         },2);
 
         $user->load(['teammates','pendingSentGifts']);
