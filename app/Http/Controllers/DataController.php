@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Circle;
+use App\Notifications\NewAllocation;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -181,8 +182,10 @@ class DataController extends Controller
                     $users[$recipient_address]->save();
                 }
             }
-
             $this->repo->resetGifts($user, $toKeep);
+            if($token_used>0) {
+                $user->circle->notify(new NewAllocation($user, $token_used));
+            }
         },2);
 
         $user->load(['teammates','pendingSentGifts']);
