@@ -21,9 +21,10 @@ class ApeIn extends Command
     /**
      * @inheritdoc
      */
-    public function handle($arguements)
+    public function handle()
     {
-        Log::info('apein',$arguements);
+        $args = $this->getArguments();
+        Log::info('apein',$args);
         $this->replyWithMessage(['text' => 'Hello! Welcome to our bot, Here are our available commands:']);
 
        // return 0;
