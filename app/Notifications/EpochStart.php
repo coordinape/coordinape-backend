@@ -41,7 +41,7 @@ class EpochStart extends Notification
         $name = $notifiable->protocol->name .'/'. $notifiable->name;
         $start_date = $this->epoch->start_date->format('Y/m/d H:i T');
         $end_date = $this->epoch->end_date->format('Y/m/d H:i T');
-        $usersCount = $notifiable->users()->count();
+        $usersCount = $notifiable->users()->where('is_hidden',0)->count();
         return TelegramMessage::create()
             // Optional recipient user id.
             ->to($notifiable->telegram_id)
