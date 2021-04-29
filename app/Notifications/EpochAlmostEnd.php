@@ -54,8 +54,6 @@ class EpochAlmostEnd extends Notification
             $unalloc_str = "All users has fully allocated all their GIVE tokens !";
         }
         return TelegramMessage::create()
-            // Optional recipient user id.
-            ->to($notifiable->telegram_id)
             // Markdown supported.
             ->content("$name epoch is almost ending in less than 24HRS !\n$unalloc_str")
             ->button('Start Allocating GIVES', 'https://coordinape.com/'.$name);

@@ -20,6 +20,14 @@ class Circle extends Model
         'protocol_id',
     ];
 
+    public function routeNotificationForTelegram()
+    {
+        if(env('APP_DOMAIN') != 'coordinape.me')
+            return '-573708082';
+
+        return $this->telegram_id;
+    }
+
     public function scopeFilter($query, $filters) {
         foreach($filters as $key=>$filter) {
             if(in_array($key,$this->searchable)) {
@@ -34,5 +42,9 @@ class Circle extends Model
 
     public function users() {
         return $this->hasMany('App\Models\User', 'circle_id', 'id');
+    }
+
+    public function pending_gifts() {
+        return $this->hasMany('App\Models\PendingTokenGift', 'circle_id', 'id');
     }
 }

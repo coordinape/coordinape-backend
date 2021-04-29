@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('close:epochs')->everyFiveMinutes();
         $schedule->command('check:enotifications')->everyFiveMinutes();
-
+        $schedule->command('daily:update')->dailyAt('21:00');
     }
 
     /**

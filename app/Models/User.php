@@ -87,12 +87,24 @@ class User extends Authenticatable
         return $query;
     }
 
+    public function scopeYetToSend($query) {
+        return $query->where('give_token_remaining',100);
+    }
+
+    public function scopeHasSent($query) {
+        return $query->where('give_token_remaining','<',100);
+    }
+
     public function scopeIsAdmin($query) {
         return $query->where('role', 1);
     }
 
     public function scopeByAddress($query, $address) {
         return $query->whereRaw( 'LOWER(`address`) LIKE ?', [ $address ] );
+    }
+
+    public function scopeOptOuts($query) {
+        return $query->where('non_receiver',1);
     }
 
     public function pendingSentGifts() {

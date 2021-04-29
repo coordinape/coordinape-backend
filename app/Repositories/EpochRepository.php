@@ -6,6 +6,7 @@ use App\Models\PendingTokenGift;
 use App\Models\Teammate;
 use App\Models\TokenGift;
 use App\Models\Epoch;
+use App\Notifications\DailyUpdate;
 use App\Notifications\EpochAlmostEnd;
 use App\Notifications\EpochStart;
 use App\Notifications\OptOutEpoch;
@@ -88,7 +89,7 @@ class EpochRepository
             $q->where('epoch_id',$epoch->id)->where('circle_id',$circle_id);
         }])->where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
 
-        $header = ['No.','name','address','received','sent','epoch number', 'Daate'];
+        $header = ['No.','name','address','received','sent','epoch number', 'Date'];
         $list = [];
         $list[]= $header;
         //$total_sent = TokenGift::where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
@@ -206,5 +207,35 @@ class EpochRepository
                 $epoch->save();
             }
         }
+    }
+
+    public function dailyUpdate($epoch) {
+
+        $circle = $epoch->circle;
+        $users = $circle->users()->where('is_hidden',0)->get();
+        $pending_gifts = $circle->pending_gifts;
+        $total_gifts_sent = count($pending_gifts);
+        $total_tokens_sent = $pending_gifts->SUM('tokens');
+        $opt_outs = $circle->users()->where('is_hidden',0)->optOuts()->count();
+        $has_sent = $circle->users()->where('is_hidden',0)->hasSent()->count();
+        $total_users = count($users);
+        $sent_today_gifts = $circle->pending_gifts()->with('sender')->sentToday()->get();
+
+        $name_strs = '';
+        $user_added = [];
+        foreach($sent_today_gifts as $pending_gift) {
+            if(array_key_exists($pending_gift->sender_id,$user_added))
+                continue;
+
+            $sender = $pending_gift->sender;
+            if($name_strs)
+                $name_strs .= ', ';
+
+            $name_strs .= $sender->telegram_username ?: $sender->name;
+            $user_added[$pending_gift->sender_id] = true;
+        }
+        $epoch_num = Epoch::where('circle_id',$circle->id)->where('ended', 1)->count();
+        $epoch_num += 1;
+        $circle->notify(new DailyUpdate($epoch, $name_strs, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users,$epoch_num));
     }
 }

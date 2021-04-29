@@ -37,8 +37,6 @@ class OptOutEpoch extends Notification
         $circle_name = $notifiable->protocol->name .'/'. $notifiable->name;
         $name = $this->user->telegram_username ?: $this->user->name;
         return TelegramMessage::create()
-            // Optional recipient user id.
-            ->to($notifiable->telegram_id)
             // Markdown supported.
             ->content("$name has just opt out of the current epoch !\nA total of $this->totalRefunded GIVE is refunded\n$this->refundStr")
             ->button('Reallocate your GIVES', 'https://coordinape.com/'.$circle_name);
