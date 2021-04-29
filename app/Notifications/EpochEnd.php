@@ -61,8 +61,6 @@ class EpochEnd extends Notification
             'http://'.$app_domain."/api/$notifiable->id/csv" : 'https://'.$app_domain."/api/$notifiable->id/csv";
         $url .=  "?epoch=". $this->epoch_num;
         return TelegramMessage::create()
-            // Optional recipient user id.
-            ->to($notifiable->telegram_id)
             // Markdown supported.
             ->content("$name epoch has just ended !\n$unalloc_str")
             ->button('Click to Download CSV', $url);

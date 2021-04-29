@@ -43,8 +43,6 @@ class EpochStart extends Notification
         $end_date = $this->epoch->end_date->format('Y/m/d H:i T');
         $usersCount = $notifiable->users()->where('is_hidden',0)->count();
         return TelegramMessage::create()
-            // Optional recipient user id.
-            ->to($notifiable->telegram_id)
             // Markdown supported.
             ->content("A new $name epoch is active !\n$usersCount users will be participating and the duration of the epoch will be between:\n$start_date - $end_date")
             ->button('Start Allocating GIVES', 'https://coordinape.com/'.$name);

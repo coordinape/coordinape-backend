@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,5 +44,9 @@ class PendingTokenGift extends Model
 
     public function sender() {
         return $this->belongsTo('App\Models\User','sender_id','id');
+    }
+
+    public function scopeSentToday($query) {
+        return $query->whereDate('created_at',Carbon::today());
     }
 }
