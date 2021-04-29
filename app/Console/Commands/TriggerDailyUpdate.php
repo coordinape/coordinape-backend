@@ -47,7 +47,7 @@ class TriggerDailyUpdate extends Command
         })->get();
 
         foreach($epoches as $epoch) {
-            if($epoch->ended == 0)
+            if($epoch->circle->telegram_id && $epoch->ended == 0)
                 $this->repo->dailyUpdate($epoch);
         }
     }
