@@ -41,6 +41,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //});
 
 Route::prefix('{subdomain}')->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
+        Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
+        Route::post('/users', [DataController::class, 'createUser']);
+        Route::post('/epoches', [DataController::class, 'createEpoch']);
+        Route::delete('/epoches/{epoch}', [DataController::class, 'deleteEpoch']);
+        Route::delete('/users/{address}', [DataController::class, 'deleteUser']);
+    });
     Route::get('/circles', [DataController::class, 'getCircles']);
     Route::get('/users/{address}', [DataController::class, 'getUser2']);
     Route::get('/users', [DataController::class, 'getUsers']);
@@ -53,14 +61,7 @@ Route::prefix('{subdomain}')->group(function () {
     Route::post('/upload', [DataController::class, 'uploadAvatar']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
     Route::get('/epoches',[DataController::class, 'epoches']);
-    Route::prefix('admin')->group(function () {
-        Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
-        Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
-        Route::post('/users', [DataController::class, 'createUser']);
-        Route::post('/epoches', [DataController::class, 'createEpoch']);
-        Route::delete('/epoches/{epoch}', [DataController::class, 'deleteEpoch']);
-        Route::delete('/users/{address}', [DataController::class, 'deleteUser']);
-    });
+
 });
 
 

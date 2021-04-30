@@ -58,7 +58,7 @@ class DataController extends Controller
         return response()->json($circle);
     }
 
-    public function updateCircle(Circle $circle, CircleRequest $request, $subdomain=null): JsonResponse
+    public function updateCircle( CircleRequest $request, $subdomain=null, Circle $circle): JsonResponse
     {
         $circle->update($request->all());
         return response()->json($circle);
