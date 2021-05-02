@@ -34,7 +34,8 @@ class User extends Authenticatable
         'avatar',
         'non_receiver',
         'epoch_first_visit',
-        'non_giver'
+        'non_giver',
+        'starting_tokens'
     ];
 
     /**
@@ -88,11 +89,11 @@ class User extends Authenticatable
     }
 
     public function scopeYetToSend($query) {
-        return $query->where('give_token_remaining',100);
+        return $query->where('give_token_remaining',$this->attributes['starting_tokens']);
     }
 
     public function scopeHasSent($query) {
-        return $query->where('give_token_remaining','<',100);
+        return $query->where('give_token_remaining','<',$this->attributes['starting_tokens']);
     }
 
     public function scopeIsAdmin($query) {

@@ -40,6 +40,10 @@ class Circle extends Model
         return $this->belongsTo('App\Models\Protocol','protocol_id','id');
     }
 
+    public function epoches() {
+        return $this->hasMany('App\Models\Epoch', 'circle_id', 'id');
+    }
+
     public function users() {
         return $this->hasMany('App\Models\User', 'circle_id', 'id');
     }

@@ -58,7 +58,7 @@ class GiftRequest extends FormRequest
             'signature' => 'required',
             'address' => 'required',
             'gifts.*.recipient_address' => 'required|string|size:42',
-            'gifts.*.tokens' => 'required|integer|max:100'
+            'gifts.*.tokens' => 'required|integer'
         ];
 
         $gifts = $this->gifts;
@@ -76,8 +76,8 @@ class GiftRequest extends FormRequest
 
 //        $this->merge(['user' => $user]);
 
-        if($sum > 100) {
-            throw new ConflictHttpException('Sum of tokens is more than 100');
+        if($sum > $user->starting_tokens) {
+            throw new ConflictHttpException('Sum of tokens is more than '. $user->starting_tokens);
         }
 
         return $rules;

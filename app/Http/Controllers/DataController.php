@@ -124,8 +124,13 @@ class DataController extends Controller
         $user = $request->user;
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
-
         $data = $request->all();
+
+        if($user->starting_tokens != $data['starting_tokens']) {
+           if( $user->circle->epoches()->isActiveDate()->first()) {
+               return response()->json(['error'=> 'Cannot update starting tokens during an active epoch'],422);
+           }
+        }
         $data = $data['data'];
         $data['address'] =  strtolower($data['address']);
         $user = $this->repo->removeAllPendingGiftsReceived($user, $data);

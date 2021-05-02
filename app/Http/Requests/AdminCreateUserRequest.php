@@ -35,6 +35,7 @@ class AdminCreateUserRequest extends FormRequest
             'name' => !empty($data['name']) ? $data['name']:null,
             'address' => !empty($data['address']) ? $data['address']:null,
             'non_giver'  => !empty($data['non_giver']) ? $data['non_giver']:0,
+            'starting_tokens'  => !empty($data['starting_tokens']) ? $data['starting_tokens']:100
         ]);
     }
 

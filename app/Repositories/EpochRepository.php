@@ -35,7 +35,7 @@ class EpochRepository
             $epoch_number = Epoch::where('ended',1)->where('circle_id',$circle_id)->count();
             $epoch_number = $epoch_number + 1;
             $circle = $epoch->circle;
-            $unalloc_users = $circle->users()->where('non_giver',0)->where('give_token_remaining','=',100)->get();
+            $unalloc_users = $circle->users()->where('non_giver',0)->yetToSend()->get();
             $ret = DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
                 foreach($pending_gifts as $gift) {
                     $tokenGift = new TokenGift($gift->replicate()->toArray());
@@ -44,8 +44,8 @@ class EpochRepository
                 }
 
                 $this->model->where('circle_id',$circle_id)->delete();
-                User::where('circle_id',$circle_id)->where('non_giver',0)->where('give_token_remaining',100)->update(['non_receiver'=>1]);
-                User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>100, 'epoch_first_visit' => 1]);
+                User::where('circle_id',$circle_id)->where('non_giver',0)->scopeYetToSend()->update(['non_receiver'=>1]);
+                User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
                 $epoch->ended = 1;
                 $epoch->number = $epoch_number;
                 $epoch->save();
@@ -70,7 +70,7 @@ class EpochRepository
             $rUser->save();
         }
         $token_used = $user->pendingSentGifts()->get()->SUM('tokens');
-        $user->give_token_remaining = 100-$token_used;
+        $user->give_token_remaining = $user->starting_tokens-$token_used;
         $user->save();
     }
 
@@ -146,7 +146,7 @@ class EpochRepository
                    $optOutStr .= "$sender->name: $gift_token\n";
                    $gift->delete();
                    $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-                   $sender->give_token_remaining = 100-$token_used;
+                   $sender->give_token_remaining = $sender->starting_tokens-$token_used;
                    $sender->save();
                }
                $updateData['give_token_received'] = 0;
@@ -179,7 +179,7 @@ class EpochRepository
                 $gift_token = $gift->tokens;
                 $gift->delete();
                 $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-                $sender->give_token_remaining = 100-$token_used;
+                $sender->give_token_remaining = $sender->starting_tokens-$token_used;
                 $sender->save();
             }
 
