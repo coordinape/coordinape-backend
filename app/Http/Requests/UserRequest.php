@@ -39,7 +39,8 @@ class UserRequest extends FormRequest
             'user' => $existing_user,
             'name' => !empty($data['name']) ? $data['name']:null,
             'circle_id' => $circle_id,
-            'address' => !empty($data['address']) ? strtolower($data['address']):null
+            'address' => !empty($data['address']) ? strtolower($data['address']):null,
+            'non_receiver' => !empty($data['non_receiver']) ? $data['non_receiver']:0,
         ]);
     }
 
@@ -53,7 +54,7 @@ class UserRequest extends FormRequest
         $circle_id = $this->circle_id;
         return [
             'data' => 'required',
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'circle_id' => 'required|integer|exists:circles,id',
             'address' => ['required', 'string', 'size:42', Rule::unique('users')->ignore($this->user->id)->where(function ($query) use ($circle_id) {
                 return $query->where('circle_id', $circle_id);

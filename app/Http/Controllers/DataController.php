@@ -53,14 +53,14 @@ class DataController extends Controller
 
     public function createCircle(CircleRequest $request)
     {
-        $circle = new Circle($request->all());
+        $circle = new Circle($request->only('name','protocol_id','token_name','team_sel_text','alloc_text'));
         $circle->save();
         return response()->json($circle);
     }
 
     public function updateCircle( CircleRequest $request, $subdomain=null, Circle $circle): JsonResponse
     {
-        $circle->update($request->all());
+        $circle->update($request->only('name','token_name','team_sel_text','alloc_text'));
         return response()->json($circle);
     }
 
@@ -99,7 +99,7 @@ class DataController extends Controller
     }
 
     public function createUser(AdminCreateUserRequest $request, $circle_id): JsonResponse {
-        $data = $request->all();
+        $data = $request->only('address','name','starting_tokens','non_giver');
         $data['address'] =  strtolower($data['address']);
         $user = new User($data);
         $user->save();
@@ -112,8 +112,7 @@ class DataController extends Controller
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
-        $data = $request->all();
-        $data = $data['data'];
+        $data = $request->only('name','address','non_receiver');
         $data['address'] =  strtolower($data['address']);
         $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
         return response()->json($user);
@@ -124,7 +123,7 @@ class DataController extends Controller
         $user = $request->user;
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
-        $data = $request->all();
+        $data = $request->only('name','address','starting_tokens','non_giver');
 
         if($user->starting_tokens != $data['starting_tokens']) {
            if( $user->circle->epoches()->isActiveDate()->first()) {
@@ -297,7 +296,7 @@ class DataController extends Controller
     }
 
     public function createEpoch(EpochRequest $request, $circle_id) : JsonResponse  {
-        $data = $request->all();
+        $data = $request->only('start_date','end_date');
         $exist = Epoch::where('circle_id',$circle_id)->whereDate('start_date', '<=', $data['end_date'])->whereDate('end_date', '>=', $data['start_date'])->exists();
         if($exist)  {
             $error = ValidationException::withMessages([
