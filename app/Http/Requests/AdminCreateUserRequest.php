@@ -14,8 +14,7 @@ class AdminCreateUserRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = $this->get('address');
-        $subdomain = $this->route('subdomain');
-        $circle_id = Utils::getCircleIdByName($subdomain);
+        $circle_id = $this->route('circle_id');
         if($circle_id) {
             $admin_user = User::byAddress($this->get('address'))->isAdmin()->where('circle_id', $circle_id)->first();
         } else {

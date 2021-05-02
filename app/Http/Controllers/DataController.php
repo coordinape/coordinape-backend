@@ -98,7 +98,7 @@ class DataController extends Controller
         return response()->json($users);
     }
 
-    public function createUser(AdminCreateUserRequest $request, $subdomain): JsonResponse {
+    public function createUser(AdminCreateUserRequest $request, $circle_id): JsonResponse {
         $data = $request->all();
         $data['address'] =  strtolower($data['address']);
         $user = new User($data);
@@ -291,9 +291,8 @@ class DataController extends Controller
         return response()->json($epoches);
     }
 
-    public function createEpoch(EpochRequest $request, $subdomain) : JsonResponse  {
+    public function createEpoch(EpochRequest $request, $circle_id) : JsonResponse  {
         $data = $request->all();
-        $circle_id = $request->circle_id;
         $exist = Epoch::where('circle_id',$circle_id)->whereDate('start_date', '<=', $data['end_date'])->whereDate('end_date', '>=', $data['start_date'])->exists();
         if($exist)  {
             $error = ValidationException::withMessages([
