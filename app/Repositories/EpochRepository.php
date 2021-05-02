@@ -203,7 +203,7 @@ class EpochRepository
                 $circle = $epoch->circle;
                 $unalloc_users = $circle->users()->where('non_giver',0)->where('is_hidden',0)->where('give_token_remaining','>',0)->get();
                 $circle->notify(new EpochAlmostEnd($unalloc_users));
-                $epoch->notified_end = Carbon::now();
+                $epoch->notified_before_end = Carbon::now();
                 $epoch->save();
             }
         }
