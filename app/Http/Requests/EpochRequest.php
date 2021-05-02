@@ -20,10 +20,10 @@ class EpochRequest extends FormRequest
         $address  = $this->get('address');
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $existing_user =  User::byAddress($address)->isAdmin();
-        if(!$this->route('circle_id'))
+        if(!$this->route('subdomain'))
             return false;
 
-        $circle_id = $this->route('circle_id');
+        $circle_id = $this->route('subdomain');
         $existing_user = $existing_user->where('circle_id', $circle_id)->first();
 
         $this->merge([

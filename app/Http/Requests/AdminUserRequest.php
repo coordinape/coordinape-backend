@@ -19,7 +19,7 @@ class AdminUserRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = $this->get('address');
-        $circle_id =  $this->route('circle_id');
+        $circle_id =  $this->route('subdomain');
         $updating_user = null;
         $admin_user = null;
         if($circle_id) {
