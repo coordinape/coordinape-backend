@@ -59,7 +59,7 @@ class AdminUserRequest extends FormRequest
             'data' => 'required',
             'name' => 'required|string|max:255',
             'address' => ['required', 'string', 'size:42',Rule::unique('users')->ignore($this->user->id)->where(function ($query) use ($circle_id) {
-                return $query->where('circle_id', $circle_id);
+                return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
             })]
         ];
     }
