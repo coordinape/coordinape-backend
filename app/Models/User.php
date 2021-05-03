@@ -89,11 +89,11 @@ class User extends Authenticatable
     }
 
     public function scopeYetToSend($query) {
-        return $query->where('give_token_remaining',$this->attributes['starting_tokens']);
+        return $query->where('give_token_remaining',$this->starting_tokens);
     }
 
     public function scopeHasSent($query) {
-        return $query->where('give_token_remaining','<',$this->attributes['starting_tokens']);
+        return $query->where('give_token_remaining','<',$this->starting_tokens);
     }
 
     public function scopeIsAdmin($query) {
