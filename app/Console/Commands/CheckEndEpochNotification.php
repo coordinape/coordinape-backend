@@ -52,7 +52,7 @@ class CheckEndEpochNotification extends Command
 
             if($circle->telegram_id && $epoch->number)
             {
-                $circle->notify(new EpochEnd([],$epoch->number));
+                $circle->notify(new EpochEnd($epoch->number));
                 $epoch->notified_end = Carbon::now();
                 $epoch->save();
                 Utils::purgeCache($circle->id);

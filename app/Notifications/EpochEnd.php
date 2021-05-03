@@ -20,7 +20,7 @@ class EpochEnd extends Notification
      */
     protected $unallocated_users;
     protected $epoch_num;
-    public function __construct($unallocated_users = [],$epoch_num)
+    public function __construct($epoch_num, $unallocated_users = [])
     {
         $this->unallocated_users = $unallocated_users;
         $this->epoch_num = $epoch_num;
