@@ -131,7 +131,6 @@ class DataController extends Controller
                return response()->json(['error'=> 'Cannot update starting tokens during an active epoch'],422);
            }
         }
-        $data = $data['data'];
         $data['address'] =  strtolower($data['address']);
         $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
         return response()->json($user);
