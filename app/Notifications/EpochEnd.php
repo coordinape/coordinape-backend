@@ -52,11 +52,11 @@ class EpochEnd extends Notification
         if($unalloc_str) {
             $unalloc_str = "Users that did not allocate any GIVE Tokens:\n" . $unalloc_str;
         }
-        else {
-            $unalloc_str = "All users has fully allocated all their GIVE tokens !";
-        }
+//        else {
+//            $unalloc_str = "All users has fully allocated all their GIVE tokens !";
+//        }
 
-        $app_domain = env('APP_DOMAIN');
+        $app_domain = 'coordinape.me';
         $url = $app_domain== 'localhost:8000' ?
             'http://'.$app_domain."/api/$notifiable->id/csv" : 'https://'.$app_domain."/api/$notifiable->id/csv";
         $url .=  "?epoch=". $this->epoch_num;

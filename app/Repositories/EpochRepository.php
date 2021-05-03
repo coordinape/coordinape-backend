@@ -36,7 +36,7 @@ class EpochRepository
             $epoch_number = $epoch_number + 1;
             $circle = $epoch->circle;
             $unalloc_users = $circle->users()->where('non_giver',0)->yetToSend()->get();
-            $ret = DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
+            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
                 foreach($pending_gifts as $gift) {
                     $tokenGift = new TokenGift($gift->replicate()->toArray());
                     $tokenGift->epoch_id = $epoch->id;
@@ -50,9 +50,8 @@ class EpochRepository
                 $epoch->number = $epoch_number;
                 $epoch->save();
 
-                return true;
             });
-            if($ret && !$epoch->notified_end && $circle->telegram_id) {
+            if(!$epoch->notified_end && $circle->telegram_id) {
                 $circle->notify(new EpochEnd($unalloc_users,$epoch_number));
                 $epoch->notified_end = Carbon::now();
                 $epoch->save();
