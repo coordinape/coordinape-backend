@@ -99,8 +99,9 @@ class DataController extends Controller
     }
 
     public function createUser(AdminCreateUserRequest $request, $circle_id): JsonResponse {
-        $data = $request->only('address','name','starting_tokens','non_giver');
+        $data = $request->only('address','name','starting_tokens','non_giver','circle_id');
         $data['address'] =  strtolower($data['address']);
+        $data['circle_id'] =  $circle_id;
         $user = new User($data);
         $user->save();
         return response()->json($user);
