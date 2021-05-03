@@ -42,6 +42,7 @@ class UserRequest extends FormRequest
             'address' => !empty($data['address']) ? strtolower($data['address']):null,
             'non_receiver' => !empty($data['non_receiver']) ? $data['non_receiver']:0,
             'bio' => !empty($data['bio']) ? $data['bio']:null,
+            'epoch_first_visit' => !empty($data['epoch_first_visit']) ? $data['epoch_first_visit']:0
         ]);
     }
 
