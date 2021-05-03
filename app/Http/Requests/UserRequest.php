@@ -41,6 +41,7 @@ class UserRequest extends FormRequest
             'circle_id' => $circle_id,
             'address' => !empty($data['address']) ? strtolower($data['address']):null,
             'non_receiver' => !empty($data['non_receiver']) ? $data['non_receiver']:0,
+            'bio' => !empty($data['bio']) ? $data['bio']:null,
         ]);
     }
 
