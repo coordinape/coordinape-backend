@@ -106,6 +106,7 @@ class DataController extends Controller
         $user = new User($data);
         $user->save();
         $user->circle->notify(new AddNewUser($request->admin_user, $user));
+        $user->refresh();
         return response()->json($user);
     }
 
@@ -302,8 +303,8 @@ class DataController extends Controller
         $exist = Epoch::where('circle_id',$circle_id)->whereDate('start_date', '<=', $data['end_date'])->whereDate('end_date', '>=', $data['start_date'])->exists();
         if($exist)  {
             $error = ValidationException::withMessages([
-                'start_date' => ['Has overlapping date with existing epoch'],
-                'end_date' => ['Has overlapping date with existing epoch'],
+                'start_date' => ['New epoch has overlapping date with existing epoch'],
+                'end_date' => ['New epoch has overlapping date with existing epoch'],
             ]);
             throw $error;
         }

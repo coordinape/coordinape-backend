@@ -74,7 +74,9 @@ class User extends Authenticatable
             'users.avatar',
             'users.non_receiver',
             'users.epoch_first_visit',
-            'users.non_giver', 'c.protocol_id']);
+            'users.non_giver', 'c.protocol_id',
+            'users.role',
+            'users.starting_tokens']);
 
         return $query;
     }
