@@ -302,11 +302,7 @@ class DataController extends Controller
         $data = $request->only('start_date','end_date');
         $exist = Epoch::where('circle_id',$circle_id)->whereDate('start_date', '<=', $data['end_date'])->whereDate('end_date', '>=', $data['start_date'])->exists();
         if($exist)  {
-            $error = ValidationException::withMessages([
-                'start_date' => ['New epoch has overlapping date with existing epoch'],
-                'end_date' => ['New epoch has overlapping date with existing epoch'],
-            ]);
-            throw $error;
+            return response()->json(['message'=> 'New epoch has overlapping date with existing epoch'], 422);
         }
         $data['circle_id'] = $circle_id;
         $epoch = new Epoch($data);
