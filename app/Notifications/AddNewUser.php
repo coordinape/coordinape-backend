@@ -44,7 +44,7 @@ class AddNewUser extends Notification
         $admin_user_name = $this->admin_user->name;
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$user_name $user_address - has been added by $admin_user_name");
+            ->content("$user_name $user_address - has just been added by $admin_user_name");
     }
 
     /**
