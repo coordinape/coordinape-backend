@@ -22,7 +22,8 @@ class AdminCreateUserRequest extends FormRequest
         }
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $this->merge([
-            'circle_id' => $circle_id
+            'circle_id' => $circle_id,
+            'admin_user' => $admin_user
         ]);
         return $admin_user && strtolower($recoveredAddress)==strtolower($address);
     }

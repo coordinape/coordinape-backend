@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Circle;
+use App\Notifications\AddNewUser;
 use App\Notifications\NewAllocation;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -104,6 +105,7 @@ class DataController extends Controller
         $data['circle_id'] =  $circle_id;
         $user = new User($data);
         $user->save();
+        $user->circle->notify(new AddNewUser($request->admin_user, $user));
         return response()->json($user);
     }
 
