@@ -183,7 +183,7 @@ class EpochRepository
             }
 
             Teammate::where('team_mate_id', $user->id)->delete();
-            $user->teammates()->delete();
+            Teammate::where('user_id', $user->id)->delete();
             $user->delete();
             return $user;
         },2);
