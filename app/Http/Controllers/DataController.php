@@ -95,6 +95,9 @@ class DataController extends Controller
         if($subdomain)
             $users->where('circle_id',$circle_id);
 
+        if(!empty($data['deleted_users']) && $data['deleted_users'])
+            $users->withTrashed();
+        
         $users = $users->get();
         return response()->json($users);
     }
