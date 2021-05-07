@@ -9,6 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
+use App\Helper\Utils;
 
 class AddNewUser extends Notification
 {
@@ -39,12 +40,12 @@ class AddNewUser extends Notification
 
     public function toTelegram($notifiable=null)
     {
-        $user_name = $this->user->name;
+        $user_name = Utils::cleanStr($this->user->name);
         $user_address = $this->user->address;
-        $admin_user_name = $this->admin_user->name;
+        $admin_user_name = Utils::cleanStr($this->admin_user->name);
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$user_name $user_address - has just been added by $admin_user_name");
+            ->content("$user_name $user_address has just been added by $admin_user_name");
     }
 
     /**

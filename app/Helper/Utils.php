@@ -76,4 +76,9 @@ class Utils
             Cache::tags([$tag,'default'])->flush();
     }
 
+    public static function cleanStr($str): string {
+
+        return str_replace(array(':', '-', '/', '*','_','`'), ' ', $str);
+
+    }
 }

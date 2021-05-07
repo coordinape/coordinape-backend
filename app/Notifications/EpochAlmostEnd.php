@@ -8,6 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
+use App\Helper\Utils;
 
 class EpochAlmostEnd extends Notification
 {
@@ -43,7 +44,7 @@ class EpochAlmostEnd extends Notification
         foreach($unalloc_users as $user) {
             if($unalloc_str)
                 $unalloc_str .= ', ';
-            $user_name = $user->telegram_username?: $user->name ;
+            $user_name = $user->telegram_username?: Utils::cleanStr($user->name) ;
             $unalloc_str .= $user_name;
         }
 

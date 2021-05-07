@@ -8,6 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
+use App\Helper\Utils;
 
 class OptOutEpoch extends Notification
 {
@@ -35,7 +36,7 @@ class OptOutEpoch extends Notification
     public function toTelegram($notifiable=null)
     {
         $circle_name = $notifiable->protocol->name .'/'. $notifiable->name;
-        $name = $this->user->telegram_username ?: $this->user->name;
+        $name = $this->user->telegram_username ?: Utils::cleanStr($this->user->name);
         return TelegramMessage::create()
             // Markdown supported.
             ->content("$name has just opt out of the current epoch !\nA total of $this->totalRefunded GIVE is refunded\n$this->refundStr")
