@@ -97,7 +97,6 @@ class DataController extends Controller
 
         if(!empty($data['deleted_users']) && $data['deleted_users'])
             $users->withTrashed();
-        
         $users = $users->get();
         return response()->json($users);
     }
@@ -302,7 +301,7 @@ class DataController extends Controller
     }
 
     public function createEpoch(EpochRequest $request, $circle_id) : JsonResponse  {
-        $data = $request->only('start_date','end_date');
+        $data = $request->only('start_date','end_date','grant');
         $exist = Epoch::where('circle_id',$circle_id)->whereDate('start_date', '<=', $data['end_date'])->whereDate('end_date', '>=', $data['start_date'])->exists();
         if($exist)  {
             return response()->json(['message'=> 'New epoch has overlapping date with existing epoch'], 422);

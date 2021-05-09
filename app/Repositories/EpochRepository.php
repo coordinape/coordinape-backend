@@ -88,15 +88,19 @@ class EpochRepository
             $q->where('epoch_id',$epoch->id)->where('circle_id',$circle_id);
         }])->where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
 
+        $grant = $grant ?:$epoch->grant;
         $header = ['No.','name','address','received','sent','epoch number', 'Date'];
+        if($grant) {
+            $header[] = 'Grant Amt ($)';
+        }
+
         $list = [];
         $list[]= $header;
-        //$total_sent = TokenGift::where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
+        $total_sent = TokenGift::where('epoch_id',$epoch->id)->where('circle_id',$circle_id)->get()->SUM('tokens');
         $date_range = $epoch->start_date->format('Y/m/d') . ' - ' . $epoch->end_date->format('Y/m/d');
         foreach($users as $idx=>$user) {
             $received = $user->receivedGifts->SUM('tokens');
-//            $usd_received = $grant && $received ? (floor(($received * $grant / $total_sent) * 100) / 100):0;
-//            $yfi_received = $usd_received ? $usd_received/ $yfi_price : 0;
+            $usd_received = $grant && $received ? (floor(($received * $grant / $total_sent) * 100) / 100):0;
             $col = [];
             $col[] = $idx +1;
             $col[]= $user->name;
@@ -105,8 +109,8 @@ class EpochRepository
             $col[]= $user->sentGifts->SUM('tokens');
             $col[]= $epoch->number;
             $col[]= $date_range;
-//            $col[] = $usd_received ;
-//            $col[] = $yfi_received ;
+            if($grant)
+                $col[] = $usd_received ;
             $list[]= $col;
         }
 

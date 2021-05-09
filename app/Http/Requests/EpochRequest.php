@@ -39,7 +39,8 @@ class EpochRequest extends FormRequest
         $this->merge([
             'data' => $data,
             'start_date' => !empty($data['start_date']) ? $data['start_date']:null,
-            'end_date' => !empty($data['end_date']) ? $data['end_date']:null
+            'end_date' => !empty($data['end_date']) ? $data['end_date']:null,
+            'grant' => !empty($data['grant']) ? $data['grant']:0
         ]);
     }
 
@@ -52,7 +53,8 @@ class EpochRequest extends FormRequest
     {
         return [
             'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after:start_date'
+            'end_date' => 'required|date|after:start_date',
+            'grant' => 'numeric|max:1000000000'
         ];
     }
 }
