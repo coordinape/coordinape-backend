@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use DB;
 
 class User extends Authenticatable
 {
@@ -91,11 +92,11 @@ class User extends Authenticatable
     }
 
     public function scopeYetToSend($query) {
-        return $query->where('give_token_remaining',$this->starting_tokens);
+        return $query->where('give_token_remaining',DB::raw("`starting_tokens`"));
     }
 
     public function scopeHasSent($query) {
-        return $query->where('give_token_remaining','<',$this->starting_tokens);
+        return $query->where('give_token_remaining','<',DB::raw("`starting_tokens`"));
     }
 
     public function scopeIsAdmin($query) {
