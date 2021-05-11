@@ -102,7 +102,7 @@ class DataController extends Controller
     }
 
     public function createUser(AdminCreateUserRequest $request, $circle_id): JsonResponse {
-        $data = $request->only('address','name','starting_tokens','non_giver','circle_id');
+        $data = $request->only('address','name','starting_tokens','non_giver','circle_id','give_token_remaining');
         $data['address'] =  strtolower($data['address']);
         $data['circle_id'] =  $circle_id;
         $user = new User($data);
@@ -134,6 +134,8 @@ class DataController extends Controller
         if($user->starting_tokens != $data['starting_tokens']) {
            if( $user->circle->epoches()->isActiveDate()->first()) {
                return response()->json(['error'=> 'Cannot update starting tokens during an active epoch'],422);
+           } else {
+               $data['give_token_remaining'] = $data['starting_tokens'];
            }
         }
         $data['address'] =  strtolower($data['address']);
