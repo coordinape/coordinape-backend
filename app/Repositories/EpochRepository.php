@@ -82,11 +82,14 @@ class EpochRepository
 //        $ret = json_decode( (string)$response->getBody());
 //        $yfi_price = $ret->{'yearn-finance'}->usd;
 
+        $end_date = $epoch->end_date;
         $users = User::with(['receivedGifts' => function ($q) use($epoch, $circle_id) {
             $q->where('epoch_id',$epoch->id)->where('circle_id',$circle_id);
         }, 'sentGifts' => function ($q) use($epoch, $circle_id) {
             $q->where('epoch_id',$epoch->id)->where('circle_id',$circle_id);
-        }])->where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
+        }])->withTrashed()->where(function($q) use($end_date) {
+            $q->whereNull('deleted_at')->orWhere('deleted_at','>',$end_date);
+        })->where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
 
         $grant = $grant ?:$epoch->grant;
         $header = ['No.','name','address','received','sent','epoch number', 'Date'];
