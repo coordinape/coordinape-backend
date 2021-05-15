@@ -90,7 +90,7 @@ class EpochRepository
 
         $grant = $grant ?:$epoch->grant;
         $header = ['No.','name','address','received','sent','epoch number', 'Date'];
-        if($grant) {
+        if($grant && $grant>0) {
             $header[] = 'Grant Amt ($)';
         }
 
@@ -109,7 +109,7 @@ class EpochRepository
             $col[]= $user->sentGifts->SUM('tokens');
             $col[]= $epoch->number;
             $col[]= $date_range;
-            if($grant)
+            if($grant && $grant>0) {
                 $col[] = $usd_received ;
             $list[]= $col;
         }
