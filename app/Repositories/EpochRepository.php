@@ -44,7 +44,7 @@ class EpochRepository
                 }
 
                 $this->model->where('circle_id',$circle_id)->delete();
-                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
+//                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
                 User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
                 $epoch->ended = 1;
                 $epoch->number = $epoch_number;
@@ -135,33 +135,33 @@ class EpochRepository
     }
 
     public function removeAllPendingGiftsReceived($user, $updateData = []) {
-        $pendingGifts = $user->pendingReceivedGifts;
-        $pendingGifts->load(['sender.pendingSentGifts']);
-        return DB::transaction(function () use ($user, $updateData, $pendingGifts) {
-           $optOutStr = "";
-           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
-           {
-               $totalRefunded = 0;
-               foreach($pendingGifts as $gift) {
-                   if(!$gift->tokens && $gift->note)
-                       continue;
-
-                   $sender = $gift->sender;
-                   $gift_token = $gift->tokens;
-                   $totalRefunded += $gift_token;
-                   $optOutStr .= "$sender->name: $gift_token\n";
-                   $gift->delete();
-                   $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-                   $sender->give_token_remaining = $sender->starting_tokens-$token_used;
-                   $sender->save();
-               }
-               $updateData['give_token_received'] = 0;
-               $circle = $user->circle;
-               if($circle->telegram_id)
-               {
-                   $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
-               }
-           }
+        //$pendingGifts = $user->pendingReceivedGifts;
+        //$pendingGifts->load(['sender.pendingSentGifts']);
+        return DB::transaction(function () use ($user, $updateData) {
+//           $optOutStr = "";
+//           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
+//           {
+//               $totalRefunded = 0;
+//               foreach($pendingGifts as $gift) {
+//                   if(!$gift->tokens && $gift->note)
+//                       continue;
+//
+//                   $sender = $gift->sender;
+//                   $gift_token = $gift->tokens;
+//                   $totalRefunded += $gift_token;
+//                   $optOutStr .= "$sender->name: $gift_token\n";
+//                   $gift->delete();
+//                   $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
+//                   $sender->give_token_remaining = $sender->starting_tokens-$token_used;
+//                   $sender->save();
+//               }
+//               $updateData['give_token_received'] = 0;
+//               $circle = $user->circle;
+//               if($circle->telegram_id)
+//               {
+//                   $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
+//               }
+//           }
 
             $user->update($updateData);
             return $user;

@@ -36,7 +36,8 @@ class User extends Authenticatable
         'non_receiver',
         'epoch_first_visit',
         'non_giver',
-        'starting_tokens'
+        'starting_tokens',
+        'regift_percent'
     ];
 
     /**
