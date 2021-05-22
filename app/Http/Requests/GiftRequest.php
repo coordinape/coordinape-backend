@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use App\Models\User;
@@ -78,6 +77,14 @@ class GiftRequest extends FormRequest
 
         if($sum > $user->starting_tokens) {
             throw new ConflictHttpException('Sum of tokens is more than '. $user->starting_tokens);
+        }
+
+        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
+        if(!$activeEpoch) {
+            throw new ConflictHttpException('Currently not in an active Epoch');
+        }
+        else if($activeEpoch->is_regift_phase == 1) {
+            throw new ConflictHttpException("Not allowed to allocate in regifting phase");
         }
 
         return $rules;

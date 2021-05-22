@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Helper\Utils;
 use App\Models\User;
-use Ethereum\EcRecover;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

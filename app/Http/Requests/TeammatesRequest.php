@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Helper\Utils;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class TeammatesRequest extends FormRequest
 {
@@ -19,7 +20,6 @@ class TeammatesRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = strtolower($this->get('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $existing_user = null;
         $circle_id = null;
         $existing_user =  User::byAddress($address);
         if($this->route('subdomain')) {
@@ -49,7 +49,11 @@ class TeammatesRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-        ];
+        $user = $this->user;
+        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
+        if($activeEpoch && $activeEpoch->is_regift_phase) {
+            throw new ConflictHttpException('Not allowed to edit teammates in regifting phase');
+        }
+        return ['teammates.*'=> 'integer'];
     }
 }

@@ -146,59 +146,7 @@ class DataController extends Controller
     public function updateGifts(GiftRequest $request, $subdomain, $address): JsonResponse
     {
         $user = $request->user;
-        $gifts = $request->gifts;
-        $addresses = [];
-
-        foreach($gifts as $gift) {
-            $addresses[] = strtolower($gift['recipient_address']);
-        }
-
-        $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
-        $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
-        DB::transaction(function () use ($users, $user, $gifts, $address, $pendingSentGiftsMap) {
-            $token_used = 0;
-            $toKeep = [];
-            foreach ($gifts as $gift) {
-                $recipient_address = strtolower($gift['recipient_address']);
-                if ($users->has($recipient_address)) {
-                    if ($user->id == $users[$recipient_address]->id)
-                        continue;
-
-                    $gift['sender_id'] = $user->id;
-                    $gift['sender_address'] = strtolower($address);
-                    $gift['recipient_address'] = $recipient_address;
-                    $gift['recipient_id'] = $users[$recipient_address]->id;
-
-                    $token_used += $gift['tokens'];
-                    $pendingGift = $pendingSentGiftsMap->has($gift['recipient_id']) ? $pendingSentGiftsMap[$gift['recipient_id']] : null  ;
-
-                    if ($pendingGift) {
-                        if ($gift['tokens'] == 0 && $gift['note'] == '') {
-                            $pendingGift->delete();
-
-                        } else {
-                            $pendingGift->tokens = $gift['tokens'];
-                            $pendingGift->note = $gift['note'];
-                            $pendingGift->save();
-                        }
-                    } else {
-                        if ($gift['tokens'] == 0 && $gift['note'] == '')
-                            continue;
-
-                        $pendingGift = $user->pendingSentGifts()->create($gift);
-                    }
-
-                    $toKeep[] = $pendingGift->recipient_id;
-                    $users[$recipient_address]->give_token_received = $users[$recipient_address]->pendingReceivedGifts()->get()->SUM('tokens');
-                    $users[$recipient_address]->save();
-                }
-            }
-            $this->repo->resetGifts($user, $toKeep);
-//            if($token_used>0) {
-//                $user->circle->notify(new NewAllocation($user, $token_used));
-//            }
-        },2);
-
+        $this->repo->updateGifts($request, $address);
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
