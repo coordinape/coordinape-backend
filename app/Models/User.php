@@ -135,4 +135,8 @@ class User extends Authenticatable
     public function circle() {
         return $this->belongsTo('App\Models\Circle','circle_id','id');
     }
+
+    public function burns() {
+        return $this->hasMany('App\Models\Burn', 'user_id','id');
+    }
 }

@@ -30,7 +30,7 @@ use Carbon\Carbon;
 use App\Models\Protocol;
 use App\Http\Requests\EpochRequest;
 use App\Http\Requests\DeleteEpochRequest;
-use App\Models\Teammate;
+use App\Models\Burn;
 use App\Http\Requests\DeleteUserRequest;
 
 class DataController extends Controller
@@ -296,4 +296,13 @@ class DataController extends Controller
             return response()->json($data);
         }
     }
+
+     public function burns(Request $request, $subdomain) : JsonResponse  {
+         $circle_id = Utils::getCircleIdByName($subdomain);
+         if (!$circle_id) {
+             return response()->json(['error' => 'Circle not Found'], 422);
+         }
+         $burns = Burn::where('circle_id',$circle_id)->filter($request->all())->get();
+         return response()->json($burns);
+     }
 }

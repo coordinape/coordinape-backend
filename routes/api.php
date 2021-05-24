@@ -61,7 +61,7 @@ Route::prefix('{subdomain}')->group(function () {
     Route::post('/upload', [DataController::class, 'uploadAvatar']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
     Route::get('/epoches',[DataController::class, 'epoches']);
-
+    Route::get('/burns', [DataController::class, 'burns']);
 });
 
 

@@ -2,6 +2,7 @@
 
 
 namespace App\Repositories;
+use App\Models\Burn;
 use App\Models\PendingTokenGift;
 use App\Models\Teammate;
 use App\Models\TokenGift;
@@ -15,6 +16,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use App\Helper\Utils;
 use App\Notifications\EpochEnd;
+use Illuminate\Database\Eloquent\Model;
 
 class EpochRepository
 {
@@ -36,7 +38,19 @@ class EpochRepository
             $epoch_number = $epoch_number + 1;
             $circle = $epoch->circle;
             $unalloc_users = $circle->users()->where('non_giver',0)->yetToSend()->get();
-            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
+            $regifted_users = $circle->users()->where('give_token_received','>',0)->where('regift_percent','>',0)->get();
+            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number, $regifted_users) {
+                foreach($regifted_users as $regifted_user) {
+                    $burn = new Burn();
+                    $burn['regift_percent'] = $regifted_user->regift_percent;
+                    $burn['tokens_burnt'] = $regifted_user->regift_percent == 100 ? $regifted_user->give_token_received: ceil( $regifted_user->give_token_received / 100 * $regifted_user->regift_percent);
+                    $burn['original_amount'] = $regifted_user->give_token_received;
+                    $burn['circle_id'] = $circle_id;
+                    $burn['epoch_id'] = $epoch->id;
+                    $burn['user_id'] = $regifted_user->id;
+                    $burn->save();
+                }
+
                 foreach($pending_gifts as $gift) {
                     $tokenGift = new TokenGift($gift->replicate()->toArray());
                     $tokenGift->epoch_id = $epoch->id;
@@ -82,17 +96,21 @@ class EpochRepository
 //        $ret = json_decode( (string)$response->getBody());
 //        $yfi_price = $ret->{'yearn-finance'}->usd;
 
+
+
         $end_date = $epoch->end_date;
         $users = User::with(['receivedGifts' => function ($q) use($epoch, $circle_id) {
             $q->where('epoch_id',$epoch->id)->where('circle_id',$circle_id);
         }, 'sentGifts' => function ($q) use($epoch, $circle_id) {
             $q->where('epoch_id',$epoch->id)->where('circle_id',$circle_id);
+        }, 'burns' => function ($q) use ($epoch, $circle_id) {
+            $q->where('epoch_id', $epoch->id);
         }])->withTrashed()->where(function($q) use($end_date) {
             $q->whereNull('deleted_at')->orWhere('deleted_at','>',$end_date);
         })->where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
 
         $grant = $grant ?:$epoch->grant;
-        $header = ['No.','name','address','received','sent','epoch number', 'Date'];
+        $header = ['No.','name','address','received','sent','burnt','initial_received','epoch number', 'Date'];
         if($grant && $grant>0) {
             $header[] = 'Grant Amt ($)';
         }
@@ -103,13 +121,18 @@ class EpochRepository
         $date_range = $epoch->start_date->format('Y/m/d') . ' - ' . $epoch->end_date->format('Y/m/d');
         foreach($users as $idx=>$user) {
             $received = $user->receivedGifts->SUM('tokens');
+            $burn_obj = count($user->burns) ? $user->burns[0]: null;
+            $burnt = $burn_obj ? $burn_obj->tokens_burnt : 0;
+            $initial_received = $burn_obj ? $burn_obj->original_amount : $received;
             $usd_received = $grant && $received ? (floor(($received * $grant / $total_sent) * 100) / 100):0;
             $col = [];
             $col[] = $idx +1;
             $col[]= $user->name;
             $col[]= $user->address;
-            $col[]= $received;
+            $col[]= $received - $burnt;
             $col[]= $user->sentGifts->SUM('tokens');
+            $col[]= $burnt;
+            $col[]= $initial_received;
             $col[]= $epoch->number;
             $col[]= $date_range;
             if($grant && $grant>0)
