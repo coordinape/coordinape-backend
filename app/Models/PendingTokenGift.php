@@ -11,9 +11,11 @@ class PendingTokenGift extends Model
     use HasFactory;
 
     protected $searchable = [
-        'sender_address',
-        'recipient_address',
+//        'sender_address',
+//        'recipient_address',
         'circle_id',
+        'recipient_id',
+        'sender_id',
         'id'
     ];
     protected $fillable = [

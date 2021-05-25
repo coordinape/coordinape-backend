@@ -10,8 +10,10 @@ class TokenGift extends Model
     use HasFactory;
 
     protected $searchable = [
-        'sender_address',
-        'recipient_address',
+//        'sender_address',
+//        'recipient_address',
+        'recipient_id',
+        'sender_id',
         'circle_id',
         'id',
         'epoch_id'

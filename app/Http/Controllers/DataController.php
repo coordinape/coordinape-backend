@@ -163,6 +163,16 @@ class DataController extends Controller
             }
         }
 
+        if(!empty($filters['recipient_address'])) {
+            $user = User::byAddress($request->recipient_address)->where('circle_id',$circle_id)->first();
+            $filters['recipient_id'] = $user->id;
+        }
+
+        if(!empty($filters['sender_address'])) {
+            $user = User::byAddress($request->sender_address)->where('circle_id',$circle_id)->first();
+            $filters['sender_id'] = $user->id;
+        }
+
         return response()->json(PendingTokenGift::filter($filters)->get());
     }
 
@@ -170,6 +180,16 @@ class DataController extends Controller
         $filters = $request->all();
         if($circle_id) {
             $filters['circle_id'] = $circle_id;
+        }
+
+        if(!empty($filters['recipient_address'])) {
+            $user = User::byAddress($request->recipient_address)->where('circle_id',$circle_id)->first();
+            $filters['recipient_id'] = $user->id;
+        }
+
+        if(!empty($filters['sender_address'])) {
+            $user = User::byAddress($request->sender_address)->where('circle_id',$circle_id)->first();
+            $filters['sender_id'] = $user->id;
         }
 
         return response()->json( Utils::queryCache($request,function () use($filters,$request) {
