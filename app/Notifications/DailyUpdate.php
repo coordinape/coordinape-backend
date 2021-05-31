@@ -56,7 +56,7 @@ class DailyUpdate extends Notification
         $start_date = $this->epoch->start_date->format('Y/m/d');
         $end_date = $this->epoch->end_date->format('Y/m/d');
 
-        $stats_content = "Total Allocations: *$this->total_gifts_sent*\nGIVES sent: *$this->total_tokens_sent*\nOpt Outs: *$this->opt_outs*\nUsers Allocated: *$this->has_sent/$this->total_users*";
+        $stats_content = "Total Allocations: *$this->total_gifts_sent*\nGIVES sent: *$this->total_tokens_sent*\nUsers Allocated: *$this->has_sent/$this->total_users*";
         return TelegramMessage::create()
             // Markdown supported.
             ->content("$name - *epoch $this->epoch_num*\n\n_{$start_date} to {$end_date}_\n\n$stats_content\nepoch ending *$diff* !\n\n$alloc_str");
