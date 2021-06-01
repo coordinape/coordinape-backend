@@ -43,7 +43,7 @@ class TriggerDailyUpdate extends Command
     public function handle()
     {
         $epoches = Epoch::with(['circle.protocol','circle.pending_gifts','circle.users'])->isActiveDate()->where(function($q) {
-            return $q->whereNull('notified_start')->orWhereNull('notified_before_end');
+            return $q->where('ended',0);
         })->get();
 
         foreach($epoches as $epoch) {
