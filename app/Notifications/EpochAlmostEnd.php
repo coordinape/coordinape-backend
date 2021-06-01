@@ -56,7 +56,7 @@ class EpochAlmostEnd extends Notification
         }
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$name epoch is almost ending in less than 24HRS !\n$unalloc_str")
+            ->content("$name epoch is almost ending in less than 48HRS !\n$unalloc_str")
             ->button('Start Allocating GIVES', 'https://coordinape.com/'.$name);
     }
     /**
