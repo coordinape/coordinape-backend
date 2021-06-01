@@ -285,7 +285,7 @@ class EpochRepository
             $epoch->save();
         }
         else if(!$epoch->notified_before_end) {
-            $now = Carbon::now()->addDay();
+            $now = Carbon::now()->addDays(2);
             if($epoch->end_date <= $now) {
                 $circle = $epoch->circle;
                 $unalloc_users = $circle->users()->where('non_giver',0)->where('is_hidden',0)->where('give_token_remaining','>',0)->get();
