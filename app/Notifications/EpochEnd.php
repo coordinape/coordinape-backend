@@ -19,12 +19,12 @@ class EpochEnd extends Notification
      *
      * @return void
      */
-    protected $unallocated_users;
-    protected $epoch_num;
-    public function __construct($epoch_num, $unallocated_users = [])
+    protected $unallocated_users, $epoch_num, $circle_name;
+    public function __construct($epoch_num, $circle_name, $unallocated_users = [])
     {
         $this->unallocated_users = $unallocated_users;
         $this->epoch_num = $epoch_num;
+        $this->circle_name = $circle_name;
     }
 
     /**
@@ -40,7 +40,7 @@ class EpochEnd extends Notification
 
     public function toTelegram($notifiable=null)
     {
-        $name = $notifiable->protocol->name .'/'. $notifiable->name;
+        $name = '_'.$this->circle_name.'_';
         $unalloc_users = $this->unallocated_users;
         $unalloc_str = '';
         foreach($unalloc_users as $user) {

@@ -19,10 +19,11 @@ class EpochStart extends Notification
      *
      * @return void
      */
-    protected $epoch;
-    public function __construct($epoch)
+    protected $epoch, $circle_name;
+    public function __construct($epoch, $circle_name)
     {
         $this->epoch = $epoch;
+        $this->circle_name = $circle_name;
     }
 
     /**
@@ -38,7 +39,7 @@ class EpochStart extends Notification
 
     public function toTelegram($notifiable=null)
     {
-        $name = $notifiable->protocol->name .'/'. $notifiable->name;
+        $name = '_'.$this->circle_name.'_';
         $start_date = $this->epoch->start_date->format('Y/m/d H:i T');
         $end_date = $this->epoch->end_date->format('Y/m/d H:i T');
         $usersCount = $notifiable->users()->where('is_hidden',0)->count();

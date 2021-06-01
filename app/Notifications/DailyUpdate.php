@@ -20,8 +20,8 @@ class DailyUpdate extends Notification
      * @return void
      */
     protected $name_str, $epoch, $total_gifts_sent, $total_tokens_sent,
-              $opt_outs, $has_sent, $total_users, $epoch_num;
-    public function __construct($epoch, $name_str, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users, $epoch_num)
+              $opt_outs, $has_sent, $total_users, $epoch_num, $circle_name;
+    public function __construct($epoch, $name_str, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users, $epoch_num, $circle_name)
     {
         $this->epoch = $epoch;
         $this->name_str = $name_str;
@@ -31,6 +31,7 @@ class DailyUpdate extends Notification
         $this->has_sent = $has_sent;
         $this->total_users = $total_users;
         $this->epoch_num = $epoch_num;
+        $this->circle_name = $circle_name;
 
     }
 
@@ -48,7 +49,7 @@ class DailyUpdate extends Notification
     public function toTelegram($notifiable=null)
     {
         $alloc_str = $this->name_str;
-        $name = '_'.$notifiable->protocol->name .'/'. $notifiable->name.'_';
+        $name = '_'.$this->circle_name.'_';
         if($alloc_str) {
             $alloc_str = "Users that made new allocations today:\n" . $alloc_str;
         }

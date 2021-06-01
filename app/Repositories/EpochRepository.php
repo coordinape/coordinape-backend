@@ -280,7 +280,12 @@ class EpochRepository
     public function checkEpochNotifications($epoch) {
         if(!$epoch->notified_start) {
             $circle = $epoch->circle;
-            $circle->notify(new EpochStart($epoch));
+            $protocol = $circle->protocol;
+            $circle_name = $protocol->name.'/'.$circle->name;
+            $circle->notify(new EpochStart($epoch,$circle_name));
+            if($protocol->telegram_id) {
+                $protocol->notify(new EpochStart($epoch,$circle_name));
+            }
             $epoch->notified_start = Carbon::now();
             $epoch->save();
         }
@@ -289,7 +294,12 @@ class EpochRepository
             if($epoch->end_date <= $now) {
                 $circle = $epoch->circle;
                 $unalloc_users = $circle->users()->where('non_giver',0)->where('is_hidden',0)->where('give_token_remaining','>',0)->get();
-                $circle->notify(new EpochAlmostEnd($unalloc_users));
+                $protocol = $circle->protocol;
+                $circle_name = $protocol->name.'/'.$circle->name;
+                $circle->notify(new EpochAlmostEnd($circle_name,$unalloc_users));
+                if($protocol->telegram_id) {
+                    $protocol->notify(new EpochAlmostEnd($circle_name,$unalloc_users));
+                }
                 $epoch->notified_before_end = Carbon::now();
                 $epoch->save();
             }
@@ -323,6 +333,11 @@ class EpochRepository
         }
         $epoch_num = Epoch::where('circle_id',$circle->id)->where('ended', 1)->count();
         $epoch_num += 1;
-        $circle->notify(new DailyUpdate($epoch, $name_strs, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users,$epoch_num));
+        $protocol = $circle->protocol;
+        $circle_name = $protocol->name.'/'.$circle->name;
+        $circle->notify(new DailyUpdate($epoch, $name_strs, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users,$epoch_num,$circle_name));
+        if($protocol->telegram_id) {
+            $protocol->notify(new DailyUpdate($epoch, $name_strs, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users,$epoch_num,$circle_name));
+        }
     }
 }
