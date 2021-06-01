@@ -55,9 +55,9 @@ class CheckEndEpochNotification extends Command
                 $protocol = $circle->protocol;
                 $circle_name = $protocol->name.'/'.$circle->name;
                 $circle->notify(new EpochEnd($epoch->number, $circle_name));
-                if($protocol->telegram_id) {
-                    $protocol->notify(new EpochEnd($epoch->number, $circle_name));
-                }
+//                if($protocol->telegram_id) {
+//                    $protocol->notify(new EpochEnd($epoch->number, $circle_name));
+//                }
                 $epoch->notified_end = Carbon::now();
                 $epoch->save();
                 Utils::purgeCache($circle->id);
