@@ -66,7 +66,9 @@ class EpochRepository
 
             });
             if(!$epoch->notified_end && $circle->telegram_id) {
-                $circle->notify(new EpochEnd($epoch_number,$unalloc_users));
+                $protocol = $circle->protocol;
+                $circle_name = $protocol->name.'/'.$circle->name;
+                $circle->notify(new EpochEnd($epoch_number,$circle_name,$unalloc_users));
                 $epoch->notified_end = Carbon::now();
                 $epoch->save();
                 Utils::purgeCache($circle_id);
