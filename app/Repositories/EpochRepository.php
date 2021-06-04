@@ -338,7 +338,7 @@ class EpochRepository
         $protocol = $circle->protocol;
         $circle_name = $protocol->name.'/'.$circle->name;
         $circle->notify(new DailyUpdate($epoch, $name_strs, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users,$epoch_num,$circle_name));
-        if($protocol->telegram_id) {
+        if($protocol->telegram_id && $circle->id!=5) {
             $protocol->notify(new DailyUpdate($epoch, $name_strs, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users,$epoch_num,$circle_name));
         }
     }
