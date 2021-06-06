@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataController;
-
+use App\Http\Controllers\BotController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -86,5 +86,6 @@ Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
 // phased out
 
 
+Route::post("/".env('TELEGRAM_BOT_TOKEN')."/bot-update", [BotController::class,'webHook']);
 
 
