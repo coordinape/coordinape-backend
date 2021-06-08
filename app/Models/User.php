@@ -37,7 +37,8 @@ class User extends Authenticatable
         'epoch_first_visit',
         'non_giver',
         'starting_tokens',
-        'regift_percent'
+        'regift_percent',
+        'telegram_username'
     ];
 
     /**
@@ -90,6 +91,11 @@ class User extends Authenticatable
             }
         }
         return $query;
+    }
+
+    public function routeNotificationForTelegram()
+    {
+        return $this->chat_id;
     }
 
     public function scopeYetToSend($query) {
