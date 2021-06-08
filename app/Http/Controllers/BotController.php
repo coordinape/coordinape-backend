@@ -12,19 +12,18 @@ class BotController extends Controller
 {
     public function webHook(Request $request) {
         $updates = Telegram::getWebhookUpdates();
-        //Log::info($updates);
         $message = $updates->message;
-//        dd($message);
+        Log::info($message);
         if($updates && !empty($message) &&
             ((!empty($message['entities'][0]['type']) && ($message['entities'][0]['type']=='bot_command' )) ||
             (!empty($message['text']['entities'][0]['type']) && ($message['text']['entities'][0]['type']=='bot_command' ))
             )
         ) {
+            Log::info('yes');
             if($message['chat']['type'] == 'private') {
                 $textArray = explode(' ',$message['text']);
                 if($textArray[0] == '/start') {
                     $users = User::where('telegram_username', $message['from']['username'])->get();
-//                    dd($users);
                     if(count($users)==0) {
                         // don't exist
                         return;
@@ -33,10 +32,9 @@ class BotController extends Controller
                             $user->chat_id = $message->chat->id;
                             $user->save();
                         }
-                        
+
                         $users[0]->notify(new SendSocialMessage(
-                            "Congrats {$users[0]->name} You have successfully linked your Telegram to Coordinape !\n
-                            I will remind you to allocate GIVEs whenever an epoch is ending"
+                            "Congrats {$users[0]->name} You have successfully linked your Telegram to Coordinape !\nI will remind you to allocate GIVEs whenever an epoch is ending"
                         ));
                     }
                 }
