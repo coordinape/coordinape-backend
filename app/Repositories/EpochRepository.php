@@ -142,9 +142,10 @@ class EpochRepository
             $list[]= $col;
         }
 
+        $protocol = $epoch->circle->protocol;
         $headers = [
-               'Content-type'        => 'text/csv'
-           ,   'Content-Disposition' => 'attachment; filename=receipts.csv'
+               'Content-type'        => "text/csv"
+           ,   'Content-Disposition' => "attachment; filename={$protocol->name}-{$epoch->circle->name}-{$epoch->number}.csv"
         ];
 
 

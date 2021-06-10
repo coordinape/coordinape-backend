@@ -223,10 +223,10 @@ class DataController extends Controller
 
         $epoch = null;
         if($request->epoch_id) {
-            $epoch = Epoch::where('circle_id',$circle_id)->where('id',$request->epoch_id )->first();
+            $epoch = Epoch::with('circle.protocol')->where('circle_id',$circle_id)->where('id',$request->epoch_id )->first();
 
         } else if ($request->epoch) {
-            $epoch = Epoch::where('circle_id',$circle_id)->where('number', $request->epoch)->first();
+            $epoch = Epoch::with('circle.protocol')->where('circle_id',$circle_id)->where('number', $request->epoch)->first();
         }
         if(!$epoch)
             return 'Epoch Not found';
