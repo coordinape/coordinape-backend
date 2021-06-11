@@ -38,7 +38,8 @@ class User extends Authenticatable
         'non_giver',
         'starting_tokens',
         'regift_percent',
-        'telegram_username'
+        'telegram_username',
+        'fixed_non_receiver'
     ];
 
     /**

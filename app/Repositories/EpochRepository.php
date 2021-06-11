@@ -177,7 +177,7 @@ class EpochRepository
                     if ($user->id == $users[$recipient_address]->id)
                         continue;
 
-                    if($users[$recipient_address]->non_receiver == 1) {
+                    if($users[$recipient_address]->non_receiver == 1 || $users[$recipient_address]->fixed_non_receiver == 1) {
                         $gift['tokens'] = 0;
                     }
 
@@ -223,7 +223,9 @@ class EpochRepository
         $pendingGifts->load(['sender.pendingSentGifts']);
         return DB::transaction(function () use ($user, $updateData, $pendingGifts) {
            $optOutStr = "";
-           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
+           if( (!empty($updateData['fixed_non_receiver']) && $updateData['fixed_non_receiver'] != $user->fixed_non_receiver && $updateData['fixed_non_receiver'] == 1) ||
+               (!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
+           )
            {
                $totalRefunded = 0;
                foreach($pendingGifts as $gift) {

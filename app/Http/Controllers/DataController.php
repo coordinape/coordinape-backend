@@ -102,7 +102,7 @@ class DataController extends Controller
     }
 
     public function createUser(AdminCreateUserRequest $request, $circle_id): JsonResponse {
-        $data = $request->only('address','name','starting_tokens','non_giver','circle_id','give_token_remaining');
+        $data = $request->only('address','name','starting_tokens','non_giver','circle_id','give_token_remaining','fixed_non_receiver');
         $data['address'] =  strtolower($data['address']);
         $data['circle_id'] =  $circle_id;
         $user = new User($data);
@@ -129,7 +129,7 @@ class DataController extends Controller
         $user = $request->user;
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
-        $data = $request->only('name','address','starting_tokens','non_giver');
+        $data = $request->only('name','address','starting_tokens','non_giver','fixed_non_receiver');
 
         if($user->starting_tokens != $data['starting_tokens']) {
            if( $user->circle->epoches()->isActiveDate()->first()) {

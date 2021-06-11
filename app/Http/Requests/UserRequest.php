@@ -59,6 +59,7 @@ class UserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'circle_id' => 'required|integer|exists:circles,id',
             'regift_percent' => 'integer|min:0|max:100',
+            'non_receiver' => 'integer|min:0|max:1|required',
             'address' => ['required', 'string', 'size:42', Rule::unique('users')->ignore($this->user->id)->where(function ($query) use ($circle_id) {
                 return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
             })]
