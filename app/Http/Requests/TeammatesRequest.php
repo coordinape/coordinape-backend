@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Helper\Utils;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class TeammatesRequest extends FormRequest
 {
@@ -49,11 +48,11 @@ class TeammatesRequest extends FormRequest
      */
     public function rules()
     {
-        $user = $this->user;
-        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
-        if($activeEpoch && $activeEpoch->is_regift_phase) {
-            throw new ConflictHttpException('Not allowed to edit teammates in regifting phase');
-        }
+//        $user = $this->user;
+//        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
+//        if($activeEpoch && $activeEpoch->is_regift_phase) {
+//            throw new ConflictHttpException('Not allowed to edit teammates in regifting phase');
+//        }
         return ['teammates.*'=> 'integer'];
     }
 }

@@ -38,18 +38,18 @@ class EpochRepository
             $epoch_number = $epoch_number + 1;
             $circle = $epoch->circle;
             $unalloc_users = $circle->users()->where('non_giver',0)->yetToSend()->get();
-            $regifted_users = $circle->users()->where('give_token_received','>',0)->where('regift_percent','>',0)->get();
-            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number, $regifted_users) {
-                foreach($regifted_users as $regifted_user) {
-                    $burn = new Burn();
-                    $burn['regift_percent'] = $regifted_user->regift_percent;
-                    $burn['tokens_burnt'] = $regifted_user->regift_percent == 100 ? $regifted_user->give_token_received: ceil( $regifted_user->give_token_received / 100 * $regifted_user->regift_percent);
-                    $burn['original_amount'] = $regifted_user->give_token_received;
-                    $burn['circle_id'] = $circle_id;
-                    $burn['epoch_id'] = $epoch->id;
-                    $burn['user_id'] = $regifted_user->id;
-                    $burn->save();
-                }
+//            $regifted_users = $circle->users()->where('give_token_received','>',0)->where('regift_percent','>',0)->get();
+            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
+//                foreach($regifted_users as $regifted_user) {
+//                    $burn = new Burn();
+//                    $burn['regift_percent'] = $regifted_user->regift_percent;
+//                    $burn['tokens_burnt'] = $regifted_user->regift_percent == 100 ? $regifted_user->give_token_received: ceil( $regifted_user->give_token_received / 100 * $regifted_user->regift_percent);
+//                    $burn['original_amount'] = $regifted_user->give_token_received;
+//                    $burn['circle_id'] = $circle_id;
+//                    $burn['epoch_id'] = $epoch->id;
+//                    $burn['user_id'] = $regifted_user->id;
+//                    $burn->save();
+//                }
 
                 foreach($pending_gifts as $gift) {
                     $tokenGift = new TokenGift($gift->replicate()->toArray());
@@ -58,7 +58,7 @@ class EpochRepository
                 }
 
                 $this->model->where('circle_id',$circle_id)->delete();
-//                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
+                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
                 User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
                 $epoch->ended = 1;
                 $epoch->number = $epoch_number;
@@ -97,9 +97,6 @@ class EpochRepository
 //
 //        $ret = json_decode( (string)$response->getBody());
 //        $yfi_price = $ret->{'yearn-finance'}->usd;
-
-
-
         $end_date = $epoch->end_date;
         $users = User::with(['receivedGifts' => function ($q) use($epoch, $circle_id) {
             $q->where('epoch_id',$epoch->id)->where('circle_id',$circle_id);
@@ -112,7 +109,7 @@ class EpochRepository
         })->where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
 
         $grant = $grant ?:$epoch->grant;
-        $header = ['No.','name','address','received','sent','burnt','initial_received','epoch number', 'Date'];
+        $header = ['No.','name','address','received','sent','epoch number', 'Date'];
         if($grant && $grant>0) {
             $header[] = 'Grant Amt ($)';
         }
@@ -125,7 +122,7 @@ class EpochRepository
             $received = $user->receivedGifts->SUM('tokens');
             $burn_obj = count($user->burns) ? $user->burns[0]: null;
             $burnt = $burn_obj ? $burn_obj->tokens_burnt : 0;
-            $initial_received = $burn_obj ? $burn_obj->original_amount : $received;
+//            $initial_received = $burn_obj ? $burn_obj->original_amount : $received;
             $usd_received = $grant && $received ? (floor(($received * $grant / $total_sent) * 100) / 100):0;
             $col = [];
             $col[] = $idx +1;
@@ -133,8 +130,8 @@ class EpochRepository
             $col[]= $user->address;
             $col[]= $received - $burnt;
             $col[]= $user->sentGifts->SUM('tokens');
-            $col[]= $burnt;
-            $col[]= $initial_received;
+//            $col[]= $burnt;
+//            $col[]= $initial_received;
             $col[]= $epoch->number;
             $col[]= $date_range;
             if($grant && $grant>0)
@@ -147,7 +144,6 @@ class EpochRepository
                'Content-type'        => "text/csv"
            ,   'Content-Disposition' => "attachment; filename={$protocol->name}-{$epoch->circle->name}-{$epoch->number}.csv"
         ];
-
 
         $callback = function() use ($list)
         {
@@ -180,6 +176,10 @@ class EpochRepository
                 if ($users->has($recipient_address)) {
                     if ($user->id == $users[$recipient_address]->id)
                         continue;
+
+                    if($users[$recipient_address]->non_receiver == 1) {
+                        $gift['tokens'] = 0;
+                    }
 
                     $gift['sender_id'] = $user->id;
                     $gift['sender_address'] = strtolower($address);
@@ -219,33 +219,33 @@ class EpochRepository
     }
 
     public function removeAllPendingGiftsReceived($user, $updateData = []) {
-        //$pendingGifts = $user->pendingReceivedGifts;
-        //$pendingGifts->load(['sender.pendingSentGifts']);
-        return DB::transaction(function () use ($user, $updateData) {
-//           $optOutStr = "";
-//           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
-//           {
-//               $totalRefunded = 0;
-//               foreach($pendingGifts as $gift) {
-//                   if(!$gift->tokens && $gift->note)
-//                       continue;
-//
-//                   $sender = $gift->sender;
-//                   $gift_token = $gift->tokens;
-//                   $totalRefunded += $gift_token;
-//                   $optOutStr .= "$sender->name: $gift_token\n";
-//                   $gift->delete();
-//                   $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-//                   $sender->give_token_remaining = $sender->starting_tokens-$token_used;
-//                   $sender->save();
-//               }
-//               $updateData['give_token_received'] = 0;
-//               $circle = $user->circle;
-//               if($circle->telegram_id)
-//               {
-//                   $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
-//               }
-//           }
+        $pendingGifts = $user->pendingReceivedGifts;
+        $pendingGifts->load(['sender.pendingSentGifts']);
+        return DB::transaction(function () use ($user, $updateData, $pendingGifts) {
+           $optOutStr = "";
+           if(!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
+           {
+               $totalRefunded = 0;
+               foreach($pendingGifts as $gift) {
+                   if(!$gift->tokens && $gift->note)
+                       continue;
+
+                   $sender = $gift->sender;
+                   $gift_token = $gift->tokens;
+                   $totalRefunded += $gift_token;
+                   $optOutStr .= "$sender->name: $gift_token\n";
+                   $gift->delete();
+                   $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
+                   $sender->give_token_remaining = $sender->starting_tokens-$token_used;
+                   $sender->save();
+               }
+               $updateData['give_token_received'] = 0;
+               $circle = $user->circle;
+               if($circle->telegram_id)
+               {
+                   $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
+               }
+           }
 
             $user->update($updateData);
             return $user;

@@ -83,9 +83,6 @@ class GiftRequest extends FormRequest
         if(!$activeEpoch) {
             throw new ConflictHttpException('Currently not in an active Epoch');
         }
-        else if($activeEpoch->is_regift_phase == 1) {
-            throw new ConflictHttpException("Not allowed to allocate in regifting phase");
-        }
 
         return $rules;
     }
