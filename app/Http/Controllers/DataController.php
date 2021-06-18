@@ -78,7 +78,9 @@ class DataController extends Controller
         $circle_id = Utils::getCircleIdByName($subdomain);
         $user = User::byAddress($address);
         if($subdomain)
-            $user->where('circle_id',$circle_id);
+            $user->where(function($q) use ($circle_id){
+                $q->where('circle_id',$circle_id)->orWhere('admin_view', 1);
+        });
         $user = $user->first();
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
