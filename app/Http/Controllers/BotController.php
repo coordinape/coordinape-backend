@@ -84,11 +84,11 @@ class BotController extends Controller
             if($user) {
                 $notifyModel = $is_group ? $circle:$user;
 
-                $commands = "/start - Subscribe to updates from the Bot (Use this command throught PM Only)
-/give - Add username, tokens and note (optional) after the command separated by a space e.g /give @username 20 Thank YOU
-/allocations - Get all the allocations that you have sent
-/receipts - Get all the allocations that you have received
-/announce - To broadcast message throughout all channels (super admins only)";
+                $commands = "/start > Subscribe to updates from the Bot (Use this command throught PM Only)
+/give > Add username, tokens and note (optional) after the command separated by a space e.g /give @username 20 Thank YOU
+/allocations > Get all the allocations that you have sent
+/receipts > Get all the allocations that you have received
+/announce > To broadcast message throughout all channels (super admins only)";
                 $notifyModel->notify(new SendSocialMessage(
                     $commands, false
                 ));
