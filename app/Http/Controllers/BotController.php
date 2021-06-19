@@ -97,10 +97,18 @@ class BotController extends Controller
         }])->where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::with(['epoches' => function ($q) {
             $q->isActiveDate();
         }])->whereIn('id',$whitelisted)->first();
-        if($circle && count($circle->epoches)) {
+
+        if($circle) {
             $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle : $user;
+                if(count($circle->epoches) == 0)
+                {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "Sorry $user->name ser, there is currently no active epochs"
+                    ));
+                    return false;
+                }
                 if($user->non_giver) {
                     $notifyModel->notify(new SendSocialMessage(
                         "Sorry $user->name ser, You are not allowed to give allocations"
@@ -179,6 +187,8 @@ class BotController extends Controller
                     ));
                 }
             }
+        } else {
+
         }
     }
 
