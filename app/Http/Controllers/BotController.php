@@ -212,7 +212,7 @@ class BotController extends Controller
                 $allocStr = '';
                 $pendingSentGifts = $user->pendingSentGifts;
                 foreach($pendingSentGifts as $gift) {
-                    $allocStr .= "{$gift->recipient->name} > $gift->tokens\n Tokens";
+                    $allocStr .= "{$gift->recipient->name} > $gift->tokens tokens\n";
                 }
                 if(!$allocStr)
                     $allocStr = "You have no allocations currently";
