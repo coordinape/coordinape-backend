@@ -99,7 +99,7 @@ class BotController extends Controller
         }])->whereIn('id',$whitelisted)->first();
         Log::info($circle);
         if($circle) {
-            $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle)->first();
+            $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             Log::info($user);
             if($user) {
                 $notifyModel = $is_group ? $circle : $user;
@@ -116,7 +116,7 @@ class BotController extends Controller
                     ));
                     return false;
                 }
-                $recipientUser = User::where('telegram_username',$recipientUsername)->where('circle_id', $circle)->first();
+                $recipientUser = User::where('telegram_username',$recipientUsername)->where('circle_id', $circle->id)->first();
                 Log::info($recipientUser);
                 if($recipientUser) {
                     $noteOnly = false;
