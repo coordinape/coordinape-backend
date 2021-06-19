@@ -87,7 +87,7 @@ class BotController extends Controller
         if(count($textArray) < 3)
             return false;
 
-        $recipientUsername = $textArray[1];
+        $recipientUsername = substr($textArray[1],1);
         $amount = filter_var($textArray[2], FILTER_VALIDATE_INT) ? to_int($textArray[2]): 0;
         $note = !empty($textArray[3]) ? $textArray[3]:'';
         $whitelisted = [self::yearnCircleId];
