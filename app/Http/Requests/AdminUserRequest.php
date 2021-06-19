@@ -44,11 +44,8 @@ class AdminUserRequest extends FormRequest
             'non_giver'  => !empty($data['non_giver']) ? $data['non_giver']:0,
             'fixed_non_receiver'  => !empty($data['fixed_non_receiver']) ? $data['fixed_non_receiver']:0,
             'starting_tokens'  => !empty($data['starting_tokens']) ? $data['starting_tokens']:100,
-
+            'role'  => !empty($data['role']) ? $data['role']:0,
         ]);
-        if(!empty($data['role'])) {
-            $this->merge(['role'  => $data['role']]);
-        }
 
     }
 
@@ -70,8 +67,7 @@ class AdminUserRequest extends FormRequest
             'starting_tokens' => 'integer|max:1000000',
             'non_giver' => 'integer|min:0|max:1|required',
             'fixed_non_receiver' => 'integer|min:0|max:1|required',
-            'role' => 'integer|min:0|max:1'
-
+            'role' => 'integer|min:0|max:1|required'
         ];
     }
 }
