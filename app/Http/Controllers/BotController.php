@@ -139,8 +139,11 @@ class BotController extends Controller
                                 $current = $gift->tokens;
                                 $gift->tokens = $amount;
                                 $gift->note = $note;
-
-                                $gift->save();
+                                if($amount == 0 && !$note)
+                                    $gift->delete();
+                                else
+                                    $gift->save();
+                                
                                 $recipientUser->give_token_received = $recipientUser->pendingReceivedGifts()->get()->SUM('tokens');
                                 $recipientUser->save();
                                 $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
