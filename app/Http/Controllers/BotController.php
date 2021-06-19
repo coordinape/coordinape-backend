@@ -277,7 +277,7 @@ class BotController extends Controller
                             if($optOutText)
                             {
                                 $notifyModel->notify(new SendSocialMessage(
-                                    "@$user->telegram_username Sorry $user->name ser, You are sending tokens to an Opt Out recipient"
+                                    "@$user->telegram_username Sorry $user->name ser, You are only sending tokens to an Opt Out recipient, please include at least a note"
                                 ));
                             }
                             return false;
