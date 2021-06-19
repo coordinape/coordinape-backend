@@ -41,8 +41,7 @@ class SendSocialMessage extends Notification
 
     public function toTelegram($notifiable=null)
     {
-        if($this->sanitize)
-            $message = Utils::cleanStr($this->message);
+        $message = $this->sanitize? Utils::cleanStr($this->message): $this->message;
         return TelegramMessage::create()
             // Markdown supported.
             ->content($message);
