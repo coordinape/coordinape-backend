@@ -65,6 +65,10 @@ class BotController extends Controller
             case '/allocations':
                 $this->getAllocs($message, $is_group);
                 break;
+
+            case '/receipts':
+                $this->getReceipts($message, $is_group);
+                break;
         }
     }
 
@@ -143,7 +147,7 @@ class BotController extends Controller
                                     $gift->delete();
                                 else
                                     $gift->save();
-                                
+
                                 $recipientUser->give_token_received = $recipientUser->pendingReceivedGifts()->get()->SUM('tokens');
                                 $recipientUser->save();
                                 $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
@@ -218,13 +222,40 @@ class BotController extends Controller
                     $allocStr .= "{$gift->recipient->name} > $gift->tokens tokens\n";
                 }
                 if(!$allocStr)
-                    $allocStr = "You have no allocations currently";
+                    $allocStr = "You have sent no allocations currently";
+                else
+                    $allocStr = "Allocations\n$allocStr";
+
                 $notifyModel->notify(new SendSocialMessage(
                     $allocStr
                 ));
             }
         }
 
+    }
+
+    private function getReceipts($message, $is_group = false) {
+
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::with('pendingReceivedGifts.sender')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                $allocStr = '';
+                $pendingReceivedGifts = $user->pendingReceivedGifts;
+                foreach($pendingReceivedGifts as $gift) {
+                    $allocStr .= "{$gift->sender->name} > $gift->tokens tokens\n";
+                }
+                if(!$allocStr)
+                    $allocStr = "You received no allocations currently";
+                else
+                    $allocStr = "Received\n$allocStr";
+
+                $notifyModel->notify(new SendSocialMessage(
+                    $allocStr
+                ));
+            }
+        }
     }
 
     private function sendAnnouncement($message) {
