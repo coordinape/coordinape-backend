@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Feedback;
 use App\Models\PendingTokenGift;
 use Illuminate\Http\Request;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -100,6 +101,29 @@ class BotController extends Controller
                 $this->getHelp($message, $is_group);
                 break;
 
+            case '/feedback':
+                $this->feedback($message, $is_group);
+                break;
+
+        }
+    }
+
+    private function feedback($message, $is_group) {
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+
+                $message = substr($message['text'],10);
+                $feedback = new Feedback(['user_id' => $user->id,
+                    'telegram_username' => $user->telegram_username, 'message'=> $message ]);
+
+                $feedback->save();
+                $notifyModel = $is_group ? $circle:$user;
+                $notifyModel->notify(new SendSocialMessage(
+                    "@$user->telegram_username your feedback has been logged #$feedback->id", false
+                ));
+            }
         }
     }
 
@@ -174,8 +198,9 @@ class BotController extends Controller
 /announce - To broadcast message throughout all channels (super admins only)
 /discord - link to discord
 /website - link to website
-/apply - typeform link to join coordinape and use our application
-/help - link to documentation";
+/apply - typeform link to join coordinape and give out grants through our application
+/help - link to documentation
+/feedback - please use this to provide feedback & suggestions to me, so it doesn't get lost in the channel (add a space after the command followed by your message)";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $commands, false
@@ -343,9 +368,9 @@ class BotController extends Controller
                     $allocStr .= "{$gift->recipient->name} > $gift->tokens tokens\n";
                 }
                 if(!$allocStr)
-                    $allocStr = "You have sent no allocations currently";
+                    $allocStr = "@$user->telegram_username You have sent no allocations currently";
                 else
-                    $allocStr = "Allocations\n$allocStr";
+                    $allocStr = "@$user->telegram_username Allocations\n$allocStr";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $allocStr
@@ -368,9 +393,9 @@ class BotController extends Controller
                     $allocStr .= "{$gift->sender->name} > $gift->tokens tokens\n";
                 }
                 if(!$allocStr)
-                    $allocStr = "You received no allocations currently";
+                    $allocStr = "@$user->telegram_username You received no allocations currently";
                 else
-                    $allocStr = "Received\n$allocStr";
+                    $allocStr = "@$user->telegram_username Received\n$allocStr";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $allocStr
@@ -380,11 +405,13 @@ class BotController extends Controller
     }
 
     private function sendAnnouncement($message) {
+
         $annText = substr($message['text'],10);
         $user = User::where('telegram_username', $message['from']['username'])
             ->where(function($q) {
                 $q->where('ann_power', 1)->orWhere('super',1);
             })->first();
+
         if($user) {
             $circles = Circle::whereNotNull('telegram_id')->get();
             foreach($circles as $circle) {

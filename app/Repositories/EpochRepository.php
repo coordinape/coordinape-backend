@@ -215,7 +215,6 @@ class EpochRepository
 //                $user->circle->notify(new NewAllocation($user, $token_used));
 //            }
         },2);
-
     }
 
     public function removeAllPendingGiftsReceived($user, $updateData = []) {
@@ -295,7 +294,7 @@ class EpochRepository
             $epoch->save();
         }
         else if(!$epoch->notified_before_end) {
-            $now = Carbon::now()->addDays(2);
+            $now = Carbon::now()->addDays(1);
             if($epoch->end_date <= $now) {
                 $circle = $epoch->circle;
                 $unalloc_users = $circle->users()->where('non_giver',0)->where('is_hidden',0)->where('give_token_remaining','>',0)->get();
