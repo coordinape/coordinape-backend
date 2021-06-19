@@ -92,8 +92,12 @@ class BotController extends Controller
         $note = !empty($textArray[3]) ? $textArray[3]:'';
         $whitelisted = [self::yearnCircleId];
         $chat_id = $message['chat']['id'];
-        $circle = $is_group ? Circle::where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::whereIn('id',$whitelisted)->first();
-        if($circle) {
+        $circle = $is_group ? Circle::with(['epoches' => function ($q) {
+            $q->isActiveDate();
+        }])->where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::with(['epoches' => function ($q) {
+            $q->isActiveDate();
+        }])->whereIn('id',$whitelisted)->first();
+        if($circle && count($circle->epoches)) {
             $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle : $user;
