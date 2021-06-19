@@ -145,7 +145,7 @@ class BotController extends Controller
                                 $gift->save();
                                 $recipientUser->give_token_received = $recipientUser->pendingReceivedGifts()->get()->SUM('tokens');
                                 $recipientUser->save();
-                                $user->give_token_remaining = $user->pendingSentGifts()->get()->SUM('tokens');
+                                $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                                 $user->save();
                                 $notifyModel->notify(new SendSocialMessage(
                                     "$user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name to $amount tokens. You have $remainingGives tokens remaining"
