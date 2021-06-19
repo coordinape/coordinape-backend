@@ -120,13 +120,15 @@ class BotController extends Controller
                 Log::info($recipientUser);
                 if($recipientUser) {
                     $noteOnly = false;
+                    $optOutText = "";
                     if($recipientUser->non_receiver || $recipientUser->fixed_non_receiver) {
                         $amount = 0;
+                        $optOutText = "(Opt Out)";
                     }
                     if($amount == 0 )
                         $noteOnly = true;
 
-                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername) {
+                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername, $optOutText) {
                         $pendingSentGifts = $user->pendingSentGifts;
                         $remainingGives = $user->give_token_remaining;
                         $user->teammates()->syncWithoutDetaching([$recipientUser->id]);
@@ -149,7 +151,7 @@ class BotController extends Controller
                                 $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                                 $user->save();
                                 $notifyModel->notify(new SendSocialMessage(
-                                    "$user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name @$recipientUsername to $amount tokens. You have $user->give_token_remaining tokens remaining"
+                                    "$user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name @$recipientUsername $optOutText to $amount tokens. You have $user->give_token_remaining tokens remaining"
                                 ));
                                 return true;
                             }
@@ -178,7 +180,7 @@ class BotController extends Controller
                         $recipientUser->save();
                         $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                         $user->save();
-                        $message = $noteOnly? "You have successfully sent a note to $recipientUser->name":"$user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
+                        $message = $noteOnly? "You have successfully sent a note to $recipientUser->name $optOutText":"$user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
                         $notifyModel->notify(new SendSocialMessage(
                             $message
                         ));
