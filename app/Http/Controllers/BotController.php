@@ -69,23 +69,32 @@ class BotController extends Controller
             case '/receipts':
                 $this->getReceipts($message, $is_group);
                 break;
+
+            case '/commands':
+                $this->getCommands($message, $is_group);
+                break;
         }
     }
 
-//    private function processGroupCommands($message) {
-//        $textArray = explode(' ',$message['text']);
-//        $command = $textArray[0];
-//
-//        switch($command) {
-//            case '/give':
-//                $this->give($message, $message['chat']['type'] == 'group');
-//                break;
-//
-//            case '/announce':
-//               $this->sendAnnouncement($message);
-//             break;
-//        }
-//    }
+    private function getCommands($message, $is_group) {
+
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+
+                $commands = "start - Subscribe to updates from the Bot (Use this command throught PM Only)
+give - Add username, tokens and note (optional) after the command separated by a space e.g /give @username 20 Thank YOU
+allocations - Get all the allocations that you have sent
+receipts - Get all the allocations that you have received
+announce - To broadcast message throughout all channels (super admins only)";
+                $notifyModel->notify(new SendSocialMessage(
+                    $commands
+                ));
+            }
+        }
+    }
 
     private function give($message, $is_group) {
         // command @username amount note
