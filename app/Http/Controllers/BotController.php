@@ -184,7 +184,7 @@ class BotController extends Controller
                     });
 
                 } else {
-                    $circle->notify(new SendSocialMessage(
+                    $notifyModel->notify(new SendSocialMessage(
                         "Sorry $user->name ser, $recipientUsername does not exist in this circle"
                     ));
                 }
