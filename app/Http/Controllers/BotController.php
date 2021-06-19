@@ -129,6 +129,7 @@ class BotController extends Controller
                     DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername) {
                         $pendingSentGifts = $user->pendingSentGifts;
                         $remainingGives = $user->give_token_remaining;
+                        $user->teammates()->syncWithoutDetaching([$recipientUser->id]);
                         foreach($pendingSentGifts as $gift) {
                             if($gift->recipient_id==$recipientUser->id) {
                                 if(($remainingGives + $gift->tokens - $amount) < 0) {
