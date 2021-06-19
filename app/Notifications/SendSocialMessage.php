@@ -21,9 +21,11 @@ class SendSocialMessage extends Notification
      */
 
     protected $message;
-    public function __construct($message)
+    protected $sanitize;
+    public function __construct($message, $sanitize = true)
     {
         $this->message = $message;
+        $this->sanitize = $sanitize;
     }
 
     /**
@@ -39,7 +41,8 @@ class SendSocialMessage extends Notification
 
     public function toTelegram($notifiable=null)
     {
-        $message = Utils::cleanStr($this->message);
+        if($this->sanitize)
+            $message = Utils::cleanStr($this->message);
         return TelegramMessage::create()
             // Markdown supported.
             ->content($message);
