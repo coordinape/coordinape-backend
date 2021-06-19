@@ -25,61 +25,63 @@ class BotController extends Controller
             (!empty($message['text']['entities'][0]['type']) && ($message['text']['entities'][0]['type']=='bot_command' ))
             )
         ) {
-            if($message['chat']['type'] == 'private') {
-                $this->processPrivateCommands($message);
-            }
-            else if($message['chat']['type'] == 'group') {
-                $this->processGroupCommands($message);
-            }
+            $this->processCommands($message);
         }
 
        // return response()->json(['success' => 1]);
     }
 
-    private function processPrivateCommands($message) {
+    private function processCommands($message) {
         $textArray = explode(' ',$message['text']);
         $command = $textArray[0];
+        $is_group = $message['chat']['type'] == 'group';
         switch($command) {
             case '/start':
-                $users = User::where('telegram_username', $message['from']['username'])->get();
-                if(count($users)==0) {
-                    // don't exist
-                    return;
-                } else {
-                    foreach($users as $user) {
-                        $user->chat_id = $message->chat->id;
-                        $user->save();
-                    }
+                if(!$is_group) {
+                    $users = User::where('telegram_username', $message['from']['username'])->get();
+                    if(count($users)==0) {
+                        // don't exist
+                        return;
+                    } else {
+                        foreach($users as $user) {
+                            $user->chat_id = $message->chat->id;
+                            $user->save();
+                        }
 
-                    $users[0]->notify(new SendSocialMessage(
-                        "Congrats {$users[0]->name} You have successfully registered your Telegram to Coordinape !\nI will occasionally send you important reminders!"
-                    ));
+                        $users[0]->notify(new SendSocialMessage(
+                            "Congrats {$users[0]->name} You have successfully registered your Telegram to Coordinape !\nI will occasionally send you important reminders and updates!"
+                        ));
+                    }
                 }
                 break;
             case '/give':
-                $this->give($message, $message['chat']['type'] == 'group');
+                $this->give($message, $is_group);
                 break;
 
             case '/announce':
                 $this->sendAnnouncement($message);
                 break;
-        }
-    }
 
-    private function processGroupCommands($message) {
-        $textArray = explode(' ',$message['text']);
-        $command = $textArray[0];
-
-        switch($command) {
-            case '/give':
-                $this->give($message, $message['chat']['type'] == 'group');
+            case '/allocations':
+                $this->getAllocs($message, $is_group);
                 break;
-
-            case '/announce':
-               $this->sendAnnouncement($message);
-             break;
         }
     }
+
+//    private function processGroupCommands($message) {
+//        $textArray = explode(' ',$message['text']);
+//        $command = $textArray[0];
+//
+//        switch($command) {
+//            case '/give':
+//                $this->give($message, $message['chat']['type'] == 'group');
+//                break;
+//
+//            case '/announce':
+//               $this->sendAnnouncement($message);
+//             break;
+//        }
+//    }
 
     private function give($message, $is_group) {
         // command @username amount note
@@ -90,13 +92,7 @@ class BotController extends Controller
         $recipientUsername = substr($textArray[1],1);
         $amount = filter_var($textArray[2], FILTER_VALIDATE_INT) ? (int)($textArray[2]): 0;
         $note = !empty($textArray[3]) ? $textArray[3]:'';
-        $whitelisted = [self::yearnCircleId];
-        $chat_id = $message['chat']['id'];
-        $circle = $is_group ? Circle::with(['epoches' => function ($q) {
-            $q->isActiveDate();
-        }])->where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::with(['epoches' => function ($q) {
-            $q->isActiveDate();
-        }])->whereIn('id',$whitelisted)->first();
+        $circle = $this->getCircle($message, $is_group);
         Log::info($circle);
         if($circle) {
             $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
@@ -192,6 +188,40 @@ class BotController extends Controller
                 }
             }
         }
+    }
+
+    private function getCircle($message, $is_group) {
+        $whitelisted = [self::yearnCircleId];
+        $chat_id = $message['chat']['id'];
+        $circle = $is_group ? Circle::with(['epoches' => function ($q) {
+            $q->isActiveDate();
+        }])->where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::with(['epoches' => function ($q) {
+            $q->isActiveDate();
+        }])->whereIn('id',$whitelisted)->first();
+
+        return $circle;
+    }
+
+    private function getAllocs($message, $is_group = false) {
+
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::with('pendingSentGifts.sender')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                $allocStr = '';
+                $pendingSentGifts = $user->pendingSentGifts;
+                foreach($pendingSentGifts as $gift) {
+                    $allocStr .= "{$gift->sender->name} : $gift->tokens\n";
+                }
+                if(!$allocStr)
+                    $allocStr = "You have no allocations currently";
+                $notifyModel->notify(new SendSocialMessage(
+                    $allocStr
+                ));
+            }
+        }
+
     }
 
     private function sendAnnouncement($message) {
