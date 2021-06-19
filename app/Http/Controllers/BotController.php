@@ -126,7 +126,7 @@ class BotController extends Controller
                     if($amount == 0 )
                         $noteOnly = true;
 
-                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly) {
+                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername) {
                         $pendingSentGifts = $user->pendingSentGifts;
                         $remainingGives = $user->give_token_remaining;
                         foreach($pendingSentGifts as $gift) {
@@ -148,7 +148,7 @@ class BotController extends Controller
                                 $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                                 $user->save();
                                 $notifyModel->notify(new SendSocialMessage(
-                                    "$user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name to $amount tokens. You have $user->give_token_remaining tokens remaining"
+                                    "$user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name @$recipientUsername to $amount tokens. You have $user->give_token_remaining tokens remaining"
                                 ));
                                 return true;
                             }
@@ -177,7 +177,7 @@ class BotController extends Controller
                         $recipientUser->save();
                         $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                         $user->save();
-                        $message = $noteOnly? "You have successfully sent a note to $recipientUser->name":"$user->name ser, You have successfully allocated $amount tokens to $recipientUser->name. You have $user->give_token_remaining tokens remaining";
+                        $message = $noteOnly? "You have successfully sent a note to $recipientUser->name":"$user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
                         $notifyModel->notify(new SendSocialMessage(
                             $message
                         ));
