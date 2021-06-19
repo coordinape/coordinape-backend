@@ -76,14 +76,18 @@ class DataController extends Controller
 
     public function getUser2($subdomain, $address): JsonResponse {
         $circle_id = Utils::getCircleIdByName($subdomain);
-        $user = User::byAddress($address);
+        $query = User::byAddress($address);
         if($subdomain)
-            $user->where(function($q) use ($circle_id){
-                $q->where('circle_id',$circle_id)->orWhere('admin_view', 1);
-        });
-        $user = $user->first();
+            $query->where('circle_id',$circle_id);
+        $user = $query->first();
         if(!$user)
+        {
+            $user = User::byAddress($address)->where('admin_view', 1)->first();
+            if($user)
+                return response()->json($user);
+            
             return response()->json(['error'=> 'Address not found'],422);
+        }
 
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
