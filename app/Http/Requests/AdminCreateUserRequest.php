@@ -41,6 +41,10 @@ class AdminCreateUserRequest extends FormRequest
             'fixed_non_receiver'  => !empty($data['fixed_non_receiver']) ? $data['fixed_non_receiver']:0
 
         ]);
+
+        if(!empty($data['role'])) {
+            $this->merge(['role' => $data['role']]);
+        }
     }
 
     /**
@@ -59,7 +63,8 @@ class AdminCreateUserRequest extends FormRequest
             })],
             'non_giver' => 'integer|min:0|max:1|required',
             'fixed_non_receiver' => 'integer|min:0|max:1|required',
-            'starting_tokens' => 'integer|max:1000000'
+            'starting_tokens' => 'integer|max:1000000',
+            'role' => 'integer|min:0|max:1'
         ];
     }
 }
