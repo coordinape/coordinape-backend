@@ -109,6 +109,9 @@ class DataController extends Controller
 
     public function createUser(AdminCreateUserRequest $request, $circle_id): JsonResponse {
         $data = $request->only('address','name','starting_tokens','non_giver','circle_id','give_token_remaining','fixed_non_receiver', 'role');
+        if($data['fixed_non_receiver'] ==1 ) {
+            $data['non_receiver'] = 1;
+        }
         $data['address'] =  strtolower($data['address']);
         $data['circle_id'] =  $circle_id;
         $user = new User($data);
@@ -125,6 +128,9 @@ class DataController extends Controller
             return response()->json(['error'=> 'Address not found'],422);
 
         $data = $request->only('name','address','non_receiver','bio','epoch_first_visit');
+        if($user->fixed_non_receiver ==1 ) {
+            $data['non_receiver'] = 1;
+        }
         $data['address'] =  strtolower($data['address']);
         $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
         return response()->json($user);
@@ -137,6 +143,9 @@ class DataController extends Controller
             return response()->json(['error'=> 'Address not found'],422);
         $data = $request->only('name','address','starting_tokens','non_giver','fixed_non_receiver', 'role');
 
+        if($data['fixed_non_receiver'] ==1 ) {
+            $data['non_receiver'] = 1;
+        }
         if($user->starting_tokens != $data['starting_tokens']) {
            if( $user->circle->epoches()->isActiveDate()->first()) {
                return response()->json(['error'=> 'Cannot update starting tokens during an active epoch'],422);
