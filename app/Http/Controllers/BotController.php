@@ -10,11 +10,17 @@ use App\Models\User;
 use App\Notifications\SendSocialMessage;
 use App\Models\Circle;
 use DB;
+use App\Repositories\EpochRepository;
 
 class BotController extends Controller
 {
 
     const yearnCircleId = 1;
+
+    protected $repo;
+    public function __construct(EpochRepository $repo) {
+        $this->repo = $repo;
+    }
 
     public function webHook(Request $request) {
         $updates = Telegram::getWebhookUpdates();
@@ -58,6 +64,10 @@ class BotController extends Controller
                 $this->give($message, $is_group);
                 break;
 
+            case '/deallocate':
+                $this->deallocate($message, $is_group);
+                break;
+
             case '/announce':
                 $this->sendAnnouncement($message);
                 break;
@@ -89,6 +99,7 @@ class BotController extends Controller
             case '/help':
                 $this->getHelp($message, $is_group);
                 break;
+
         }
     }
 
@@ -158,15 +169,33 @@ class BotController extends Controller
                 $commands = "/start - Subscribe to updates from the Bot (Use this command throught PM Only)
 /give - Add username, tokens and note (optional) after the command separated by a space e.g /give @username 20 Thank YOU
 /allocations - Get all the allocations that you have sent
+/deallocate - Deallocate all your existing tokens that you have given
 /receipts - Get all the allocations that you have received
 /announce - To broadcast message throughout all channels (super admins only)
-/discord - get link to discord
-/website - get link to website
+/discord - link to discord
+/website - link to website
 /apply - typeform link to join coordinape and use our application
 /help - link to documentation
 ";
                 $notifyModel->notify(new SendSocialMessage(
                     $commands, false
+                ));
+            }
+        }
+    }
+
+    private function deallocate($message, $is_group) {
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                DB::transactions(function () use($user) {
+                    $this->repo->resetGifts($user,[]);
+                });
+
+                $notifyModel->notify(new SendSocialMessage(
+                    "You have deallocated all your tokens, you have now $user->starting_tokens tokens remaining"
                 ));
             }
         }
