@@ -88,7 +88,7 @@ class BotController extends Controller
             return false;
 
         $recipientUsername = substr($textArray[1],1);
-        $amount = filter_var($textArray[2], FILTER_VALIDATE_INT) ? to_int($textArray[2]): 0;
+        $amount = filter_var($textArray[2], FILTER_VALIDATE_INT) ? (int)($textArray[2]): 0;
         $note = !empty($textArray[3]) ? $textArray[3]:'';
         $whitelisted = [self::yearnCircleId];
         $chat_id = $message['chat']['id'];
