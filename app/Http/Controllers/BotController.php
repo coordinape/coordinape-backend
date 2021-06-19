@@ -73,6 +73,77 @@ class BotController extends Controller
             case '/commands':
                 $this->getCommands($message, $is_group);
                 break;
+
+            case '/discord':
+                $this->getDiscord($message, $is_group);
+                break;
+
+            case '/website':
+                $this->getWebsite($message, $is_group);
+                break;
+
+            case '/apply':
+                $this->getTypeform($message, $is_group);
+                break;
+
+            case '/help':
+                $this->getHelp($message, $is_group);
+                break;
+        }
+    }
+
+    private function getHelp($message, $is_group) {
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                $notifyModel->notify(new SendSocialMessage(
+                    "https://docs.coordinape.com", false
+                ));
+            }
+        }
+    }
+
+    private function getDiscord($message,$is_group) {
+
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                $notifyModel->notify(new SendSocialMessage(
+                    "https://discord.gg/tegaa7wr", false
+                ));
+            }
+        }
+    }
+
+    private function getWebsite($message,$is_group) {
+
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                $notifyModel->notify(new SendSocialMessage(
+                    "https://coordinape.com", false
+                ));
+            }
+        }
+    }
+
+    private function getTypeform($message,$is_group) {
+
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                $notifyModel->notify(new SendSocialMessage(
+                    "https://yearnfinance.typeform.com/to/egGYEbrC", false
+                ));
+            }
         }
     }
 
@@ -88,7 +159,12 @@ class BotController extends Controller
 /give - Add username, tokens and note (optional) after the command separated by a space e.g /give @username 20 Thank YOU
 /allocations - Get all the allocations that you have sent
 /receipts - Get all the allocations that you have received
-/announce - To broadcast message throughout all channels (super admins only)";
+/announce - To broadcast message throughout all channels (super admins only)
+/discord - get link to discord
+/website - get link to website
+/apply - typeform link to join coordinape and use our application
+/help - link to documentation
+";
                 $notifyModel->notify(new SendSocialMessage(
                     $commands, false
                 ));
