@@ -195,7 +195,7 @@ class BotController extends Controller
                 });
 
                 $notifyModel->notify(new SendSocialMessage(
-                    "$user->name @$user->telegram_username ser, You have deallocated all your tokens, you have now $user->starting_tokens tokens remaining"
+                    "@$user->telegram_username $user->name ser, You have deallocated all your tokens, you have now $user->starting_tokens tokens remaining"
                 ));
             }
         }
@@ -220,13 +220,13 @@ class BotController extends Controller
                 if(count($circle->epoches) == 0)
                 {
                     $notifyModel->notify(new SendSocialMessage(
-                        "Sorry $user->name @$user->telegram_username ser, there is currently no active epochs"
+                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
                     ));
                     return false;
                 }
                 if($user->non_giver) {
                     $notifyModel->notify(new SendSocialMessage(
-                        "Sorry $user->name @$user->telegram_username ser, You are not allowed to give allocations"
+                        "@$user->telegram_username Sorry $user->name ser, You are not allowed to give allocations"
                     ));
                     return false;
                 }
@@ -250,7 +250,7 @@ class BotController extends Controller
                             if($gift->recipient_id==$recipientUser->id) {
                                 if(($remainingGives + $gift->tokens - $amount) < 0) {
                                     $notifyModel->notify(new SendSocialMessage(
-                                        "Sorry $user->name @$user->telegram_username ser, You only have $remainingGives tokens remaining you're ngmi"
+                                        "@$user->telegram_username Sorry $user->name ser, You only have $remainingGives tokens remaining you're ngmi"
                                     ));
                                     return false;
                                 }
@@ -267,18 +267,25 @@ class BotController extends Controller
                                 $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                                 $user->save();
                                 $notifyModel->notify(new SendSocialMessage(
-                                    "$user->name @$user->telegram_username ser, You have successfully updated your allocated $current tokens for $recipientUser->name @$recipientUsername $optOutText to $amount tokens. You have $user->give_token_remaining tokens remaining"
+                                    "@$user->telegram_username $user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name @$recipientUsername $optOutText to $amount tokens. You have $user->give_token_remaining tokens remaining"
                                 ));
                                 return true;
                             }
                         }
 
-                        if($amount == 0 && !$note)
+                        if($amount == 0 && !$note) {
+                            if($optOutText)
+                            {
+                                $notifyModel->notify(new SendSocialMessage(
+                                    "@$user->telegram_username Sorry $user->name ser, You are sending tokens to an Opt Out recipient"
+                                ));
+                            }
                             return false;
+                        }
 
                         if($amount > $user->give_token_remaining) {
                             $notifyModel->notify(new SendSocialMessage(
-                                "Sorry $user->name @$user->telegram_username ser, You only have $remainingGives tokens remaining you're ngmi"
+                                "@$user->telegram_username Sorry $user->name ser, You only have $remainingGives tokens remaining you're ngmi"
                             ));
                             return false;
                         }
@@ -296,7 +303,7 @@ class BotController extends Controller
                         $recipientUser->save();
                         $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                         $user->save();
-                        $message = $noteOnly? "$user->name @$user->telegram_username ser, You have successfully sent a note to $recipientUser->name $optOutText":"$user->name @$user->telegram_username ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
+                        $message = $noteOnly? "@$user->telegram_username $user->name ser, You have successfully sent a note to $recipientUser->name $optOutText":"@$user->telegram_username $user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
                         $notifyModel->notify(new SendSocialMessage(
                             $message
                         ));
@@ -304,7 +311,7 @@ class BotController extends Controller
 
                 } else {
                     $notifyModel->notify(new SendSocialMessage(
-                        "Sorry $user->name @$user->telegram_username ser, $recipientUsername does not exist in this circle"
+                        "@$user->telegram_username Sorry $user->name ser, $recipientUsername does not exist in this circle"
                     ));
                 }
             }
