@@ -84,7 +84,6 @@ class BotController extends Controller
     private function give($message, $is_group) {
         // command @username amount note
         $textArray = explode(' ',$message['text']);
-        Log::info($textArray);
         if(count($textArray) < 3)
             return false;
 
@@ -98,9 +97,10 @@ class BotController extends Controller
         }])->where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::with(['epoches' => function ($q) {
             $q->isActiveDate();
         }])->whereIn('id',$whitelisted)->first();
-
+        Log::info($circle);
         if($circle) {
             $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle)->first();
+            Log::info($user);
             if($user) {
                 $notifyModel = $is_group ? $circle : $user;
                 if(count($circle->epoches) == 0)
@@ -117,6 +117,7 @@ class BotController extends Controller
                     return false;
                 }
                 $recipientUser = User::where('telegram_username',$recipientUsername)->where('circle_id', $circle)->first();
+                Log::info($recipientUser);
                 if($recipientUser) {
                     $noteOnly = false;
                     if($recipientUser->non_receiver || $recipientUser->fixed_non_receiver) {
