@@ -101,10 +101,22 @@ class BotController extends Controller
             $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle : $user;
+                if($user->non_giver) {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "Sorry $user->name ser, You are not allowed to give allocations"
+                    ));
+                    return false;
+                }
                 $recipientUser = User::where('telegram_username',$recipientUsername)->where('circle_id', $circle)->first();
                 if($recipientUser) {
+                    $noteOnly = false;
+                    if($recipientUser->non_receiver || $recipientUser->fixed_non_receiver) {
+                        $amount = 0;
+                    }
+                    if($amount == 0 )
+                        $noteOnly = true;
 
-                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note) {
+                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly) {
                         $pendingSentGifts = $user->pendingSentGifts;
                         $remainingGives = $user->give_token_remaining;
                         foreach($pendingSentGifts as $gift) {
@@ -115,6 +127,7 @@ class BotController extends Controller
                                     ));
                                     return false;
                                 }
+                                $current = $gift->tokens;
                                 $gift->tokens = $amount;
                                 if($note)
                                     $gift->note = $note;
@@ -125,7 +138,7 @@ class BotController extends Controller
                                 $user->give_token_remaining = $user->pendingSentGifts()->get()->SUM('tokens');
                                 $user->save();
                                 $notifyModel->notify(new SendSocialMessage(
-                                    "$user->name ser, You have successfully allocated $amount tokens to $recipientUser->name. You have $remainingGives tokens remaining"
+                                    "$user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name to $amount tokens. You have $remainingGives tokens remaining"
                                 ));
                                 return true;
                             }
@@ -154,8 +167,9 @@ class BotController extends Controller
                         $recipientUser->save();
                         $user->give_token_remaining = $user->pendingSentGifts()->get()->SUM('tokens');
                         $user->save();
+                        $message = $noteOnly? "You have successfully sent a note to $recipientUser->name":"$user->name ser, You have successfully allocated $amount tokens to $recipientUser->name. You have $remainingGives tokens remaining";
                         $notifyModel->notify(new SendSocialMessage(
-                            "$user->name ser, You have successfully allocated $amount tokens to $recipientUser->name. You have $remainingGives tokens remaining"
+                            $message
                         ));
                     });
 
