@@ -84,6 +84,7 @@ class BotController extends Controller
     private function give($message, $is_group) {
         // command @username amount note
         $textArray = explode(' ',$message['text']);
+        Log::info($textArray);
         if(count($textArray) < 3)
             return false;
 
@@ -187,8 +188,6 @@ class BotController extends Controller
                     ));
                 }
             }
-        } else {
-
         }
     }
 
