@@ -27,8 +27,6 @@ class PendingTokenGift extends Model
         'sender_id',
         'tokens',
         'circle_id',
-        'id'
-
     ];
 
     public function scopeFilter($query, $filters) {
