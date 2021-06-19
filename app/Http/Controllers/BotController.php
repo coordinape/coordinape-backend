@@ -175,8 +175,8 @@ class BotController extends Controller
 /discord - link to discord
 /website - link to website
 /apply - typeform link to join coordinape and use our application
-/help - link to documentation
-";
+/help - link to documentation";
+
                 $notifyModel->notify(new SendSocialMessage(
                     $commands, false
                 ));
@@ -190,7 +190,7 @@ class BotController extends Controller
             $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle:$user;
-                DB::transactions(function () use($user) {
+                DB::transaction(function () use($user) {
                     $this->repo->resetGifts($user,[]);
                 });
 
