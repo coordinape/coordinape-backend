@@ -206,13 +206,13 @@ class BotController extends Controller
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::with('pendingSentGifts.sender')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle:$user;
                 $allocStr = '';
                 $pendingSentGifts = $user->pendingSentGifts;
                 foreach($pendingSentGifts as $gift) {
-                    $allocStr .= "{$gift->sender->name} : $gift->tokens\n";
+                    $allocStr .= "{$gift->recipient->name} > $gift->tokens\n Tokens";
                 }
                 if(!$allocStr)
                     $allocStr = "You have no allocations currently";
