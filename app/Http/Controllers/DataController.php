@@ -216,7 +216,7 @@ class DataController extends Controller
 
         $user = $request->user;
         $teammates = $request->teammates;
-        $circle_teammates = User::where('circle_id', $request->circle_id)->where('is_hidden',0)->whereIn('id',$teammates)->pluck('id');
+        $circle_teammates = User::where('circle_id', $request->circle_id)->where('is_hidden',0)->where('id','<>',$user->id)->whereIn('id',$teammates)->pluck('id');
         DB::transaction(function () use ($circle_teammates, $user) {
             $this->repo->resetGifts($user, $circle_teammates);
             if ($circle_teammates) {
