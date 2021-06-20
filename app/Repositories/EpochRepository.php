@@ -308,7 +308,7 @@ class EpochRepository
                 $circle_name = $protocol->name.'/'.$circle->name;
                 foreach($unalloc_users as $unalloc_user) {
                     if($unalloc_user->chat_id) {
-                        $unalloc_user->notify(new SendSocialMessage("You still have $unalloc_user->give_token_remaining tokens remaining in $circle_name !\nDo use them before the epoch ends in 24 hours !"));
+                        $unalloc_user->notify(new SendSocialMessage("You still have $unalloc_user->give_token_remaining tokens remaining in $circle_name !\nDo use them before the epoch ends in 24 hours !", false));
                     }
                 }
                 $circle->notify(new EpochAlmostEnd($circle_name,$unalloc_users));
@@ -336,6 +336,7 @@ class EpochRepository
         $name_strs = '';
         $user_added = [];
         foreach($sent_today_gifts as $pending_gift) {
+
             if(array_key_exists($pending_gift->sender_id,$user_added))
                 continue;
 
