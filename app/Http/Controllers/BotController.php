@@ -126,7 +126,7 @@ class BotController extends Controller
                     'telegram_username' => $user->telegram_username, 'message'=> $message ]);
 
                 $feedback->save();
-                $feedback_no = sprintf('%06d', $feedback->id);
+                $feedback_no = sprintf('%04d', $feedback->id);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username your feedback #$feedback_no has been logged "
