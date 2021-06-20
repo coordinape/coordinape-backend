@@ -344,6 +344,13 @@ class BotController extends Controller
             Log::info($user);
             if($user) {
                 $notifyModel = $is_group ? $circle : $user;
+                if(strtolower($recipientUsername) == strtolower($message['from']['username'])) {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, you can't give to yourself"
+                    ));
+                    return false;
+                }
+
                 if(count($circle->epoches) == 0)
                 {
                     $notifyModel->notify(new SendSocialMessage(
