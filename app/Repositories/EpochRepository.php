@@ -306,17 +306,21 @@ class EpochRepository
                 $unalloc_users = $circle->users()->where('non_giver',0)->where('is_hidden',0)->where('give_token_remaining','>',0)->get();
                 $protocol = $circle->protocol;
                 $circle_name = $protocol->name.'/'.$circle->name;
-                foreach($unalloc_users as $unalloc_user) {
-                    if($unalloc_user->chat_id) {
-                        $unalloc_user->notify(new SendSocialMessage("You still have $unalloc_user->give_token_remaining tokens remaining in $circle_name !\nDo use them before the epoch ends in 24 hours you can also allocate via Telegram /commands to see how !", false));
-                    }
-                }
                 $circle->notify(new EpochAlmostEnd($circle_name,$unalloc_users));
                 if($protocol->telegram_id) {
                     $protocol->notify(new EpochAlmostEnd($circle_name,$unalloc_users));
                 }
                 $epoch->notified_before_end = Carbon::now();
                 $epoch->save();
+
+                foreach($unalloc_users->chunk(20) as $chunk) {
+                    foreach($chunk as $unalloc_user) {
+                        if($unalloc_user->chat_id) {
+                            $unalloc_user->notify(new SendSocialMessage("You still have $unalloc_user->give_token_remaining tokens remaining in $circle_name !\nDo use them before the epoch ends in 24 hours\nYou can also allocate via Telegram /commands to see how !", false));
+                        }
+                    }
+                    sleep(1);
+                }
             }
         }
     }
