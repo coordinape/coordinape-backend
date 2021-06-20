@@ -199,10 +199,10 @@ class BotController extends Controller
                 $notifyModel = $is_group ? $circle:$user;
 
                 $commands = "/start - Subscribe to updates from the Bot (Use this command throught PM Only)
-/give - Add username, tokens and note (optional) after the command separated by a space e.g /give @username 20 Thank YOU
+/reallocate - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
+/give - Add username, tokens and note (optional) after the command separated by a space e.g /give @zashtoneth 20 Thank YOU
 /allocations - Get all the allocations that you have sent
 /deallocate - Deallocate all your existing tokens that you have given
-/reallocate - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
 /receipts - Get all the allocations that you have received
 /discord - link to discord
 /website - link to website
@@ -320,7 +320,7 @@ class BotController extends Controller
                     $allocStr .= "{$gift->recipient->name}$optOutStr > $gift->tokens tokens\n";
                     $sent += $gift->tokens;
                 }
-                
+
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username $user->name ser, you have allocated $sent/$user->starting_tokens of your tokens\n$allocStr", false
                 ));

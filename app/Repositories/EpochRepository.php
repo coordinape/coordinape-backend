@@ -7,6 +7,7 @@ use App\Models\PendingTokenGift;
 use App\Models\Teammate;
 use App\Models\TokenGift;
 use App\Models\Epoch;
+use App\Notifications\BotLaunch;
 use App\Notifications\DailyUpdate;
 use App\Notifications\EpochAlmostEnd;
 use App\Notifications\EpochStart;
@@ -287,8 +288,12 @@ class EpochRepository
             $protocol = $circle->protocol;
             $circle_name = $protocol->name.'/'.$circle->name;
             $circle->notify(new EpochStart($epoch,$circle_name));
+            if($circle->id == 1)
+                $circle->notify(new BotLaunch());
             if($protocol->telegram_id) {
                 $protocol->notify(new EpochStart($epoch,$circle_name));
+                if($circle->id == 1)
+                    $protocol->notify(new BotLaunch());
             }
             $epoch->notified_start = Carbon::now();
             $epoch->save();
