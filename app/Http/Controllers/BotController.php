@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Feedback;
 use App\Models\PendingTokenGift;
+use App\Models\TokenGift;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Illuminate\Support\Facades\Log;
@@ -63,6 +66,10 @@ class BotController extends Controller
                 break;
             case '/give':
                 $this->give($message, $is_group);
+                break;
+
+            case 'reallocate':
+                $this->reallocate($message, $is_group);
                 break;
 
             case '/deallocate':
@@ -195,13 +202,13 @@ class BotController extends Controller
 /give - Add username, tokens and note (optional) after the command separated by a space e.g /give @username 20 Thank YOU
 /allocations - Get all the allocations that you have sent
 /deallocate - Deallocate all your existing tokens that you have given
+/reallocate - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
 /receipts - Get all the allocations that you have received
-/announce - To broadcast message throughout all channels (super admins only)
 /discord - link to discord
 /website - link to website
 /apply - typeform link to join coordinape and give out grants through our application
 /help - link to documentation
-/feedback - please use this to provide feedback & suggestions to me, so it doesn't get lost in the channel (add a space after the command followed by your message)";
+/feedback - please use this to provide feedback, suggestions/ bug findings to me, so it doesn't get lost in the channel (add a space after the command followed by your message)";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $commands, false
@@ -213,15 +220,102 @@ class BotController extends Controller
     private function deallocate($message, $is_group) {
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle:$user;
+                if(count($circle->epoches) == 0)
+                {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                    ));
+                    return false;
+                }
                 DB::transaction(function () use($user) {
                     $this->repo->resetGifts($user,[]);
                 });
 
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username $user->name ser, You have deallocated all your tokens, you have now $user->starting_tokens tokens remaining"
+                ));
+            }
+        }
+    }
+
+    private function reallocate($message, $is_group) {
+
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+                $notifyModel = $is_group ? $circle:$user;
+                if(count($circle->epoches) == 0)
+                {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                    ));
+                    return false;
+                }
+                if($user->non_giver) {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, You are not allowed to give allocations"
+                    ));
+                    return false;
+                }
+
+                $latestEpoch = $circle->epoches()->where('epoches.ended',1)->whereNotNull('epoches.number')->orderBy('epoches.number','desc')->first();
+                if(!$latestEpoch) {
+                   return false;
+                }
+
+                $lastEpochGifts = TokenGift::with(['recipient'])->where('sender_id', $user->id)->where('epoch_id',$latestEpoch->id)->get();
+                if(count($lastEpochGifts) == 0) {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, you didn't allocate any tokens to anyone in the previous epoch"
+                    ));
+                    return false;
+                }
+                $sentSum = $lastEpochGifts->SUM('tokens');
+                if($sentSum > $user->starting_tokens) {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, you don't have sufficient starting tokens to give the same allocations"
+                    ));
+                    return false;
+                }
+
+                DB::transaction(function() use ($lastEpochGifts, $user, $circle, $notifyModel) {
+                    $totalTokens = 0;
+                    $startingTokens = $user->starting_tokens;
+                    $this->repo->resetGifts($user,[]);
+                    foreach($lastEpochGifts as $epochGift) {
+                        $recipientUser = $epochGift->recipient;
+                        if($epochGift->recipient) {
+                            $user->teammates()->syncWithoutDetaching([$recipientUser->id]);
+                            $tokenGift = new PendingTokenGift($epochGift->replicate(['created_at','updated_at','epoch_id','dts_created'])->toArray());
+                            $tokenGift->sender_address = $user->address;
+                            $tokenGift->recipient_address = $recipientUser->address;
+                            if($recipientUser->non_receiver) {
+                                $tokenGift->tokens = 0;
+                            }
+                            $tokenGift->save();
+                            $totalTokens += $tokenGift->tokens ;
+                            $recipientUser->give_token_received = $recipientUser->pendingReceivedGifts()->get()->SUM('tokens');
+                            $recipientUser->save();
+                        }
+                    }
+                    $user->give_token_remaining = $startingTokens - $user->pendingSentGifts()->get()->SUM('tokens');
+                    if($user->give_token_remaining < 0) {
+                        $notifyModel->notify(new SendSocialMessage(
+                            "@$user->telegram_username Sorry $user->name ser, something went wrong"
+                        ));
+                        throw new Exception;
+                    }
+                    $user->save();
+                });
+
+                $allocatedTotal = $user->pendingSentGifts()->SUM('tokens');
+
+                $notifyModel->notify(new SendSocialMessage(
+                    "@$user->telegram_username $user->name ser, you have allocated $allocatedTotal/$user->starting_tokens of your tokens"
                 ));
             }
         }
@@ -363,6 +457,13 @@ class BotController extends Controller
             $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle:$user;
+                if(count($circle->epoches) == 0)
+                {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                    ));
+                    return false;
+                }
                 $allocStr = '';
                 $pendingSentGifts = $user->pendingSentGifts;
                 foreach($pendingSentGifts as $gift) {
@@ -388,6 +489,13 @@ class BotController extends Controller
             $user = User::with('pendingReceivedGifts.sender')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
                 $notifyModel = $is_group ? $circle:$user;
+                if(count($circle->epoches) == 0)
+                {
+                    $notifyModel->notify(new SendSocialMessage(
+                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                    ));
+                    return false;
+                }
                 $allocStr = '';
                 $pendingReceivedGifts = $user->pendingReceivedGifts;
                 foreach($pendingReceivedGifts as $gift) {
