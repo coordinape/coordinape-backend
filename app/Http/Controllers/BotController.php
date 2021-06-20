@@ -312,10 +312,18 @@ class BotController extends Controller
                     $user->save();
                 });
 
-                $allocatedTotal = $user->pendingSentGifts()->get()->SUM('tokens');
+                $allocStr = '';
+                $pendingSentGifts = $user->pendingSentGifts;
+                $sent = 0;
+                foreach($pendingSentGifts as $gift) {
+                    $allocStr .= "{$gift->recipient->name} > $gift->tokens tokens\n";
+                    $sent += $gift->tokens;
+                }
+
+                $allocStr = "Allocations: $sent\n$allocStr";
 
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username $user->name ser, you have allocated $allocatedTotal/$user->starting_tokens of your tokens", false
+                    "@$user->telegram_username $user->name ser, you have allocated $sent/$user->starting_tokens of your tokens\n$allocStr", false
                 ));
             }
         }
@@ -466,13 +474,15 @@ class BotController extends Controller
                 }
                 $allocStr = '';
                 $pendingSentGifts = $user->pendingSentGifts;
+                $sent = 0;
                 foreach($pendingSentGifts as $gift) {
                     $allocStr .= "{$gift->recipient->name} > $gift->tokens tokens\n";
+                    $sent += $gift->tokens;
                 }
                 if(!$allocStr)
                     $allocStr = "@$user->telegram_username You have sent no allocations currently";
                 else
-                    $allocStr = "@$user->telegram_username Allocations\n$allocStr";
+                    $allocStr = "@$user->telegram_username Allocations: $sent\n$allocStr";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $allocStr
