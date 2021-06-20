@@ -316,7 +316,8 @@ class BotController extends Controller
                 $pendingSentGifts = $user->pendingSentGifts;
                 $sent = 0;
                 foreach($pendingSentGifts as $gift) {
-                    $allocStr .= "{$gift->recipient->name} > $gift->tokens tokens\n";
+                    $optOutStr = $gift->recipient->non_receiver ? " (Opt Out)":"";
+                    $allocStr .= "{$gift->recipient->name}$optOutStr > $gift->tokens tokens\n";
                     $sent += $gift->tokens;
                 }
 
@@ -476,7 +477,8 @@ class BotController extends Controller
                 $pendingSentGifts = $user->pendingSentGifts;
                 $sent = 0;
                 foreach($pendingSentGifts as $gift) {
-                    $allocStr .= "{$gift->recipient->name} > $gift->tokens tokens\n";
+                    $optOutStr = $gift->recipient->non_receiver ? " (Opt Out)":"";
+                    $allocStr .= "{$gift->recipient->name}$optOutStr > $gift->tokens tokens\n";
                     $sent += $gift->tokens;
                 }
                 if(!$allocStr)
