@@ -320,9 +320,7 @@ class BotController extends Controller
                     $allocStr .= "{$gift->recipient->name}$optOutStr > $gift->tokens tokens\n";
                     $sent += $gift->tokens;
                 }
-
-                $allocStr = "Allocations: $sent\n$allocStr";
-
+                
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username $user->name ser, you have allocated $sent/$user->starting_tokens of your tokens\n$allocStr", false
                 ));
