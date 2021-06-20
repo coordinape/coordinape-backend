@@ -312,7 +312,7 @@ class BotController extends Controller
                     $user->save();
                 });
 
-                $allocatedTotal = $user->pendingSentGifts()->SUM('tokens');
+                $allocatedTotal = $user->pendingSentGifts()->get()->SUM('tokens');
 
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username $user->name ser, you have allocated $allocatedTotal/$user->starting_tokens of your tokens"
