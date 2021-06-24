@@ -68,19 +68,19 @@ class BotController extends Controller
                 $this->give($message, $is_group);
                 break;
 
-            case '/reallocate':
-                $this->reallocate($message, $is_group);
+            case '/regive':
+                $this->regive($message, $is_group);
                 break;
 
-            case '/deallocate':
-                $this->deallocate($message, $is_group);
+            case '/ungive':
+                $this->ungive($message, $is_group);
                 break;
 
             case '/announce':
                 $this->sendAnnouncement($message);
                 break;
 
-            case '/allocations':
+            case '/gives':
                 $this->getAllocs($message, $is_group);
                 break;
 
@@ -199,16 +199,18 @@ class BotController extends Controller
                 $notifyModel = $is_group ? $circle:$user;
 
                 $commands = "/start - Subscribe to updates from the Bot (Use this command throught PM Only)
-/reallocate - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
-/give - Add username, tokens and note (optional) after the command separated by a space e.g /give @zashtoneth 20 Thank YOU
-/allocations - Get all the allocations that you have sent
-/deallocate - Deallocate all your existing tokens that you have given
+/regive - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
+/give - Add username, tokens and note (optional) after the command separated by a space e.g /give @zashtoneth 20 thank you note
+/gives - Get all the allocations that you have sent
+/ungive - Deallocate all your existing tokens that you have given
 /receipts - Get all the allocations that you have received
 /discord - link to discord
 /website - link to website
 /apply - typeform link to join coordinape and give out grants through our application
 /help - link to documentation
-/feedback - please use this to provide feedback, suggestions/ bug findings to me, so it doesn't get lost in the channel (add a space after the command followed by your message)";
+/feedback - please use this to provide feedback,  /suggestions/ bug findings to me , so it doesn't get lost in the channel (add a space after the command followed by your message)
+The commands all can be executed in group chats/PM , the bot is exclusively linked to yearn's community circle and usable whenever an epoch is active.
+";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $commands, false
@@ -217,7 +219,7 @@ class BotController extends Controller
         }
     }
 
-    private function deallocate($message, $is_group) {
+    private function ungive($message, $is_group) {
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
@@ -241,7 +243,7 @@ class BotController extends Controller
         }
     }
 
-    private function reallocate($message, $is_group) {
+    private function regive($message, $is_group) {
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
