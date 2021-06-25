@@ -117,6 +117,7 @@ class BotController extends Controller
 
                 $feedback->save();
                 $feedback_no = sprintf('%04d', $feedback->id);
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username your feedback #$feedback_no has been logged "
@@ -130,6 +131,7 @@ class BotController extends Controller
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username https://docs.coordinape.com", false
@@ -143,6 +145,7 @@ class BotController extends Controller
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username https://discord.gg/tegaa7wr", false
@@ -157,6 +160,7 @@ class BotController extends Controller
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username https://coordinape.com", false
@@ -171,6 +175,7 @@ class BotController extends Controller
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
                     "@$user->telegram_username https://yearnfinance.typeform.com/to/egGYEbrC", false
@@ -182,11 +187,10 @@ class BotController extends Controller
     private function getCommands($message, $is_group) {
 
         $circle = $this->getCircle($message, $is_group);
-        Log::info($circle);
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            Log::info($user);
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $commands = "/start - Subscribe to updates from the Bot (Use this command throught PM Only)
 /regive - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
@@ -214,6 +218,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 if(count($circle->epoches) == 0)
                 {
@@ -239,6 +244,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 if(count($circle->epoches) == 0)
                 {
@@ -330,11 +336,10 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         $amount = filter_var($textArray[2], FILTER_VALIDATE_INT) ? (int)($textArray[2]): 0;
         $note = !empty($textArray[3]) ? $textArray[3]:'';
         $circle = $this->getCircle($message, $is_group);
-        Log::info($circle);
         if($circle) {
             $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            Log::info($user);
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle : $user;
                 if(strtolower($recipientUsername) == strtolower($message['from']['username'])) {
                     $notifyModel->notify(new SendSocialMessage(
@@ -465,6 +470,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         if($circle) {
             $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 if(count($circle->epoches) == 0)
                 {
@@ -500,6 +506,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         if($circle) {
             $user = User::with('pendingReceivedGifts.sender')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
+                $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 if(count($circle->epoches) == 0)
                 {
@@ -552,7 +559,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 return false;
             } else {
                 foreach($users as $user) {
-                    $user->chat_id = $message->chat->id;
+                    $user->chat_id = $message['chat']['id'];
                     $user->save();
                 }
 
@@ -561,5 +568,15 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         }
 
         return false;
+    }
+
+    private function checkForUserChatId($user,$message) {
+        $is_group = $message['chat']['type'] == 'group';
+        if(!$is_group && !$user->chat_id) {
+            $result = $this->addUserChatId($message);
+            return $result ? $result:$user;
+        }
+
+        return $user;
     }
 }
