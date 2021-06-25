@@ -47,21 +47,11 @@ class BotController extends Controller
         $is_group = $message['chat']['type'] == 'group';
         switch($command) {
             case '/start':
-                if(!$is_group) {
-                    $users = User::where('telegram_username', $message['from']['username'])->get();
-                    if(count($users)==0) {
-                        // don't exist
-                        return;
-                    } else {
-                        foreach($users as $user) {
-                            $user->chat_id = $message->chat->id;
-                            $user->save();
-                        }
-
-                        $users[0]->notify(new SendSocialMessage(
-                            "Congrats {$users[0]->name} You have successfully registered your Telegram to Coordinape !\nI will occasionally send you important reminders and updates!"
-                        ));
-                    }
+                $user = $this->addUserChatId($message);
+                if($user) {
+                    $user->notify(new SendSocialMessage(
+                        "Congrats {$user->name} You have successfully registered your Telegram to Coordinape !\nI will occasionally send you important reminders and updates!"
+                    ));
                 }
                 break;
             case '/give':
@@ -149,7 +139,6 @@ class BotController extends Controller
     }
 
     private function getDiscord($message,$is_group) {
-
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
@@ -193,11 +182,12 @@ class BotController extends Controller
     private function getCommands($message, $is_group) {
 
         $circle = $this->getCircle($message, $is_group);
+        Log::info($circle);
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            Log::info($user);
             if($user) {
                 $notifyModel = $is_group ? $circle:$user;
-
                 $commands = "/start - Subscribe to updates from the Bot (Use this command throught PM Only)
 /regive - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
 /give - Add username, tokens and note (optional) after the command separated by a space e.g /give @zashtoneth 20 thank you note
@@ -551,5 +541,25 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 ));
             }
         }
+    }
+
+    private function addUserChatId($message) {
+        $is_group = $message['chat']['type'] == 'group';
+        if(!$is_group) {
+            $users = User::where('telegram_username', $message['from']['username'])->get();
+            if(count($users)==0) {
+                // don't exist
+                return false;
+            } else {
+                foreach($users as $user) {
+                    $user->chat_id = $message->chat->id;
+                    $user->save();
+                }
+
+              return $users[0];
+            }
+        }
+
+        return false;
     }
 }
