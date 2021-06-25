@@ -32,7 +32,7 @@ class BotLaunch extends Notification
     {
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("Now sending GIVES via Telegram Bot is now exclusively available for yearn/community circle /commands to see what functionalities are possible !\nWe also have a new discord channel https://discord.gg/tegaa7wr\nDo reach out to @reeserj if you are interested to contribute or helping out as an MOD/Admin\nSubscribe via the bot to get reminder and important updates directly")
+            ->content("Now sending GIVES via Telegram Bot is now exclusively available for yearn/community circle /commands to see what functionalities are possible !\nWe also have a new discord channel https://discord.gg/tegaa7wr\nDo reach out to @reeserj if you are interested to contribute or helping out as an MOD/Admin\nSubscribe via the bot to get reminder and important updates directly!")
             ->button('Subscribe for Updates', 'https://telegram.me/CoordinapeBot');
     }
 

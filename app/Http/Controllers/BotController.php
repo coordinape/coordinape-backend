@@ -208,7 +208,7 @@ class BotController extends Controller
 /website - link to website
 /apply - typeform link to join coordinape and give out grants through our application
 /help - link to documentation
-/feedback - please use this to provide feedback,  /suggestions/ bug findings to me , so it doesn't get lost in the channel (add a space after the command followed by your message)
+/feedback - please use this to provide feedback/suggestions/bug findings to me , so it doesn't get lost in the channel (add a space after the command followed by your message)
 The commands all can be executed in group chats/PM , the bot is exclusively linked to yearn's community circle and usable whenever an epoch is active.
 ";
 
@@ -456,12 +456,15 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
     private function getCircle($message, $is_group) {
         $whitelisted = [self::yearnCircleId];
-        $chat_id = $message['chat']['id'];
-        $circle = $is_group ? Circle::with(['epoches' => function ($q) {
-            $q->isActiveDate();
-        }])->where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::with(['epoches' => function ($q) {
+        //$chat_id = $message['chat']['id'];
+        $circle = Circle::with(['epoches' => function ($q) {
             $q->isActiveDate();
         }])->whereIn('id',$whitelisted)->first();
+//        $circle = $is_group ? Circle::with(['epoches' => function ($q) {
+//            $q->isActiveDate();
+//        }])->where('telegram_id', $chat_id)->whereIn('id',$whitelisted)->first(): Circle::with(['epoches' => function ($q) {
+//            $q->isActiveDate();
+//        }])->whereIn('id',$whitelisted)->first();
 
         return $circle;
     }
