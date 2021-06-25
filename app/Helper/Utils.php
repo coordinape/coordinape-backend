@@ -78,7 +78,7 @@ class Utils
 
     public static function cleanStr($str): string {
 
-        return str_replace(array(':', '-', '/', '*','_','`','(',')'), ' ', $str);
+        return str_replace(array(':', '-', '/', '*','_','`'), ' ', $str);
 
     }
 }

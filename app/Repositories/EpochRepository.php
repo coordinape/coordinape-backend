@@ -7,10 +7,12 @@ use App\Models\PendingTokenGift;
 use App\Models\Teammate;
 use App\Models\TokenGift;
 use App\Models\Epoch;
+use App\Notifications\BotLaunch;
 use App\Notifications\DailyUpdate;
 use App\Notifications\EpochAlmostEnd;
 use App\Notifications\EpochStart;
 use App\Notifications\OptOutEpoch;
+use App\Notifications\SendSocialMessage;
 use DB;
 use App\Models\User;
 use Carbon\Carbon;
@@ -215,7 +217,6 @@ class EpochRepository
 //                $user->circle->notify(new NewAllocation($user, $token_used));
 //            }
         },2);
-
     }
 
     public function removeAllPendingGiftsReceived($user, $updateData = []) {
@@ -288,14 +289,18 @@ class EpochRepository
             $protocol = $circle->protocol;
             $circle_name = $protocol->name.'/'.$circle->name;
             $circle->notify(new EpochStart($epoch,$circle_name));
+            if($circle->id == 1)
+                $circle->notify(new BotLaunch());
             if($protocol->telegram_id) {
                 $protocol->notify(new EpochStart($epoch,$circle_name));
+                if($circle->id == 1)
+                    $protocol->notify(new BotLaunch());
             }
             $epoch->notified_start = Carbon::now();
             $epoch->save();
         }
         else if(!$epoch->notified_before_end) {
-            $now = Carbon::now()->addDays(2);
+            $now = Carbon::now()->addDays(1);
             if($epoch->end_date <= $now) {
                 $circle = $epoch->circle;
                 $unalloc_users = $circle->users()->where('non_giver',0)->where('is_hidden',0)->where('give_token_remaining','>',0)->get();
@@ -307,6 +312,15 @@ class EpochRepository
                 }
                 $epoch->notified_before_end = Carbon::now();
                 $epoch->save();
+
+                foreach($unalloc_users->chunk(20) as $chunk) {
+                    foreach($chunk as $unalloc_user) {
+                        if($unalloc_user->chat_id) {
+                            $unalloc_user->notify(new SendSocialMessage("You still have $unalloc_user->give_token_remaining tokens remaining in $circle_name !\nDo use them before the epoch ends in 24 hours\nYou can also allocate via Telegram /commands to see how !", false));
+                        }
+                    }
+                    sleep(1);
+                }
             }
         }
     }
@@ -326,6 +340,7 @@ class EpochRepository
         $name_strs = '';
         $user_added = [];
         foreach($sent_today_gifts as $pending_gift) {
+
             if(array_key_exists($pending_gift->sender_id,$user_added))
                 continue;
 

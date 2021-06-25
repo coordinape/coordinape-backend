@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Helper\Utils;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,22 +9,12 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 
-class SendSocialMessage extends Notification
+class BotLaunch extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
-
-    protected $message;
-    protected $sanitize;
-    public function __construct($message, $sanitize = true)
+    public function __construct()
     {
-        $this->message = $message;
-        $this->sanitize = $sanitize;
     }
 
     /**
@@ -41,10 +30,10 @@ class SendSocialMessage extends Notification
 
     public function toTelegram($notifiable=null)
     {
-        $message = $this->sanitize? Utils::cleanStr($this->message): $this->message;
         return TelegramMessage::create()
             // Markdown supported.
-            ->content($message);
+            ->content("Now sending GIVES via Telegram Bot is now exclusively available for yearn/community circle /commands to see what functionalities are possible !\nWe also have a new discord channel https://discord.gg/tegaa7wr\nDo reach out to @reeserj if you are interested to contribute or helping out as an MOD/Admin\nSubscribe via the bot to get reminder and important updates directly!")
+            ->button('Subscribe for Updates', 'https://telegram.me/CoordinapeBot');
     }
 
     /**
