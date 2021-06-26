@@ -332,6 +332,16 @@ class DataController extends Controller
         }
     }
 
+    public function getActiveEpochs(Request $request) {
+
+        $query = Epoch::isActiveFutureDate()->where('ended',0) ;
+        if($request->circle_id) {
+            $query->where('circle_id', $request->circle_id);
+        }
+        $epochs = $query->get();
+        return response()->json($epochs);
+    }
+
      public function burns(Request $request, $subdomain) : JsonResponse  {
          $circle_id = Utils::getCircleIdByName($subdomain);
          if (!$circle_id) {

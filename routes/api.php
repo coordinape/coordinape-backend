@@ -76,7 +76,7 @@ Route::get('/users/{address}', [DataController::class, 'getUser']);
 Route::get('/users', [DataController::class, 'getUsers']);
 Route::get('/token-gifts', [DataController::class, 'getGifts']);
 Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
-
+Route::get('/active-epochs',[DataController::class, 'getActiveEpochs']);
 // phased out
 //Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
 //Route::post('/teammates', [DataController::class, 'updateTeammates']);
