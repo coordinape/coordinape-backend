@@ -25,6 +25,11 @@ class Epoch extends Model
         return $query->whereDate('start_date', '<=', $today)->whereDate('end_date','>=', $today);
     }
 
+    public function scopeIsActiveFutureDate($query) {
+        $today = Carbon::today()->toDateString();
+        return $query->whereDate('end_date','>=', $today);
+    }
+
 //    public function getIsRegiftPhaseAttribute() {
 //
 //        // check if there is regift day and epoch has not ended
