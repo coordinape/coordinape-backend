@@ -19,27 +19,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-//Route::domain('{subdomain}.'.env('APP_DOMAIN'))->group(function () {
-//
-//    Route::get('/circles', [DataController::class, 'getCircles']);
-//    Route::get('/users/{address}', [DataController::class, 'getUser2']);
-//    Route::get('/users', [DataController::class, 'getUsers']);
-//    Route::put('/users/{address}', [DataController::class, 'updateUser2']);
-//
-//    Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
-//    Route::get('/token-gifts', [DataController::class, 'getGifts']);
-//    Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts2']);
-//    Route::post('/teammates', [DataController::class, 'updateTeammates']);
-//    Route::post('/upload', [DataController::class, 'uploadAvatar']);
-//    Route::get('/csv', [DataController::class, 'generateCsv']);
-//    Route::get('/epoches',[DataController::class, 'epoches']);
-//    Route::prefix('admin')->group(function () {
-//        Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
-//        Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
-//        Route::post('/users', [DataController::class, 'createUser']);
-//    });
-//});
-
 Route::prefix('{subdomain}')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
@@ -57,6 +36,7 @@ Route::prefix('{subdomain}')->group(function () {
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
     Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts']);
+    Route::post('/v2/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
     Route::post('/teammates', [DataController::class, 'updateTeammates']);
     Route::post('/upload', [DataController::class, 'uploadAvatar']);
     Route::get('/csv', [DataController::class, 'generateCsv']);

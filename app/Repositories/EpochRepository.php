@@ -18,6 +18,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use App\Helper\Utils;
 use App\Notifications\EpochEnd;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 class EpochRepository
@@ -213,9 +214,71 @@ class EpochRepository
                 }
             }
             $this->resetGifts($user, $toKeep);
-//            if($token_used>0) {
-//                $user->circle->notify(new NewAllocation($user, $token_used));
-//            }
+        },2);
+    }
+
+    public function newUpdateGifts($request, $address) {
+
+        $user = $request->user;
+        $gifts = $request->gifts;
+
+        $ids = [];
+        foreach($gifts as $gift) {
+            $ids[] = $gift['recipient_id'];
+        }
+
+        $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
+        $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
+        DB::transaction(function () use ($users, $user, $gifts, $ids, $pendingSentGiftsMap, $address) {
+            $token_used = 0;
+            foreach ($gifts as $gift) {
+                $recipient_id = $gift['recipient_id'];
+                if ($users->has($recipient_id)) {
+                    if ($user->id == $recipient_id)
+                        continue;
+
+                    $recipient = $users[$recipient_id];
+                    if($recipient->non_receiver == 1 || $recipient->fixed_non_receiver == 1) {
+                        $gift['tokens'] = 0;
+                    }
+
+                    $gift['sender_id'] = $user->id;
+                    $gift['sender_address'] = strtolower($address);
+                    $gift['recipient_address'] = $users[$recipient_id]->address;
+                    $gift['recipient_id'] = $recipient_id;
+
+                    $token_used += $gift['tokens'];
+                    $pendingGift = $pendingSentGiftsMap->has($gift['recipient_id']) ? $pendingSentGiftsMap[$gift['recipient_id']] : null  ;
+
+                    if ($pendingGift) {
+                        if ($gift['tokens'] == 0 && $gift['note'] == '') {
+                            $pendingGift->delete();
+
+                        } else {
+                            $pendingGift->tokens = $gift['tokens'];
+                            $pendingGift->note = $gift['note'];
+                            $pendingGift->save();
+                        }
+                    } else {
+                        if ($gift['tokens'] == 0 && $gift['note'] == '')
+                            continue;
+
+                        $pendingGift = $user->pendingSentGifts()->create($gift);
+                    }
+                    $toKeep[] = $pendingGift->recipient_id;
+                    $recipient->give_token_received = $recipient->pendingReceivedGifts()->get()->SUM('tokens');
+                    $recipient->save();
+                }
+            }
+
+            $token_used = $user->pendingSentGifts()->get()->SUM('tokens');
+            if($token_used > $user->starting_tokens) {
+                throw new Exception;
+            } else {
+//                $this->resetGifts($user, $toKeep);
+                $user->give_token_remaining = $user->starting_tokens-$token_used;
+                $user->save();
+            }
         },2);
     }
 
