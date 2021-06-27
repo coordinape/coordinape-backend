@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\NewGiftRequest;
 use App\Models\Circle;
 use App\Notifications\AddNewUser;
 use App\Notifications\NewAllocation;
@@ -162,6 +163,14 @@ class DataController extends Controller
     {
         $user = $request->user;
         $this->repo->updateGifts($request, $address);
+        $user->load(['teammates','pendingSentGifts']);
+        return response()->json($user);
+    }
+
+    public function newUpdateGifts(NewGiftRequest $request, $subdomain, $address): JsonResponse
+    {
+        $user = $request->user;
+        $this->repo->newUpdateGifts($request, $address);
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
