@@ -28,11 +28,7 @@ class UserRequest extends FormRequest
         $data = json_decode($this->get('data'), true);
         $subdomain = $this->route('subdomain');
         $circle_id = Utils::getCircleIdByName($subdomain);
-        $existing_user =  User::byAddress($this->route('address'));
-        if($circle_id) {
-            $existing_user = $existing_user->where('circle_id', $circle_id);
-        }
-        $existing_user = $existing_user->first();
+        $existing_user =  User::byAddress($this->route('address'))->where('circle_id', $circle_id)->first();
         $this->merge([
             'data' => $data,
             'user' => $existing_user,
