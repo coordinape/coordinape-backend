@@ -128,11 +128,10 @@ class DataController extends Controller
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
-        $data = $request->only('name','address','non_receiver','bio','epoch_first_visit');
+        $data = $request->only('name','non_receiver','bio','epoch_first_visit');
         if($user->fixed_non_receiver ==1 ) {
             $data['non_receiver'] = 1;
         }
-        $data['address'] =  strtolower($data['address']);
         $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
         return response()->json($user);
     }
