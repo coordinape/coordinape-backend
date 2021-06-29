@@ -44,6 +44,7 @@ class BotController extends Controller
     private function processCommands($message) {
         $textArray = explode(' ',$message['text']);
         $command = $textArray[0];
+        $command = explode('@',$command)[0];
         $is_group = $message['chat']['type'] == 'group';
         switch($command) {
             case '/start':
