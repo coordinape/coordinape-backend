@@ -351,11 +351,11 @@ class EpochRepository
             $circle = $epoch->circle;
             $protocol = $circle->protocol;
             $circle_name = $protocol->name.'/'.$circle->name;
-            $circle->notify(new EpochStart($epoch,$circle_name));
+            $circle->notify(new EpochStart($epoch,$circle_name,$circle));
             if($circle->id == 1)
                 $circle->notify(new BotLaunch());
             if($protocol->telegram_id) {
-                $protocol->notify(new EpochStart($epoch,$circle_name));
+                $protocol->notify(new EpochStart($epoch,$circle_name,$circle));
                 if($circle->id == 1)
                     $protocol->notify(new BotLaunch());
             }

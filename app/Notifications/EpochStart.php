@@ -19,11 +19,13 @@ class EpochStart extends Notification
      *
      * @return void
      */
-    protected $epoch, $circle_name;
-    public function __construct($epoch, $circle_name)
+    protected $epoch, $circle_name, $circle;
+    public function __construct($epoch, $circle_name, $circle)
     {
         $this->epoch = $epoch;
         $this->circle_name = $circle_name;
+        $this->circle = $circle;
+
     }
 
     /**
@@ -42,7 +44,7 @@ class EpochStart extends Notification
         $name = '_'.$this->circle_name.'_';
         $start_date = $this->epoch->start_date->format('Y/m/d H:i T');
         $end_date = $this->epoch->end_date->format('Y/m/d H:i T');
-        $usersCount = $notifiable->users()->where('is_hidden',0)->count();
+        $usersCount = $this->circle->users()->where('is_hidden',0)->count();
         return TelegramMessage::create()
             // Markdown supported.
             ->content("A new $name epoch is active !\n$usersCount users will be participating and the duration of the epoch will be between:\n$start_date - $end_date")
