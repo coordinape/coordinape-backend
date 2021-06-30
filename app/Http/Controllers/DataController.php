@@ -362,7 +362,7 @@ class DataController extends Controller
      }
 
      public function getProfile(Request $request, $address) {
-        $profile = Profile::byAddress($address)->first();
+        $profile = Profile::with(['users.circle','users.teammates'])->byAddress($address)->first();
         return response()->json(compact('profile'));
      }
 
@@ -377,7 +377,7 @@ class DataController extends Controller
          } else {
              $profile->update($data);
          }
-
+         $profile->load(['users.circle','users.teammates']);
          return response()->json(compact('profile'));
      }
 }
