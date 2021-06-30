@@ -171,7 +171,7 @@ class EpochRepository
 
         $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
         $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
-        DB::transaction(function () use ($users, $user, $gifts, $address, $pendingSentGiftsMap) {
+        DB::transaction(function () use ($users, $user, $gifts, $address, $pendingSentGiftsMap,$epoch_id) {
             $token_used = 0;
             $toKeep = [];
             foreach ($gifts as $gift) {
@@ -188,7 +188,7 @@ class EpochRepository
                     $gift['sender_address'] = strtolower($address);
                     $gift['recipient_address'] = $recipient_address;
                     $gift['recipient_id'] = $users[$recipient_address]->id;
-
+                    $gift['epoch_id'] = $epoch_id;
                     $token_used += $gift['tokens'];
                     $pendingGift = $pendingSentGiftsMap->has($gift['recipient_id']) ? $pendingSentGiftsMap[$gift['recipient_id']] : null  ;
 
@@ -228,8 +228,10 @@ class EpochRepository
         }
 
         $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
+        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
+        $epoch_id = $activeEpoch->id;
         $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
-        DB::transaction(function () use ($users, $user, $gifts, $ids, $pendingSentGiftsMap, $address) {
+        DB::transaction(function () use ($users, $user, $gifts, $ids, $pendingSentGiftsMap, $address, $epoch_id) {
             $token_used = 0;
             foreach ($gifts as $gift) {
                 $recipient_id = $gift['recipient_id'];
@@ -246,6 +248,7 @@ class EpochRepository
                     $gift['sender_address'] = strtolower($address);
                     $gift['recipient_address'] = $users[$recipient_id]->address;
                     $gift['recipient_id'] = $recipient_id;
+                    $gift['epoch_id'] = $epoch_id;
 
                     $token_used += $gift['tokens'];
                     $pendingGift = $pendingSentGiftsMap->has($gift['recipient_id']) ? $pendingSentGiftsMap[$gift['recipient_id']] : null  ;
@@ -257,6 +260,7 @@ class EpochRepository
                         } else {
                             $pendingGift->tokens = $gift['tokens'];
                             $pendingGift->note = $gift['note'];
+                            $pendingGift->epoch_id = $epoch_id;
                             $pendingGift->save();
                         }
                     } else {

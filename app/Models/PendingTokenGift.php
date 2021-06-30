@@ -19,7 +19,6 @@ class PendingTokenGift extends Model
         'id'
     ];
     protected $fillable = [
-
         'sender_address',
         'recipient_address',
         'recipient_id',
@@ -27,6 +26,7 @@ class PendingTokenGift extends Model
         'sender_id',
         'tokens',
         'circle_id',
+        'epoch_id'
     ];
 
     public function scopeFilter($query, $filters) {
