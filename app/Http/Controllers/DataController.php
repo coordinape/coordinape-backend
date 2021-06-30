@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\NewGiftRequest;
 use App\Http\Requests\ProfileRequest;
+use App\Http\Requests\ProfileUploadRequest;
 use App\Models\Circle;
 use App\Models\Profile;
 use App\Notifications\AddNewUser;
@@ -370,14 +371,61 @@ class DataController extends Controller
 
          $data = $request->only('skills','bio','telegram_username',
              'discord_username','twitter_username','github_username','medium_username','website');
-         $profile = Profile::byAddress($address)->first();
+         $profile = $request->profile;
          if(!$profile) {
+             $data['address'] = strtolower($address);
              $profile = new Profile($data);
              $profile->save();
          } else {
              $profile->update($data);
          }
+         if(!empty($data['telegram_username'])) {
+             $profile->users()->update(['telegram_username' => $data['telegram_username']]);
+         }
          $profile->load(['users.circle','users.teammates']);
          return response()->json(compact('profile'));
      }
+
+    public function uploadProfileAvatar(ProfileUploadRequest $request, $address) : JsonResponse {
+
+        $file = $request->file('file');
+        $resized = Image::make($request->file('file'))
+            ->resize(100, null, function ($constraint) { $constraint->aspectRatio(); } )
+            ->encode($file->getCLientOriginalExtension(),80);
+        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
+        $ret = Storage::put($new_file_name, $resized);
+        if($ret) {
+            $profile = $request->profile;
+            if($profile->avatar && Storage::exists($profile->avatar)) {
+                Storage::delete($profile->avatar);
+            }
+
+            $profile->avatar = $new_file_name;
+            $profile->save();
+            return response()->json($profile);
+        }
+
+        return response()->json(['error' => 'File Upload Failed' ,422]);
+    }
+
+    public function uploadProfileBackground(ProfileUploadRequest $request, $address) : JsonResponse {
+
+        $file = $request->file('file');
+        $resized = Image::make($request->file('file'))
+            ->encode($file->getCLientOriginalExtension(),80);
+        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
+        $ret = Storage::put($new_file_name, $resized);
+        if($ret) {
+            $profile = $request->profile;
+            if($profile->background && Storage::exists($profile->background)) {
+                Storage::delete($profile->background);
+            }
+
+            $profile->background = $new_file_name;
+            $profile->save();
+            return response()->json($profile);
+        }
+
+        return response()->json(['error' => 'File Upload Failed' ,422]);
+    }
 }

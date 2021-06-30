@@ -193,8 +193,7 @@ class BotController extends Controller
             if($user) {
                 $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
-                $commands = "/start - Subscribe to updates from the Bot (Use this command throught PM Only)
-/regive - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
+                $commands = "/regive - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
 /give - Add username, tokens and note (optional) after the command separated by a space e.g /give @zashtoneth 20 thank you note
 /gives - Get all the allocations that you have sent
 /ungive - Deallocate all your existing tokens that you have given
@@ -203,7 +202,7 @@ class BotController extends Controller
 /website - link to website
 /apply - typeform link to join coordinape and give out grants through our application
 /help - link to documentation
-/feedback - please use this to provide feedback/suggestions/bug findings to me , so it doesn't get lost in the channel (add a space after the command followed by your message)
+/feedback - please use this to provide feedback/suggestions/bug findings to me
 The commands all can be executed in group chats/PM , the bot is exclusively linked to yearn's community circle and usable whenever an epoch is active.
 ";
 

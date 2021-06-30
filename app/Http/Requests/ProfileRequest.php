@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Helper\Utils;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\Profile;
 
 class ProfileRequest extends FormRequest
 {
@@ -19,14 +21,17 @@ class ProfileRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = $this->route('address');
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        return  strtolower($recoveredAddress)==strtolower($address);
+        $user = User::byAddress($address)->first();
+        return  $user && strtolower($recoveredAddress)==strtolower($address);
     }
 
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
+        $profile = Profile::byAddress($this->route('address'))->first();
         $this->merge([
             'data' => $data,
+            'profile' => $profile,
             'skills' => !empty($data['skills']) ? $data['skills']:null,
             'github_username' => !empty($data['github_username']) ? $data['github_username']:null,
             'telegram_username' => !empty($data['telegram_username']) ? $data['telegram_username']:null,
@@ -43,8 +48,10 @@ class ProfileRequest extends FormRequest
      */
     public function rules()
     {
+        $profile_id = $this->profile ? $this->profile->id:null;
         return [
-            'data' => 'required'
+            'telegram_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
+            'discord_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
         ];
     }
 }
