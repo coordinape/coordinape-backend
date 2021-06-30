@@ -45,6 +45,9 @@ Route::prefix('{subdomain}')->group(function () {
 });
 
 
+Route::get('/profile/{address}',[DataController::class, 'getProfile']);
+Route::post('/profile/{address}',[DataController::class, 'saveProfile']);
+
 Route::get('/protocols', [DataController::class, 'getProtocols']);
 Route::get('/circles', [DataController::class, 'getCircles']);
 //// not used for now

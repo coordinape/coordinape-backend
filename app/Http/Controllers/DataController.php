@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\NewGiftRequest;
+use App\Http\Requests\ProfileRequest;
 use App\Models\Circle;
+use App\Models\Profile;
 use App\Notifications\AddNewUser;
 use App\Notifications\NewAllocation;
 use Illuminate\Http\Request;
@@ -357,5 +359,25 @@ class DataController extends Controller
          }
          $burns = Burn::where('circle_id',$circle_id)->filter($request->all())->get();
          return response()->json($burns);
+     }
+
+     public function getProfile(Request $request, $address) {
+        $profile = Profile::byAddress($address)->first();
+        return response()->json(compact('profile'));
+     }
+
+     public function saveProfile(ProfileRequest $request, $address) {
+
+         $data = $request->only('skills','bio','telegram_username',
+             'discord_username','twitter_username','github_username','medium_username','website');
+         $profile = Profile::byAddress($address)->first();
+         if(!$profile) {
+             $profile = new Profile($data);
+             $profile->save();
+         } else {
+             $profile->update($data);
+         }
+
+         return response()->json(compact('profile'));
      }
 }
