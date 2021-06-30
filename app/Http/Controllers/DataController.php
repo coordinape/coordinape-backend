@@ -379,8 +379,8 @@ class DataController extends Controller
          } else {
              $profile->update($data);
          }
-         if(!empty($data['telegram_username'])) {
-             $profile->users()->update(['telegram_username' => $data['telegram_username']]);
+         if(!empty($data['telegram_username']) || !empty($data['discord_username'])) {
+             $profile->users()->update($request->only('telegram_username','discord_username'));
          }
          $profile->load(['users.circle','users.teammates']);
          return response()->json(compact('profile'));

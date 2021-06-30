@@ -41,7 +41,8 @@ class User extends Authenticatable
         'telegram_username',
         'fixed_non_receiver',
         'role',
-        'telegram_username'
+        'telegram_username',
+        'discord_username'
     ];
 
     /**
