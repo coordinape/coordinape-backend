@@ -363,8 +363,8 @@ class DataController extends Controller
      }
 
      public function getProfile(Request $request, $address) {
-        $profile = Profile::with(['users.circle','users.teammates'])->byAddress($address)->first();
-        return response()->json(compact('profile'));
+        $profile = Profile::with(['users.circle.protocol','users.teammates'])->byAddress($address)->first();
+        return response()->json($profile);
      }
 
      public function saveProfile(ProfileRequest $request, $address) {
@@ -382,8 +382,8 @@ class DataController extends Controller
          if(!empty($data['telegram_username']) || !empty($data['discord_username'])) {
              $profile->users()->update($request->only('telegram_username','discord_username'));
          }
-         $profile->load(['users.circle','users.teammates']);
-         return response()->json(compact('profile'));
+         $profile->load(['users.circle.protocol','users.teammates']);
+         return response()->json($profile);
      }
 
     public function uploadProfileAvatar(ProfileUploadRequest $request, $address) : JsonResponse {
