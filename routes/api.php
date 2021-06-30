@@ -45,8 +45,8 @@ Route::prefix('{subdomain}')->group(function () {
 });
 
 
-Route::post('/upload-avatar', [DataController::class, 'uploadProfileAvatar']);
-Route::post('/upload-background', [DataController::class, 'uploadProfileBackground']);
+Route::post('/upload-avatar/{address}', [DataController::class, 'uploadProfileAvatar']);
+Route::post('/upload-background/{address}', [DataController::class, 'uploadProfileBackground']);
 
 Route::get('/profile/{address}',[DataController::class, 'getProfile']);
 Route::post('/profile/{address}',[DataController::class, 'saveProfile']);
