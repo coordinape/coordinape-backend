@@ -149,4 +149,8 @@ class User extends Authenticatable
     public function burns() {
         return $this->hasMany('App\Models\Burn', 'user_id','id');
     }
+
+    public function profile() {
+        return $this->belongsTo('App\Models\Profile','address','address');
+    }
 }

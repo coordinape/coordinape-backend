@@ -74,7 +74,7 @@ class DataController extends Controller
         if(!$user)
             return response()->json(['error'=> 'Address not found'],422);
 
-        $user->load(['teammates','pendingSentGifts']);
+        $user->load(['teammates','pendingSentGifts','profile']);
         return response()->json($user);
     }
 
@@ -93,7 +93,7 @@ class DataController extends Controller
             return response()->json(['error'=> 'Address not found'],422);
         }
 
-        $user->load(['teammates','pendingSentGifts']);
+        $user->load(['teammates','pendingSentGifts','profile']);
         return response()->json($user);
     }
 
