@@ -556,8 +556,8 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
     }
 
     private function addUserChatId($message) {
-        $is_group = $message['chat']['type'] == 'group';
-        if(!$is_group) {
+        $is_private = $message['chat']['type'] == 'private';
+        if(!$is_private) {
             $users = User::where('telegram_username', $message['from']['username'])->get();
             if(count($users)==0) {
                 // don't exist
@@ -576,10 +576,10 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
     }
 
     private function checkForUserChatId($user,$message) {
-        $is_group = $message['chat']['type'] == 'group';
-        if(!$is_group && !$user->chat_id) {
+        $is_private = $message['chat']['type'] == 'private';
+        if($is_private && !$user->chat_id) {
             $result = $this->addUserChatId($message);
-            return $result ? $result:$user;
+            return $result ?:$user;
         }
 
         return $user;
