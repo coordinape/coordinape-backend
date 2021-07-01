@@ -557,7 +557,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
     private function addUserChatId($message) {
         $is_private = $message['chat']['type'] == 'private';
-        if(!$is_private) {
+        if($is_private) {
             $users = User::where('telegram_username', $message['from']['username'])->get();
             if(count($users)==0) {
                 // don't exist
