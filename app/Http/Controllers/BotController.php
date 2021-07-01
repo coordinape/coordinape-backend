@@ -15,6 +15,7 @@ use App\Notifications\SendSocialMessage;
 use App\Models\Circle;
 use DB;
 use App\Repositories\EpochRepository;
+use App\Helper\Utils;
 
 class BotController extends Controller
 {
@@ -313,6 +314,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 $allocStr = '';
                 $pendingSentGifts = $user->pendingSentGifts;
                 $sent = 0;
+
                 foreach($pendingSentGifts as $gift) {
                     $name = Utils::cleanStr($gift->recipient->name);
                     $optOutStr = $gift->recipient->non_receiver ? " (Opt Out)":"";
