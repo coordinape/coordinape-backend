@@ -113,9 +113,9 @@ class BotController extends Controller
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
             if($user) {
 
-                $message = substr($message['text'],10);
+                $msg = substr($message['text'],10);
                 $feedback = new Feedback(['user_id' => $user->id,
-                    'telegram_username' => $user->telegram_username, 'message'=> $message ]);
+                    'telegram_username' => $user->telegram_username, 'message'=> $msg ]);
 
                 $feedback->save();
                 $feedback_no = sprintf('%04d', $feedback->id);
@@ -438,9 +438,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                         $recipientUser->save();
                         $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                         $user->save();
-                        $message = $noteOnly? "@$user->telegram_username $user->name ser, You have successfully sent a note to $recipientUser->name $optOutText":"@$user->telegram_username $user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
+                        $msg = $noteOnly? "@$user->telegram_username $user->name ser, You have successfully sent a note to $recipientUser->name $optOutText":"@$user->telegram_username $user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
                         $notifyModel->notify(new SendSocialMessage(
-                            $message
+                            $msg
                         ));
                     });
 
