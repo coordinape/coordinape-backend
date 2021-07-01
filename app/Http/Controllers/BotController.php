@@ -150,7 +150,7 @@ class BotController extends Controller
                 $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username https://discord.gg/tegaa7wr", false
+                    "@$user->telegram_username https://discord.gg/7MWSTamFX4", false
                 ));
             }
         }
