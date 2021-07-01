@@ -337,7 +337,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
         $recipientUsername = substr($textArray[1],1);
         $amount = filter_var($textArray[2], FILTER_VALIDATE_INT) ? (int)($textArray[2]): 0;
-        $noteArray = explode($amount, $message['text']);
+        $noteArray = explode($amount, $message['text'],2);
         $note = !empty($noteArray[1]) ? trim($noteArray[1]):'';
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
