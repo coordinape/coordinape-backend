@@ -46,7 +46,7 @@ class BotController extends Controller
         $textArray = explode(' ',$message['text']);
         $command = $textArray[0];
         $command = explode('@',$command)[0];
-        $is_group = $message['chat']['type'] == 'group';
+        $is_group = $message['chat']['type'] == 'group' || $message['chat']['type'] == 'supergroup';
         switch($command) {
             case '/start':
                 $user = $this->addUserChatId($message);
