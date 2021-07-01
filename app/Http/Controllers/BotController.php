@@ -314,8 +314,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 $pendingSentGifts = $user->pendingSentGifts;
                 $sent = 0;
                 foreach($pendingSentGifts as $gift) {
+                    $name = Utils::cleanStr($gift->recipient->name);
                     $optOutStr = $gift->recipient->non_receiver ? " (Opt Out)":"";
-                    $allocStr .= "{$gift->recipient->name}$optOutStr > $gift->tokens tokens\n";
+                    $allocStr .= "{$name}$optOutStr > $gift->tokens tokens\n";
                     $sent += $gift->tokens;
                 }
 
@@ -483,8 +484,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 $pendingSentGifts = $user->pendingSentGifts;
                 $sent = 0;
                 foreach($pendingSentGifts as $gift) {
+                    $name = Utils::cleanStr($gift->recipient->name);
                     $optOutStr = $gift->recipient->non_receiver ? " (Opt Out)":"";
-                    $allocStr .= "{$gift->recipient->name}$optOutStr > $gift->tokens tokens\n";
+                    $allocStr .= "{$name}$optOutStr > $gift->tokens tokens\n";
                     $sent += $gift->tokens;
                 }
                 if(!$allocStr)
