@@ -215,6 +215,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
     }
 
     private function ungive($message, $is_group) {
+        if(empty($message['from']['username'])) {
+            return false;
+        }
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
             $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
@@ -240,6 +243,10 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
     }
 
     private function regive($message, $is_group) {
+
+        if(empty($message['from']['username'])) {
+           return false;
+        }
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
@@ -334,6 +341,10 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         $textArray = explode(' ',$message['text']);
         if(count($textArray) < 3)
             return false;
+
+        if(empty($message['from']['username'])) {
+            return false;
+        }
 
         $recipientUsername = substr($textArray[1],1);
         $amount = filter_var($textArray[2], FILTER_VALIDATE_INT) ? (int)($textArray[2]): 0;
@@ -470,6 +481,10 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
     private function getAllocs($message, $is_group = false) {
 
+        if(empty($message['from']['username'])) {
+            return false;
+        }
+
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
             $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
@@ -507,6 +522,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
     private function getReceipts($message, $is_group = false) {
 
+        if(empty($message['from']['username'])) {
+            return false;
+        }
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
             $user = User::with('pendingReceivedGifts.sender')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
@@ -556,6 +574,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
     }
 
     private function addUserChatId($message) {
+        if(empty($message['from']['username'])) {
+            return false;
+        }
         $is_private = $message['chat']['type'] == 'private';
         if($is_private) {
             $users = User::where('telegram_username', $message['from']['username'])->get();
