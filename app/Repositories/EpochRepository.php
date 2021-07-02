@@ -303,7 +303,8 @@ class EpochRepository
                    $sender = $gift->sender;
                    $gift_token = $gift->tokens;
                    $totalRefunded += $gift_token;
-                   $optOutStr .= "$sender->name: $gift_token\n";
+                   $senderName = Utils::cleanStr($sender->name);
+                   $optOutStr .= "$senderName: $gift_token\n";
                    $gift->delete();
                    $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
                    $sender->give_token_remaining = $sender->starting_tokens-$token_used;
