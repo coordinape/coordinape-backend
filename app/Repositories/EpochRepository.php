@@ -416,7 +416,7 @@ class EpochRepository
             if($name_strs)
                 $name_strs .= ', ';
 
-            $name_strs .= $sender->telegram_username ?: Utils::cleanStr($sender->name);
+            $name_strs .= Utils::cleanStr($sender->name);
             $user_added[$pending_gift->sender_id] = true;
         }
         $epoch_num = Epoch::where('circle_id',$circle->id)->where('ended', 1)->count();
