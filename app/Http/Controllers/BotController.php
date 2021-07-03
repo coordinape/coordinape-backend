@@ -117,18 +117,18 @@ class BotController extends Controller
             if($user) {
 
                 $feedbacks = Feedback::limit(20)->orderBy('id','desc')->get();
-                $messageStr = '';
+                $fullStr = '';
                 foreach($feedbacks as $feedback) {
                     $name = Utils::cleanStr($feedback->telegram_username);
                     $messageStr = Utils::cleanStr($feedback->message);
                     $feedback_no = sprintf('%04d', $feedback->id);
-                    $messageStr .= "\n{$feedback_no} {$name} :\n$messageStr\n";
+                    $fullStr .= "\n{$feedback_no} {$name} :\n$messageStr\n";
                 }
 
                 $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username\n$messageStr", false
+                    "@$user->telegram_username\n$fullStr", false
                 ));
             }
         }
