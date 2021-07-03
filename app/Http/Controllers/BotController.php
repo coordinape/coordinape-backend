@@ -122,13 +122,13 @@ class BotController extends Controller
                     $name = Utils::cleanStr($feedback->telegram_username);
                     $messageStr = Utils::cleanStr($feedback->message);
                     $feedback_no = sprintf('%04d', $feedback->id);
-                    $messageStr .= "{$feedback_no} {$name} :\n$messageStr\n";
+                    $messageStr .= "\n{$feedback_no} {$name} :\n$messageStr\n";
                 }
 
                 $user = $this->checkForUserChatId($user,$message);
                 $notifyModel = $is_group ? $circle:$user;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username\n$messageStr"
+                    "@$user->telegram_username\n$messageStr", false
                 ));
             }
         }
