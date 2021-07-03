@@ -171,6 +171,8 @@ class EpochRepository
 
         $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
         $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
+        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
+        $epoch_id = $activeEpoch->id;
         DB::transaction(function () use ($users, $user, $gifts, $address, $pendingSentGiftsMap,$epoch_id) {
             $token_used = 0;
             $toKeep = [];
