@@ -103,7 +103,34 @@ class BotController extends Controller
             case '/feedback':
                 $this->feedback($message, $is_group);
                 break;
+            case '/feedbacks':
+                $this->feedbacks($message, $is_group);
+                break;
 
+        }
+    }
+
+    private function feedbacks($message, $is_group) {
+        $circle = $this->getCircle($message, $is_group);
+        if($circle) {
+            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
+            if($user) {
+
+                $feedbacks = Feedback::limit(20)->orderBy('id','desc')->get();
+                $messageStr = '';
+                foreach($feedbacks as $feedback) {
+                    $name = Utils::cleanStr($feedback->telegram_username);
+                    $messageStr = Utils::cleanStr($feedback->message);
+                    $feedback_no = sprintf('%04d', $feedback->id);
+                    $messageStr .= "{$feedback_no} {$name} :\n$messageStr\n";
+                }
+
+                $user = $this->checkForUserChatId($user,$message);
+                $notifyModel = $is_group ? $circle:$user;
+                $notifyModel->notify(new SendSocialMessage(
+                    "@$user->telegram_username\n$messageStr"
+                ));
+            }
         }
     }
 
