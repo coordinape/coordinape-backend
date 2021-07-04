@@ -472,6 +472,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                         $giftData['recipient_id'] = $recipientUser->id;
                         $giftData['tokens'] = $amount;
                         $giftData['circle_id'] = $circle->id;
+                        $giftData['epoch_id'] = $epoch_id;
                         $giftData['note'] = $note;
                         $gift = new PendingTokenGift($giftData);
                         $gift->save();
