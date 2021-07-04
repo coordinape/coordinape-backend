@@ -314,8 +314,8 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                     ));
                     return false;
                 }
-
-                DB::transaction(function() use ($lastEpochGifts, $user, $circle, $notifyModel) {
+                $epoch_id = $circle->epoches[0]->id;
+                DB::transaction(function() use ($lastEpochGifts, $user, $circle, $notifyModel, $epoch_id) {
                     $totalTokens = 0;
                     $startingTokens = $user->starting_tokens;
                     $this->repo->resetGifts($user,[]);
@@ -326,6 +326,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                             $tokenGift = new PendingTokenGift($epochGift->replicate(['created_at','updated_at','epoch_id','dts_created'])->toArray());
                             $tokenGift->sender_address = $user->address;
                             $tokenGift->recipient_address = $recipientUser->address;
+                            $tokenGift->epoch_id = $epoch_id;
                             if($recipientUser->non_receiver) {
                                 $tokenGift->tokens = 0;
                             }
@@ -415,7 +416,8 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                     if($amount == 0 )
                         $noteOnly = true;
 
-                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername, $optOutText) {
+                    $epoch_id = $circle->epoches[0]->id;
+                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername, $optOutText,$epoch_id) {
                         $pendingSentGifts = $user->pendingSentGifts;
                         $remainingGives = $user->give_token_remaining;
                         $user->teammates()->syncWithoutDetaching([$recipientUser->id]);
@@ -430,6 +432,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                                 $current = $gift->tokens;
                                 $gift->tokens = $amount;
                                 $gift->note = $note;
+                                $gift->epoch_id = $epoch_id;
                                 if($amount == 0 && !$note)
                                     $gift->delete();
                                 else
