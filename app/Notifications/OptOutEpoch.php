@@ -40,7 +40,7 @@ class OptOutEpoch extends Notification
         return TelegramMessage::create()
             // Markdown supported.
             ->content("$name has just opt out of the current epoch !\nA total of $this->totalRefunded GIVE is refunded\n$this->refundStr")
-            ->button('Reallocate your GIVES', 'https://coordinape.com/'.$circle_name);
+            ->button('Reallocate your GIVES', 'https://app.coordinape.com/give');
     }
 
     /**
