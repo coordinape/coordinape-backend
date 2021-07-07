@@ -251,6 +251,7 @@ class EpochRepository
                     $gift['recipient_address'] = $users[$recipient_id]->address;
                     $gift['recipient_id'] = $recipient_id;
                     $gift['epoch_id'] = $epoch_id;
+                    $gift['circle_id'] = $user->circle_id;
 
                     $token_used += $gift['tokens'];
                     $pendingGift = $pendingSentGiftsMap->has($gift['recipient_id']) ? $pendingSentGiftsMap[$gift['recipient_id']] : null  ;
