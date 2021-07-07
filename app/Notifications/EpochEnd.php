@@ -46,7 +46,7 @@ class EpochEnd extends Notification
         foreach($unalloc_users as $user) {
             if($unalloc_str)
                 $unalloc_str .= ', ';
-            $user_name = $user->telegram_username?: Utils::cleanStr($user->name) ;
+            $user_name = Utils::cleanStr($user->name) ;
             $unalloc_str .= $user_name;
         }
 
