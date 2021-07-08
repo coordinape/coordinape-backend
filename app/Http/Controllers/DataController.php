@@ -120,8 +120,10 @@ class DataController extends Controller
         $data['circle_id'] =  $circle_id;
         $user = new User($data);
         $user->save();
-        $profile = new Profile(['address' => $data['address']]);
-        $profile->save();
+        if(!Profile::where('address' , $data['address'])->exists()) {
+            $profile = new Profile(['address' => $data['address']]);
+            $profile->save();
+        }
         $user->circle->notify(new AddNewUser($request->admin_user, $user));
         $user->refresh();
         return response()->json($user);
