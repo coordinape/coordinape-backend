@@ -25,6 +25,8 @@ Route::prefix('{subdomain}')->group(function () {
         Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
         Route::post('/users', [DataController::class, 'createUser']);
         Route::post('/epoches', [DataController::class, 'createEpoch']);
+        Route::post('/v2/epoches', [DataController::class, 'newCreateEpoch']);
+        Route::put('/epoches/{epoch}', [DataController::class, 'updateEpoch']);
         Route::delete('/epoches/{epoch}', [DataController::class, 'deleteEpoch']);
         Route::delete('/users/{address}', [DataController::class, 'deleteUser']);
     });
@@ -35,7 +37,6 @@ Route::prefix('{subdomain}')->group(function () {
 
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
-    Route::post('/token-gifts/{address}', [DataController::class, 'updateGifts']);
     Route::post('/v2/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
     Route::post('/teammates', [DataController::class, 'updateTeammates']);
     Route::post('/upload', [DataController::class, 'uploadAvatar']);

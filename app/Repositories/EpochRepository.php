@@ -76,6 +76,43 @@ class EpochRepository
                 $epoch->save();
                 Utils::purgeCache($circle_id);
             }
+
+            if($epoch->repeat) {
+                $days = $epoch->days;
+                $start_date = $epoch->start_date;
+                $end_date = $epoch->end_date;
+                switch($epoch->repeat) {
+
+                    //weekly
+                    case 1:
+                        $start_date = $start_date->addDays(7);
+                        break;
+                    //monthly
+                    case 2:
+                        $dayOfMonth = $epoch->start_date->day;
+                        $start_date = $start_date->addMonths(1)->day($dayOfMonth);
+                        break;
+                }
+
+                // check if new start date is later than current epoch enddate
+                if($start_date > $end_date) {
+                    $end_date = $start_date->copy()->addDays($days)
+                                ->hour($end_date->hour)->minute($end_date->minute);
+
+                    // check overlap with existing epochs
+                    $exist = Epoch::checkOverlapDatetime(['circle_id' => $circle_id,
+                                    'start_date' => $start_date, 'end_date' => $end_date ])->exists();
+                    if(!$exist) {
+                        $newEpoch = new Epoch();
+                        $newEpoch->start_date = $start_date;
+                        $newEpoch->end_date = $end_date;
+                        $newEpoch->circle_id = $circle_id;
+                        $newEpoch->repeat = $epoch->repeat;
+                        $newEpoch->days = $days;
+                        $newEpoch->save();
+                    }
+                }
+            }
         }
     }
 

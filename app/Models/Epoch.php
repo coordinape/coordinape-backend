@@ -11,7 +11,7 @@ class Epoch extends Model
     use HasFactory;
 
     protected $fillable = ['number','start_date','end_date','circle_id','ended',
-        'notified_start','notified_before_end','notified_end','telegram_id','grant'];
+        'notified_start','notified_before_end','notified_end','telegram_id','grant','days','repeat','start_time'];
     protected $dates = ['start_date','end_date'];
 
 //    protected $appends = ['is_regift_phase'];
@@ -28,6 +28,11 @@ class Epoch extends Model
     public function scopeIsActiveFutureDate($query) {
         $today = Carbon::today()->toDateString();
         return $query->whereDate('end_date','>=', $today);
+    }
+
+    public function scopeCheckOverlapDatetime($query, $data) {
+        return $query->where('circle_id',$data['circle_id'])->where('start_date', '<=', $data['end_date'])
+            ->where('end_date', '>=', $data['start_date']);
     }
 
 //    public function getIsRegiftPhaseAttribute() {
