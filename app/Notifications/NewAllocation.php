@@ -38,7 +38,7 @@ class NewAllocation extends Notification
         return TelegramMessage::create()
             // Markdown supported.
             ->content("$name has updated his allocation this epoch !\nA total of $this->totalAllocated GIVE is allocated\n")
-            ->button("Check if you received GIVEs", 'https://app.coordinape.com/give');
+            ->button("Check if you received GIVEs", 'https://app.coordinape.com/allocation');
     }
     /**
      * Get the array representation of the notification.
