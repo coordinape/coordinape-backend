@@ -28,7 +28,9 @@ class DeleteEpochRequest extends FormRequest
         $this->merge([
             'circle_id' => $circle_id
         ]);
-        return $admin_user && strtolower($recoveredAddress)==strtolower($address);
+        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
+
+        return $admin_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     /**

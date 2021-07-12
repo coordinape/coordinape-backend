@@ -24,7 +24,9 @@ class DeleteUserRequest extends FormRequest
         $this->merge([
             'user' => $updating_user
         ]);
-        return $admin_user && $updating_user && strtolower($recoveredAddress)==strtolower($address);
+        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
+
+        return $admin_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     /**

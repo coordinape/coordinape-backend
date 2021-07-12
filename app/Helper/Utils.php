@@ -13,9 +13,10 @@ class Utils
 
     const circleMap = ['yearn'=>1 ];
 
-    public static function personalEcRecover(string $message, string $signature)
+    public static function personalEcRecover(string $message, string $signature, $withPrefix = true)
     {
-        $message_hash =  '0x' . Keccak::hash(self::personalSignAddHeader($message), 256);
+        $message = $withPrefix ? self::personalSignAddHeader($message) : $message;
+        $message_hash =  '0x' . Keccak::hash($message, 256);
         $address = self::phpEcRecover($message_hash, $signature);
         return $address;
     }

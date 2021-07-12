@@ -31,7 +31,9 @@ class AdminUserRequest extends FormRequest
             'user' => $updating_user,
             'circle_id' => $circle_id
         ]);
-        return $admin_user && $updating_user && strtolower($recoveredAddress)==strtolower($address);
+        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
+
+        return $admin_user && $updating_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     protected function prepareForValidation()

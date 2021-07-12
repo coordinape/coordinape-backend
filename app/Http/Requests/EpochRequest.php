@@ -30,7 +30,8 @@ class EpochRequest extends FormRequest
             'user' => $existing_user,
             'circle_id' => $circle_id
         ]);
-        return $existing_user && strtolower($recoveredAddress)==strtolower($address);
+        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
+        return $existing_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     protected function prepareForValidation() {

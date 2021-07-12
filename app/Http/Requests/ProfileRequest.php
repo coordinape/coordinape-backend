@@ -22,7 +22,9 @@ class ProfileRequest extends FormRequest
         $address  = $this->route('address');
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $user = User::byAddress($address)->first();
-        return  $user && strtolower($recoveredAddress)==strtolower($address);
+        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
+
+        return $user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     protected function prepareForValidation()

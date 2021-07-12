@@ -20,7 +20,9 @@ class UserRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = $this->get('address');
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        return  strtolower($recoveredAddress)==strtolower($address);
+        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
+
+        return  (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     protected function prepareForValidation()

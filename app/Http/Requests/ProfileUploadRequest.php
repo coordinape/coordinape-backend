@@ -23,7 +23,8 @@ class ProfileUploadRequest extends FormRequest
         $this->merge([
             'user' => $user,
         ]);
-        return $user && strtolower($recoveredAddress)==$address;
+        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
+        return $user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     /**
