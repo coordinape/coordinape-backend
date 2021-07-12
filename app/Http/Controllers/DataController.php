@@ -101,7 +101,7 @@ class DataController extends Controller
         $circle_id = Utils::getCircleIdByName($subdomain);
         $data = $request->all();
 
-        $users = !empty($data['protocol_id']) ? User::protocolFilter($data) : User::filter($data);
+        $users = !empty($data['protocol_id']) ? User::with(['profile'])->protocolFilter($data) : User::with(['profile'])->filter($data);
         if($subdomain)
             $users->where('circle_id',$circle_id);
 
