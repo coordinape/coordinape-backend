@@ -424,7 +424,7 @@ class DataController extends Controller
      }
 
      public function getProfile(Request $request, $address) {
-        $profile = Profile::with(['users.circle.protocol','users.teammates'])->byAddress($address)->first();
+        $profile = Profile::with(['users.circle.protocol','users.teammates','users.histories.epoch'])->byAddress($address)->first();
         return response()->json($profile);
      }
 
@@ -443,7 +443,7 @@ class DataController extends Controller
          if(!empty($data['telegram_username']) || !empty($data['discord_username'])) {
              $profile->users()->update($request->only('telegram_username','discord_username'));
          }
-         $profile->load(['users.circle.protocol','users.teammates']);
+         $profile->load(['users.circle.protocol','users.teammates','users.histories.epoch']);
          return response()->json($profile);
      }
 

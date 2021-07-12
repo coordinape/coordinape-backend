@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use App\Helper\Utils;
 use App\Notifications\EpochEnd;
 use Exception;
+use App\Models\History;
 use Illuminate\Database\Eloquent\Model;
 
 class EpochRepository
@@ -63,6 +64,10 @@ class EpochRepository
                 $this->model->where('circle_id',$circle_id)->delete();
                 User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
                 User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
+                $users = User::where('circle_id',$circle_id)->get();
+                foreach($users as $user) {
+                    $user->histories()->create(['bio' => $user->bio,'epoch_id' => $epoch->id, 'circle_id' => $circle_id]);
+                }
                 $epoch->ended = 1;
                 $epoch->number = $epoch_number;
                 $epoch->save();

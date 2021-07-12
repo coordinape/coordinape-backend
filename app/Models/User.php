@@ -150,6 +150,10 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\Burn', 'user_id','id');
     }
 
+    public function histories() {
+        return $this->hasMany('App\Models\History', 'user_id','id');
+    }
+
     public function profile() {
         return $this->belongsTo('App\Models\Profile','address','address');
     }
