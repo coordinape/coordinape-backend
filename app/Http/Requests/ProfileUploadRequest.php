@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Helper\Utils;
-use App\Models\User;
+use App\Models\Profile;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProfileUploadRequest extends FormRequest
@@ -19,12 +19,12 @@ class ProfileUploadRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = strtolower($this->route('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $user =  User::byAddress($address)->first();
+        $profile =  Profile::byAddress($address)->first();
         $this->merge([
-            'user' => $user,
+            'profile' => $profile,
         ]);
         $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-        return $user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        return $profile && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
     }
 
     /**
