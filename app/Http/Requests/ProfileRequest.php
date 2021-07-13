@@ -34,6 +34,7 @@ class ProfileRequest extends FormRequest
         $this->merge([
             'data' => $data,
             'profile' => $profile,
+            'bio' => !empty($data['bio']) ? $data['bio']:null,
             'skills' => !empty($data['skills']) ? $data['skills']:null,
             'github_username' => !empty($data['github_username']) ? $data['github_username']:null,
             'telegram_username' => !empty($data['telegram_username']) ? $data['telegram_username']:null,
