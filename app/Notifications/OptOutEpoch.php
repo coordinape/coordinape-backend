@@ -36,7 +36,7 @@ class OptOutEpoch extends Notification
     public function toTelegram($notifiable=null)
     {
         $circle_name = $notifiable->protocol->name .'/'. $notifiable->name;
-        $name = $this->user->telegram_username ?: Utils::cleanStr($this->user->name);
+        $name = Utils::cleanStr($this->user->name);
         return TelegramMessage::create()
             // Markdown supported.
             ->content("$name has just opt out of the current epoch !\nA total of $this->totalRefunded GIVE is refunded\n$this->refundStr")
