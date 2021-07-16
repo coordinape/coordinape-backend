@@ -75,7 +75,3 @@ Route::get('/active-epochs',[DataController::class, 'getActiveEpochs']);
 
 Route::post("/".env('TELEGRAM_BOT_TOKEN')."/bot-update", [BotController::class,'webHook']);
 
-
-Route::get('/debug-sentry', function () {
-    throw new Exception('My first Sentry error!');
-});
