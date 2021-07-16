@@ -450,8 +450,17 @@ class DataController extends Controller
     public function uploadProfileAvatar(ProfileUploadRequest $request, $address) : JsonResponse {
 
         $file = $request->file('file');
-        $resized = Image::make($request->file('file'))
-            ->resize(100, null, function ($constraint) { $constraint->aspectRatio(); } )
+        $image = Image::make($file);
+        $height = $image->height();
+        $width = $image->width();
+
+        if($width> 240) {
+            $height = $height * 240/$height;
+            $width = $width * 240/$width;
+        }
+
+        $resized = $image
+            ->resize($width, $height, function ($constraint) { $constraint->aspectRatio(); } )
             ->encode($file->getCLientOriginalExtension(),80);
         $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
         $ret = Storage::put($new_file_name, $resized);
