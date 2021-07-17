@@ -75,3 +75,6 @@ Route::get('/active-epochs',[DataController::class, 'getActiveEpochs']);
 
 Route::post("/".env('TELEGRAM_BOT_TOKEN')."/bot-update", [BotController::class,'webHook']);
 
+Route::fallback(function(){
+    return response()->json(['message' => 'Endpoint Not Found'], 404);
+})->name('api.fallback.404');
