@@ -24,8 +24,8 @@ class NewGiftRequest extends FormRequest
         $circle_id = null;
         if($this->route('address')) {
             $existing_user =  User::byAddress($this->route('address'));
-            if($this->route('subdomain')) {
-                $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
+            if($this->route('circle_id')) {
+                $circle_id = Utils::getCircleIdByName($this->route('circle_id'));
                 $existing_user = $existing_user->where('circle_id', $circle_id);
             }
             $existing_user = $existing_user->first();

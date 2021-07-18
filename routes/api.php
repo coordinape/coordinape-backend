@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\BotController;
+use App\Http\Controllers\NominationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,7 +20,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('{subdomain}')->group(function () {
+Route::prefix('{circle_id}')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::put('/circles/{circle}', [DataController::class, 'updateCircle']);
         Route::put('/users/{address}', [DataController::class, 'adminUpdateUser']);
@@ -43,6 +44,11 @@ Route::prefix('{subdomain}')->group(function () {
     Route::get('/csv', [DataController::class, 'generateCsv']);
     Route::get('/epoches',[DataController::class, 'epoches']);
     Route::get('/burns', [DataController::class, 'burns']);
+    Route::post('/nominee', [NominationController::class, 'createNominee']);
+    Route::get('/nominees', [NominationController::class, 'getNominees']);
+    Route::post('/vouch', [NominationController::class, 'addVouch']);
+
+
 });
 
 

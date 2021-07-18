@@ -28,8 +28,7 @@ class UserRequest extends FormRequest
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $subdomain = $this->route('subdomain');
-        $circle_id = Utils::getCircleIdByName($subdomain);
+        $circle_id = $this->route('circle_id');
         $existing_user =  User::byAddress($this->route('address'))->where('circle_id', $circle_id)->first();
         $this->merge([
             'data' => $data,

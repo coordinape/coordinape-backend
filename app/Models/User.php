@@ -157,4 +157,8 @@ class User extends Authenticatable
     public function profile() {
         return $this->belongsTo('App\Models\Profile','address','address');
     }
+
+    public function nominations() {
+        return $this->belongsToMany('App\Models\Nominee','vouches','voucher_id','nominee_id');
+    }
 }

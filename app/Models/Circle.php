@@ -14,7 +14,11 @@ class Circle extends Model
         'protocol_id',
         'token_name',
         'team_sel_text',
-        'alloc_text'
+        'alloc_text',
+        'vouching',
+        'min_vouches',
+        'nomination_days_limit',
+        'vouching_text'
     ];
     protected $searchable = [
         'protocol_id',

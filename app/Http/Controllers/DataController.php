@@ -9,7 +9,6 @@ use App\Http\Requests\ProfileUploadRequest;
 use App\Models\Circle;
 use App\Models\Profile;
 use App\Notifications\AddNewUser;
-use App\Notifications\NewAllocation;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -46,12 +45,12 @@ class DataController extends Controller
         $this->repo = $repo;
     }
 
-    public function getCircles(Request $request, $subdomain = null): JsonResponse
+    public function getCircles(Request $request, $circle_id = null): JsonResponse
     {
         return response()->json(Circle::filter($request->all())->with('protocol')->get());
     }
 
-    public function getProtocols(Request $request, $subdomain = null): JsonResponse
+    public function getProtocols(Request $request): JsonResponse
     {
         return response()->json(Protocol::all());
     }
@@ -63,7 +62,7 @@ class DataController extends Controller
         return response()->json($circle);
     }
 
-    public function updateCircle( CircleRequest $request, $subdomain=null, Circle $circle): JsonResponse
+    public function updateCircle( CircleRequest $request, $circle_id=null, Circle $circle): JsonResponse
     {
         $circle->update($request->only('name','token_name','team_sel_text','alloc_text'));
         return response()->json($circle);
@@ -78,10 +77,9 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function getUser2($subdomain, $address): JsonResponse {
-        $circle_id = Utils::getCircleIdByName($subdomain);
+    public function getUser2($circle_id, $address): JsonResponse {
         $query = User::byAddress($address);
-        if($subdomain)
+        if($circle_id)
             $query->where('circle_id',$circle_id);
         $user = $query->first();
         if(!$user)
@@ -97,12 +95,11 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function getUsers(Request $request, $subdomain = null): JsonResponse {
-        $circle_id = Utils::getCircleIdByName($subdomain);
+    public function getUsers(Request $request, $circle_id = null): JsonResponse {
         $data = $request->all();
 
         $users = !empty($data['protocol_id']) ? User::with(['profile'])->protocolFilter($data) : User::with(['profile'])->filter($data);
-        if($subdomain)
+        if($circle_id)
             $users->where('circle_id',$circle_id);
 
         if(!empty($data['deleted_users']) && $data['deleted_users'])
@@ -129,7 +126,7 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function updateUser(UserRequest $request, $subdomain, $address): JsonResponse
+    public function updateUser(UserRequest $request, $circle_id, $address): JsonResponse
     {
         $user = $request->user;
         if(!$user)
@@ -165,7 +162,7 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function newUpdateGifts(NewGiftRequest $request, $subdomain, $address): JsonResponse
+    public function newUpdateGifts(NewGiftRequest $request, $circle_id, $address): JsonResponse
     {
         $user = $request->user;
         $this->repo->newUpdateGifts($request, $address);
@@ -173,16 +170,13 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function getPendingGifts(Request $request, $subdomain = null): JsonResponse {
+    public function getPendingGifts(Request $request, $circle_id = null): JsonResponse {
         $filters = $request->all();
-        if($subdomain) {
-            $circle_id = Utils::getCircleIdByName($subdomain);
-            if($circle_id) {
-                $filters['circle_id'] = $circle_id;
-            }
-            else {
-               return response()->json([]);
-            }
+        if($circle_id) {
+            $filters['circle_id'] = $circle_id;
+
+        } else {
+            return response()->json([]);
         }
 
         if(!empty($filters['recipient_address'])) {
@@ -219,7 +213,7 @@ class DataController extends Controller
         }, 10, $circle_id));
     }
 
-    public function updateTeammates(TeammatesRequest $request, $subdomain=null) : JsonResponse {
+    public function updateTeammates(TeammatesRequest $request, $circle_id=null) : JsonResponse {
 
         $user = $request->user;
         $teammates = $request->teammates;
@@ -234,9 +228,8 @@ class DataController extends Controller
         return response()->json($user);
     }
 
-    public function generateCsv(CsvRequest $request, $subdomain = null)
+    public function generateCsv(CsvRequest $request, $circle_id = null)
     {
-        $circle_id = Utils::getCircleIdByName($subdomain);
         if (!$circle_id) {
             if (!$request->circle_id)
                 return response()->json(['error' => 'Circle not Found'], 422);
@@ -256,7 +249,7 @@ class DataController extends Controller
         return $this->repo->getEpochCsv($epoch, $circle_id, $request->grant);
     }
 
-    public function uploadAvatar(FileUploadRequest $request, $subdomain=null) : JsonResponse {
+    public function uploadAvatar(FileUploadRequest $request, $circle_id=null) : JsonResponse {
 
         $file = $request->file('file');
         $resized = Image::make($request->file('file'))
@@ -279,8 +272,7 @@ class DataController extends Controller
 //        dd(Storage::disk('s3')->allFiles(''));
     }
 
-    public function epoches(Request $request, $subdomain) : JsonResponse  {
-        $circle_id = Utils::getCircleIdByName($subdomain);
+    public function epoches(Request $request, $circle_id) : JsonResponse  {
         if (!$circle_id) {
             return response()->json(['error' => 'Circle not Found'], 422);
         }
@@ -414,8 +406,8 @@ class DataController extends Controller
         return response()->json($epochs);
     }
 
-     public function burns(Request $request, $subdomain) : JsonResponse  {
-         $circle_id = Utils::getCircleIdByName($subdomain);
+     public function burns(Request $request, $circle_id) : JsonResponse  {
+         $circle_id = Utils::getCircleIdByName($circle_id);
          if (!$circle_id) {
              return response()->json(['error' => 'Circle not Found'], 422);
          }
@@ -498,4 +490,5 @@ class DataController extends Controller
 
         return response()->json(['error' => 'File Upload Failed' ,422]);
     }
+
 }

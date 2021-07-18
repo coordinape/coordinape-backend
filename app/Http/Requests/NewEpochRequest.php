@@ -20,10 +20,10 @@ class NewEpochRequest extends FormRequest
         $address  = $this->get('address');
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $existing_user =  User::byAddress($address)->isAdmin();
-        if(!$this->route('subdomain'))
+        if(!$this->route('circle_id'))
             return false;
 
-        $circle_id = $this->route('subdomain');
+        $circle_id = $this->route('circle_id');
         $existing_user = $existing_user->where('circle_id', $circle_id)->first();
         $this->merge([
             'user' => $existing_user,

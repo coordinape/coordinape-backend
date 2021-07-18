@@ -21,8 +21,8 @@ class CircleRequest extends FormRequest
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $circle_id = null;
         $existing_user =  User::byAddress($address)->isAdmin();
-        if($this->route('subdomain')) {
-            $circle_id = Utils::getCircleIdByName($this->route('subdomain'));
+        if($this->route('circle_id')) {
+            $circle_id = Utils::getCircleIdByName($this->route('circle_id'));
             $existing_user = $existing_user->where('circle_id', $circle_id);
         }
         $existing_user = $existing_user->first();
@@ -43,7 +43,11 @@ class CircleRequest extends FormRequest
             'name' => !empty($data['name']) ? $data['name']:null,
             'token_name' => !empty($data['token_name']) ? $data['token_name']:null,
             'team_sel_text' => !empty($data['team_sel_text']) ? $data['team_sel_text']:null,
-            'alloc_text' => !empty($data['alloc_text']) ? $data['alloc_text']:null
+            'alloc_text' => !empty($data['alloc_text']) ? $data['alloc_text']:null,
+            'vouching'  => !empty($data['vouching']) ? $data['vouching']:1,
+            'min_vouches'  => !empty($data['min_vouches']) ? $data['min_vouches']:3,
+            'nomination_days_limit' => !empty($data['nomination_days_limit']) ? $data['nomination_days_limit']:14,
+            'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:null,
         ]);
     }
 
@@ -55,9 +59,15 @@ class CircleRequest extends FormRequest
     public function rules()
     {
         return [
+
             'data' => 'required',
             'name' => 'required|string|max:255',
-            'token_name' => 'required|string|max:255'
+            'token_name' => 'required|string|max:255',
+            'vouching' => 'integer|min:0|max:1',
+            'min_vouches' => 'integer|min:1',
+            'nomination_days_limit' => 'integer|min:1',
+            'vouching_text' => 'string:max:5000',
+            'alloc_text' => 'string:max:5000',
         ];
     }
 }
