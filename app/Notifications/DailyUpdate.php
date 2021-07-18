@@ -10,7 +10,7 @@ use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use Carbon\Carbon;
 
-class DailyUpdate extends Notification
+class DailyUpdate extends Notification implements ShouldQueue
 {
     use Queueable;
 

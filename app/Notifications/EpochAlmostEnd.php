@@ -10,7 +10,7 @@ use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use App\Helper\Utils;
 
-class EpochAlmostEnd extends Notification
+class EpochAlmostEnd extends Notification implements ShouldQueue
 {
     use Queueable;
 

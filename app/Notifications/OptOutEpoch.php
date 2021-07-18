@@ -10,7 +10,7 @@ use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use App\Helper\Utils;
 
-class OptOutEpoch extends Notification
+class OptOutEpoch extends Notification implements ShouldQueue
 {
     use Queueable;
 

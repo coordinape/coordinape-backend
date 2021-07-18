@@ -11,7 +11,7 @@ use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use App\Helper\Utils;
 
-class AddNewUser extends Notification
+class AddNewUser extends Notification implements ShouldQueue
 {
     use Queueable;
 

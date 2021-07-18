@@ -10,7 +10,7 @@ use NotificationChannels\Telegram\TelegramMessage;
 use NotificationChannels\Telegram\TelegramChannel;
 
 
-class EpochStart extends Notification
+class EpochStart extends Notification implements ShouldQueue
 {
     use Queueable;
 
