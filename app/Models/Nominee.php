@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,7 +28,7 @@ class Nominee extends Model
         'ended'
     ];
 
-    protected $dates = ['expiry_date'];
+    protected $dates = ['expiry_date','nominated_date'];
 
     public function scopeFilter($query, $filters) {
         foreach($filters as $key=>$filter) {
@@ -44,5 +45,14 @@ class Nominee extends Model
 
     public function user() {
         return $this->belongsTo('App\Models\User','user_id');
+    }
+
+    public function circle() {
+        return $this->belongsTo('App\Models\Circle','circle_id');
+    }
+
+    public function scopePastExpiryDate($query) {
+        $today = Carbon::today()->toDateString();
+        return $query->whereDate('expiry_date','<=', $today);
     }
 }

@@ -36,7 +36,7 @@ class EpochStart extends Notification
      */
     public function via($notifiable)
     {
-        return [TelegramChannel::class];
+        return env('TELEGRAM_BOT_TOKEN') ? [TelegramChannel::class] : [];
     }
 
     public function toTelegram($notifiable=null)

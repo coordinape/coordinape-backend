@@ -55,4 +55,8 @@ class Circle extends Model
     public function pending_gifts() {
         return $this->hasMany('App\Models\PendingTokenGift', 'circle_id', 'id');
     }
+
+    public function nominees() {
+        return $this->hasMany('App\Models\Nominee','circle_id');
+    }
 }

@@ -6,14 +6,12 @@ use App\Http\Requests\NewEpochRequest;
 use App\Http\Requests\NewGiftRequest;
 use App\Http\Requests\ProfileRequest;
 use App\Http\Requests\ProfileUploadRequest;
-use App\Models\Circle;
 use App\Models\Profile;
 use App\Notifications\AddNewUser;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use App\Models\PendingTokenGift;
-use App\Http\Requests\CircleRequest;
 use App\Http\Requests\UserRequest;
 use DB;
 use App\Models\TokenGift;
@@ -45,27 +43,9 @@ class DataController extends Controller
         $this->repo = $repo;
     }
 
-    public function getCircles(Request $request, $circle_id = null): JsonResponse
-    {
-        return response()->json(Circle::filter($request->all())->with('protocol')->get());
-    }
-
     public function getProtocols(Request $request): JsonResponse
     {
         return response()->json(Protocol::all());
-    }
-
-    public function createCircle(CircleRequest $request)
-    {
-        $circle = new Circle($request->only('name','protocol_id','token_name','team_sel_text','alloc_text'));
-        $circle->save();
-        return response()->json($circle);
-    }
-
-    public function updateCircle( CircleRequest $request, $circle_id=null, Circle $circle): JsonResponse
-    {
-        $circle->update($request->only('name','token_name','team_sel_text','alloc_text'));
-        return response()->json($circle);
     }
 
     public function getUser($address): JsonResponse {

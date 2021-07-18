@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 
-class BotLaunch extends Notification
+class BotLaunch extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -25,7 +25,7 @@ class BotLaunch extends Notification
      */
     public function via($notifiable)
     {
-        return [TelegramChannel::class];
+        return env('TELEGRAM_BOT_TOKEN') ? [TelegramChannel::class] : [];
     }
 
     public function toTelegram($notifiable=null)
