@@ -52,10 +52,12 @@ class DataController extends Controller
 
     public function getPendingGifts(Request $request, $circle_id = null): JsonResponse {
         $filters = $request->all();
+
         if($circle_id) {
             $filters['circle_id'] = $circle_id;
-
-        } else {
+        }
+        else if(empty($filters['circle_id']))
+        {
             return response()->json([]);
         }
 
