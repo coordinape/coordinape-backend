@@ -53,7 +53,7 @@ class NomineeRequest extends FormRequest
             }), Rule::unique('users')->where(function ($query) use ($circle_id) {
                 return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
             })],
-            'desc' => 'required|string|max:5000',
+            'description' => 'required|string|max:5000',
         ];
     }
 }

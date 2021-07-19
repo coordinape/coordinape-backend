@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\NomineeRequest;
 use App\Http\Requests\VouchRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class NominationController extends Controller
         return response()->json($this->repo->addVouch($request,$circle_id));
     }
 
-    public function createNominee(Request $request, $circle_id) : JsonResponse {
+    public function createNominee(NomineeRequest $request, $circle_id) : JsonResponse {
         return response()->json($this->repo->createNominee($request));
     }
 }

@@ -22,6 +22,7 @@ class Nominee extends Model
         'circle_id'
     ];
     protected $searchable = [
+        'id',
         'circle_id',
         'address',
         'nominated_by_user_id',

@@ -45,11 +45,10 @@ Route::prefix('{circle_id}')->group(function () {
     Route::post('/upload', [DataController::class, 'uploadAvatar']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
     Route::get('/burns', [DataController::class, 'burns']);
-    Route::post('/nominee', [NominationController::class, 'createNominee']);
+    Route::post('/nominees', [NominationController::class, 'createNominee']);
     Route::get('/nominees', [NominationController::class, 'getNominees']);
     Route::post('/vouch', [NominationController::class, 'addVouch']);
     Route::get('/epoches',[EpochController::class, 'epoches']);
-
 
 });
 

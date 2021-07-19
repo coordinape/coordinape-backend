@@ -20,7 +20,7 @@ class NominationRepository {
     }
 
     public function getNominees($request, $circle_id) {
-        return $this->model->where('circle_id', $circle_id)->filter($request->all())->get();
+        return $this->model->with('nominations')->where('circle_id', $circle_id)->filter($request->all())->get();
     }
 
     public function addVouch($request, $circle_id) {
