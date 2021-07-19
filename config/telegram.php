@@ -202,4 +202,6 @@ return [
         // 'stop' => Acme\Project\Commands\StopCommand::class,
         // 'status' => Acme\Project\Commands\StatusCommand::class,
     ],
+
+    'token' => env('TELEGRAM_BOT_TOKEN', null)
 ];

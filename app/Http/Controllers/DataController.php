@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\NewEpochRequest;
 use App\Http\Requests\NewGiftRequest;
-use App\Http\Requests\ProfileRequest;
-use App\Http\Requests\ProfileUploadRequest;
 use App\Models\Profile;
 use App\Notifications\AddNewUser;
 use Illuminate\Http\Request;
@@ -27,10 +24,7 @@ use App\Helper\Utils;
 use App\Http\Requests\AdminCreateUserRequest;
 use App\Http\Requests\AdminUserRequest;
 use App\Models\Epoch;
-use Carbon\Carbon;
 use App\Models\Protocol;
-use App\Http\Requests\EpochRequest;
-use App\Http\Requests\DeleteEpochRequest;
 use App\Models\Burn;
 use App\Http\Requests\DeleteUserRequest;
 
@@ -46,100 +40,6 @@ class DataController extends Controller
     public function getProtocols(Request $request): JsonResponse
     {
         return response()->json(Protocol::all());
-    }
-
-    public function getUser($address): JsonResponse {
-        $user = User::byAddress($address)->first();
-        if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
-
-        $user->load(['teammates','pendingSentGifts','profile']);
-        return response()->json($user);
-    }
-
-    public function getUser2($circle_id, $address): JsonResponse {
-        $query = User::byAddress($address);
-        if($circle_id)
-            $query->where('circle_id',$circle_id);
-        $user = $query->first();
-        if(!$user)
-        {
-            $user = User::byAddress($address)->where('admin_view', 1)->first();
-            if($user)
-                return response()->json($user);
-
-            return response()->json(['error'=> 'Address not found'],422);
-        }
-
-        $user->load(['teammates','pendingSentGifts','profile']);
-        return response()->json($user);
-    }
-
-    public function getUsers(Request $request, $circle_id = null): JsonResponse {
-        $data = $request->all();
-
-        $users = !empty($data['protocol_id']) ? User::with(['profile'])->protocolFilter($data) : User::with(['profile'])->filter($data);
-        if($circle_id)
-            $users->where('circle_id',$circle_id);
-
-        if(!empty($data['deleted_users']) && $data['deleted_users'])
-            $users->withTrashed();
-        $users = $users->get();
-        return response()->json($users);
-    }
-
-    public function createUser(AdminCreateUserRequest $request, $circle_id): JsonResponse {
-        $data = $request->only('address','name','starting_tokens','non_giver','circle_id','give_token_remaining','fixed_non_receiver', 'role');
-        if($data['fixed_non_receiver'] ==1 ) {
-            $data['non_receiver'] = 1;
-        }
-        $data['address'] =  strtolower($data['address']);
-        $data['circle_id'] =  $circle_id;
-        $user = new User($data);
-        $user->save();
-        if(!Profile::where('address' , $data['address'])->exists()) {
-            $profile = new Profile(['address' => $data['address']]);
-            $profile->save();
-        }
-        $user->circle->notify(new AddNewUser($request->admin_user, $user));
-        $user->refresh();
-        return response()->json($user);
-    }
-
-    public function updateUser(UserRequest $request, $circle_id, $address): JsonResponse
-    {
-        $user = $request->user;
-        if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
-
-        $data = $request->only('name','non_receiver','bio','epoch_first_visit');
-        if($user->fixed_non_receiver ==1 ) {
-            $data['non_receiver'] = 1;
-        }
-        $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
-        return response()->json($user);
-    }
-
-    public function adminUpdateUser(AdminUserRequest $request, $circle_id, $address): JsonResponse
-    {
-        $user = $request->user;
-        if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
-        $data = $request->only('name','address','starting_tokens','non_giver','fixed_non_receiver', 'role');
-
-        if($data['fixed_non_receiver'] ==1 ) {
-            $data['non_receiver'] = 1;
-        }
-        if($user->starting_tokens != $data['starting_tokens']) {
-           if( $user->circle->epoches()->isActiveDate()->first()) {
-               return response()->json(['error'=> 'Cannot update starting tokens during an active epoch'],422);
-           } else {
-               $data['give_token_remaining'] = $data['starting_tokens'];
-           }
-        }
-        $data['address'] =  strtolower($data['address']);
-        $user = $this->repo->removeAllPendingGiftsReceived($user, $data);
-        return response()->json($user);
     }
 
     public function newUpdateGifts(NewGiftRequest $request, $circle_id, $address): JsonResponse
@@ -190,7 +90,7 @@ class DataController extends Controller
 
         return response()->json( Utils::queryCache($request,function () use($filters,$request) {
             return TokenGift::filter($filters)->limit(20000)->get();
-        }, 10, $circle_id));
+        }, 60, $circle_id));
     }
 
     public function updateTeammates(TeammatesRequest $request, $circle_id=null) : JsonResponse {
@@ -249,226 +149,12 @@ class DataController extends Controller
         }
 
         return response()->json(['error' => 'File Upload Failed' ,422]);
-//        dd(Storage::disk('s3')->allFiles(''));
-    }
-
-    public function epoches(Request $request, $circle_id) : JsonResponse  {
-        if (!$circle_id) {
-            return response()->json(['error' => 'Circle not Found'], 422);
-        }
-        $epoches = Epoch::where('circle_id', $circle_id);
-        if($request->current) {
-            $epoches->isActiveDate();
-        }
-        $epoches = $epoches->get();
-        return response()->json($epoches);
-    }
-
-    public function updateEpoch(newEpochRequest $request, $circle_id, Epoch $epoch) {
-        $now = Carbon::now();
-        $data = $request->only('start_date','grant','start_time','days','repeat');
-        $start_date = Carbon::createFromFormat('Y-m-d G:i', $data['start_date'] ." ". $data['start_time']);
-
-        if($epoch->circle_id != $circle_id) {
-            return response()->json(
-                ['message'=> "You are not authorized to update this epoch"], 422);
-        } else if ($epoch->ended == 1) {
-            return response()->json(
-                ['message'=> "You cannot update an epoch that has ended"], 422);
-            // check if an epoch that has started and changing startdate to later than current date
-        } else if($now >= $epoch->start_date && $start_date >= $now) {
-            return response()->json(
-                ['message'=> "You cannot have change the start date to later than now when epoch has already started"], 422);
-        }
-        if(!empty($data['repeat']) && $data['repeat'] > 0) {
-            $repeating = Epoch::where('circle_id',$circle_id)->where('id','!=',$epoch->id)->where('ended',0)->where('repeat','>',0)->exists();
-            if($repeating) {
-                return response()->json(
-                    ['message'=> "You cannot have more than one repeating active epoch"], 422);
-            }
-        }
-        $end_date = $start_date->copy()->addDays($data['days']);
-        $exist = Epoch::where('id','!=',$epoch->id)->checkOverlapDatetime(['circle_id'=> $circle_id,
-            'start_date' => $start_date, 'end_date' => $end_date])->first();
-        if($exist){
-            $startStr = $exist->start_date->format('m/d');
-            $endStr = $exist->end_date->format('m/d');
-            return response()->json(
-                ['message'=> "This epoch overlaps with an existing epoch that occurs between $startStr and $endStr\nPlease adjust epoch settings to avoid overlapping with existing epochs"], 422);
-        }
-        $data['start_date'] = $start_date;
-        $data['end_date'] = $end_date;
-        $data['circle_id'] = $circle_id;
-        $epoch->update($data);
-        return response()->json($epoch);
-    }
-
-    public function newCreateEpoch(newEpochRequest $request, $circle_id) : JsonResponse  {
-        $data = $request->only('start_date','grant','start_time','days','repeat');
-        $start_date = Carbon::createFromFormat('Y-m-d G:i', $data['start_date'] ." ". $data['start_time']);
-        $end_date = $start_date->copy()->addDays($data['days']);
-        if(!empty($data['repeat']) && $data['repeat'] > 0) {
-            $repeating = Epoch::where('circle_id',$circle_id)->where('ended',0)->where('repeat','>',0)->exists();
-            if($repeating) {
-                return response()->json(
-                    ['message'=> "You cannot have more than one repeating active epoch"], 422);
-            }
-        }
-        $exist = Epoch::checkOverlapDatetime(['circle_id'=> $circle_id,
-            'start_date' => $start_date, 'end_date' => $end_date])->first();
-        if($exist)  {
-            $startStr = $exist->start_date->format('m/d');
-            $endStr = $exist->end_date->format('m/d');
-            return response()->json(
-                ['message'=> "This epoch overlaps with an existing epoch that occurs between $startStr and $endStr\nPlease adjust epoch settings to avoid overlapping with existing epochs"], 422);
-        }
-        $data['start_date'] = $start_date;
-        $data['end_date'] = $end_date;
-        $data['circle_id'] = $circle_id;
-        $epoch = new Epoch($data);
-        $epoch->save();
-        return response()->json($epoch);
-    }
-
-    public function createEpoch(EpochRequest $request, $circle_id) : JsonResponse  {
-        $data = $request->only('start_date','end_date','grant');
-        $exist = Epoch::where('circle_id',$circle_id)->whereDate('start_date', '<=', $data['end_date'])->whereDate('end_date', '>=', $data['start_date'])->exists();
-        if($exist)  {
-            return response()->json(['message'=> 'New epoch has overlapping date with existing epoch'], 422);
-        }
-        $data['circle_id'] = $circle_id;
-        $epoch = new Epoch($data);
-        $epoch->save();
-        return response()->json($epoch);
-    }
-
-    public function deleteEpoch(DeleteEpochRequest $request, $circle_id, Epoch $epoch) : JsonResponse {
-        $today = Carbon::now();
-        if($epoch->circle_id != $circle_id) {
-            $error = ValidationException::withMessages([
-                'epoch' => ['You are not authorized to delete this epoch'],
-            ]);
-            throw $error;
-        }
-        else if ($epoch->start_date <= $today || $epoch->ended == 1) {
-            $error = ValidationException::withMessages([
-                'epoch' => ['You cannot delete an epoch that has started or ended'],
-            ]);
-            throw $error;
-        }
-
-        $epoch->delete();
-
-        return response()->json($epoch);
-    }
-
-    public function deleteUser(DeleteUserRequest $request, $circle_id, $address) : JsonResponse  {
-
-        $user = $request->user;
-        $data = $this->repo->deleteUser($user);
-        if(is_null($data)) {
-            $error = ValidationException::withMessages([
-                'failed' => ['Delete user failed please try again'],
-            ]);
-            throw $error;
-        } else {
-            return response()->json($data);
-        }
-    }
-
-    public function getActiveEpochs(Request $request) {
-
-        $query = Epoch::isActiveFutureDate()->where('ended',0) ;
-        if($request->circle_id) {
-            $query->where('circle_id', $request->circle_id);
-        }
-        $epochs = $query->get();
-        return response()->json($epochs);
     }
 
      public function burns(Request $request, $circle_id) : JsonResponse  {
-         $circle_id = Utils::getCircleIdByName($circle_id);
-         if (!$circle_id) {
-             return response()->json(['error' => 'Circle not Found'], 422);
-         }
          $burns = Burn::where('circle_id',$circle_id)->filter($request->all())->get();
          return response()->json($burns);
      }
 
-     public function getProfile(Request $request, $address) {
-        $profile = Profile::with(['users.circle.protocol','users.teammates','users.histories.epoch'])->byAddress($address)->first();
-        return response()->json($profile);
-     }
-
-     public function saveProfile(ProfileRequest $request, $address) {
-
-         $data = $request->only('skills','bio','telegram_username',
-             'discord_username','twitter_username','github_username','medium_username','website');
-         $profile = $request->profile;
-         if(!$profile) {
-             $data['address'] = strtolower($address);
-             $profile = new Profile($data);
-             $profile->save();
-         } else {
-             $profile->update($data);
-         }
-         if(!empty($data['telegram_username']) || !empty($data['discord_username'])) {
-             $profile->users()->update($request->only('telegram_username','discord_username'));
-         }
-         $profile->load(['users.circle.protocol','users.teammates','users.histories.epoch']);
-         return response()->json($profile);
-     }
-
-    public function uploadProfileAvatar(ProfileUploadRequest $request, $address) : JsonResponse {
-
-        $file = $request->file('file');
-        $image = Image::make($file);
-        $height = $image->height();
-        $width = $image->width();
-
-        if($width> 240) {
-            $height = $height * 240/$height;
-            $width = $width * 240/$width;
-        }
-
-        $resized = $image
-            ->resize($width, $height, function ($constraint) { $constraint->aspectRatio(); } )
-            ->encode($file->getCLientOriginalExtension(),80);
-        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
-        $ret = Storage::put($new_file_name, $resized);
-        if($ret) {
-            $profile = $request->profile;
-            if($profile->avatar && Storage::exists($profile->avatar)) {
-                Storage::delete($profile->avatar);
-            }
-
-            $profile->avatar = $new_file_name;
-            $profile->save();
-            return response()->json($profile);
-        }
-
-        return response()->json(['error' => 'File Upload Failed' ,422]);
-    }
-
-    public function uploadProfileBackground(ProfileUploadRequest $request, $address) : JsonResponse {
-
-        $file = $request->file('file');
-        $resized = Image::make($request->file('file'))
-            ->encode($file->getCLientOriginalExtension(),80);
-        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
-        $ret = Storage::put($new_file_name, $resized);
-        if($ret) {
-            $profile = $request->profile;
-            if($profile->background && Storage::exists($profile->background)) {
-                Storage::delete($profile->background);
-            }
-
-            $profile->background = $new_file_name;
-            $profile->save();
-            return response()->json($profile);
-        }
-
-        return response()->json(['error' => 'File Upload Failed' ,422]);
-    }
 
 }

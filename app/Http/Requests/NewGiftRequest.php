@@ -21,11 +21,10 @@ class NewGiftRequest extends FormRequest
         $address  = strtolower($this->get('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $existing_user = null;
-        $circle_id = null;
+        $circle_id = $this->route('circle_id');
         if($this->route('address')) {
             $existing_user =  User::byAddress($this->route('address'));
-            if($this->route('circle_id')) {
-                $circle_id = Utils::getCircleIdByName($this->route('circle_id'));
+            if($circle_id) {
                 $existing_user = $existing_user->where('circle_id', $circle_id);
             }
             $existing_user = $existing_user->first();

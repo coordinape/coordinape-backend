@@ -19,10 +19,9 @@ class TeammatesRequest extends FormRequest
         $signature = $this->get('signature');
         $address  = strtolower($this->get('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $circle_id = null;
+        $circle_id = $this->route('circle_id');
         $existing_user =  User::byAddress($address);
-        if($this->route('circle_id')) {
-            $circle_id = Utils::getCircleIdByName($this->route('circle_id'));
+        if($circle_id) {
             $existing_user = $existing_user->where('circle_id', $circle_id);
         }
         $existing_user = $existing_user->first();

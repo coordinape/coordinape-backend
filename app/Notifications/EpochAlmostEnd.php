@@ -34,7 +34,7 @@ class EpochAlmostEnd extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return env('TELEGRAM_BOT_TOKEN') ? [TelegramChannel::class] : [];
+        return config('telegram.token') ? [TelegramChannel::class] : [];
     }
 
     public function toTelegram($notifiable=null)

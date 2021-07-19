@@ -26,7 +26,7 @@ class Circle extends Model
 
     public function routeNotificationForTelegram()
     {
-        if(env('APP_DOMAIN') != 'coordinape.me')
+        if(config('app.domain') != 'coordinape.me')
             return '-573708082';
 
         return $this->telegram_id;

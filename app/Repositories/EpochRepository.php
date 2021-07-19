@@ -22,9 +22,11 @@ use Exception;
 class EpochRepository
 {
     protected $model;
+    protected $epochModel;
 
-    public function __construct(PendingTokenGift $model) {
+    public function __construct(PendingTokenGift $model, Epoch $epochModel) {
         $this->model = $model;
+        $this->epochModel = $epochModel;
     }
 
     public function endEpoch($circle_id) {
@@ -200,66 +202,6 @@ class EpochRepository
         return response()->stream($callback, 200, $headers);
     }
 
-    public function updateGifts($request, $address) {
-
-        $user = $request->user;
-        $gifts = $request->gifts;
-
-        $addresses = [];
-        foreach($gifts as $gift) {
-            $addresses[] = strtolower($gift['recipient_address']);
-        }
-
-        $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn(DB::raw('lower(address)'),$addresses)->get()->keyBy('address');
-        $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
-        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
-        $epoch_id = $activeEpoch->id;
-        DB::transaction(function () use ($users, $user, $gifts, $address, $pendingSentGiftsMap,$epoch_id) {
-            $token_used = 0;
-            $toKeep = [];
-            foreach ($gifts as $gift) {
-                $recipient_address = strtolower($gift['recipient_address']);
-                if ($users->has($recipient_address)) {
-                    if ($user->id == $users[$recipient_address]->id)
-                        continue;
-
-                    if($users[$recipient_address]->non_receiver == 1 || $users[$recipient_address]->fixed_non_receiver == 1) {
-                        $gift['tokens'] = 0;
-                    }
-
-                    $gift['sender_id'] = $user->id;
-                    $gift['sender_address'] = strtolower($address);
-                    $gift['recipient_address'] = $recipient_address;
-                    $gift['recipient_id'] = $users[$recipient_address]->id;
-                    $gift['epoch_id'] = $epoch_id;
-                    $token_used += $gift['tokens'];
-                    $pendingGift = $pendingSentGiftsMap->has($gift['recipient_id']) ? $pendingSentGiftsMap[$gift['recipient_id']] : null  ;
-
-                    if ($pendingGift) {
-                        if ($gift['tokens'] == 0 && $gift['note'] == '') {
-                            $pendingGift->delete();
-
-                        } else {
-                            $pendingGift->tokens = $gift['tokens'];
-                            $pendingGift->note = $gift['note'];
-                            $pendingGift->save();
-                        }
-                    } else {
-                        if ($gift['tokens'] == 0 && $gift['note'] == '')
-                            continue;
-
-                        $pendingGift = $user->pendingSentGifts()->create($gift);
-                    }
-
-                    $toKeep[] = $pendingGift->recipient_id;
-                    $users[$recipient_address]->give_token_received = $users[$recipient_address]->pendingReceivedGifts()->get()->SUM('tokens');
-                    $users[$recipient_address]->save();
-                }
-            }
-            $this->resetGifts($user, $toKeep);
-        },2);
-    }
-
     public function newUpdateGifts($request, $address) {
 
         $user = $request->user;
@@ -368,34 +310,6 @@ class EpochRepository
         });
     }
 
-    public function deleteUser($user) {
-        $pendingGifts = $user->pendingReceivedGifts;
-        $pendingGifts->load(['sender.pendingSentGifts']);
-        $existingGifts = $user->pendingSentGifts()->with('recipient')->get();
-
-        return DB::transaction(function () use ($user, $pendingGifts, $existingGifts) {
-            foreach($existingGifts as $existingGift) {
-                $rUser = $existingGift->recipient;
-                $existingGift->delete();
-                $rUser->give_token_received = $rUser->pendingReceivedGifts()->get()->SUM('tokens');
-                $rUser->save();
-            }
-            foreach($pendingGifts as $gift) {
-                $sender = $gift->sender;
-                $gift_token = $gift->tokens;
-                $gift->delete();
-                $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-                $sender->give_token_remaining = $sender->starting_tokens-$token_used;
-                $sender->save();
-            }
-
-            Teammate::where('team_mate_id', $user->id)->delete();
-            Teammate::where('user_id', $user->id)->delete();
-            $user->delete();
-            return $user;
-        },2);
-    }
-
     public function checkEpochNotifications($epoch) {
         if(!$epoch->notified_start) {
             $circle = $epoch->circle;
@@ -445,7 +359,6 @@ class EpochRepository
         }
     }
 
-
     public function dailyUpdate($epoch) {
 
         $circle = $epoch->circle;
@@ -480,5 +393,22 @@ class EpochRepository
         if($protocol->telegram_id && $circle->id!=5) {
             $protocol->notify(new DailyUpdate($epoch, $name_strs, $total_gifts_sent, $total_tokens_sent, $opt_outs, $has_sent, $total_users,$epoch_num,$circle_name));
         }
+    }
+
+    public function epoches($request, $circle_id) {
+
+        $epoches = $this->epochModel->where('circle_id', $circle_id);
+        if($request->current) {
+            $epoches->isActiveDate();
+        }
+        return $epoches->get();
+    }
+
+    public function getActiveEpochs($request) {
+        $query = $this->epochModel->isActiveFutureDate()->where('ended',0) ;
+        if($request->circle_id) {
+            $query->where('circle_id', $request->circle_id);
+        }
+        return $query->get();
     }
 }

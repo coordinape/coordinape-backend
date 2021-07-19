@@ -40,6 +40,6 @@ class UpdateWebHook extends Command
         $url = $this->argument('url');
         $client = new \GuzzleHttp\Client();
         $apiRequest = $client->request('GET',
-            "https://api.telegram.org/bot".env('TELEGRAM_BOT_TOKEN')."/setWebhook?url=$url");
+            "https://api.telegram.org/bot".config('telegram.token')."/setWebhook?url=$url");
     }
 }

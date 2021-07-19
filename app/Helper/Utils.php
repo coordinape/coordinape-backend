@@ -11,8 +11,6 @@ use App\Models\Circle;
 class Utils
 {
 
-    const circleMap = ['yearn'=>1 ];
-
     public static function personalEcRecover(string $message, string $signature, $withPrefix = true)
     {
         $message = $withPrefix ? self::personalSignAddHeader($message) : $message;
@@ -41,17 +39,6 @@ class Utils
     {
         // MUST be double quotes.
         return "\x19Ethereum Signed Message:\n" . strlen($message) . $message;
-    }
-
-    public static function getCircleIdByName($name) {
-
-        return $name;
-        if(array_key_exists($name,Utils::circleMap))
-            return Utils::circleMap[$name];
-
-        $circle = Circle::where('name',$name )->first();
-        return $circle ? $circle->id : null;
-
     }
 
     public static function queryCache($request,$callback,$minutes=1,$tags='default')
