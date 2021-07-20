@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use App\Helper\Utils;
 use App\Notifications\EpochEnd;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class EpochRepository
 {
@@ -41,45 +42,33 @@ class EpochRepository
             $epoch_number = $epoch_number + 1;
             $circle = $epoch->circle;
             $unalloc_users = $circle->users()->where('non_giver',0)->yetToSend()->get();
-//            $regifted_users = $circle->users()->where('give_token_received','>',0)->where('regift_percent','>',0)->get();
-            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
-//                foreach($regifted_users as $regifted_user) {
-//                    $burn = new Burn();
-//                    $burn['regift_percent'] = $regifted_user->regift_percent;
-//                    $burn['tokens_burnt'] = $regifted_user->regift_percent == 100 ? $regifted_user->give_token_received: ceil( $regifted_user->give_token_received / 100 * $regifted_user->regift_percent);
-//                    $burn['original_amount'] = $regifted_user->give_token_received;
-//                    $burn['circle_id'] = $circle_id;
-//                    $burn['epoch_id'] = $epoch->id;
-//                    $burn['user_id'] = $regifted_user->id;
-//                    $burn->save();
+//            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
+//                foreach($pending_gifts as $gift) {
+//                    $tokenGift = new TokenGift($gift->replicate()->toArray());
+//                    $tokenGift->epoch_id = $epoch->id;
+//                    $tokenGift->save();
 //                }
-
-                foreach($pending_gifts as $gift) {
-                    $tokenGift = new TokenGift($gift->replicate()->toArray());
-                    $tokenGift->epoch_id = $epoch->id;
-                    $tokenGift->save();
-                }
-
-                $this->model->where('circle_id',$circle_id)->delete();
-                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
-                User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
-                $users = User::where('circle_id',$circle_id)->get();
-                foreach($users as $user) {
-                    $user->histories()->create(['bio' => $user->bio,'epoch_id' => $epoch->id, 'circle_id' => $circle_id]);
-                }
-                $epoch->ended = 1;
-                $epoch->number = $epoch_number;
-                $epoch->save();
-
-            });
-            if(!$epoch->notified_end && $circle->telegram_id) {
-                $protocol = $circle->protocol;
-                $circle_name = $protocol->name.'/'.$circle->name;
-                $circle->notify(new EpochEnd($epoch_number,$circle_name,$unalloc_users));
-                $epoch->notified_end = Carbon::now();
-                $epoch->save();
-                Utils::purgeCache($circle_id);
-            }
+//
+//                $this->model->where('circle_id',$circle_id)->delete();
+//                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
+//                User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
+//                $users = User::where('circle_id',$circle_id)->get();
+//                foreach($users as $user) {
+//                    $user->histories()->create(['bio' => $user->bio,'epoch_id' => $epoch->id, 'circle_id' => $circle_id]);
+//                }
+//                $epoch->ended = 1;
+//                $epoch->number = $epoch_number;
+//                $epoch->save();
+//
+//            });
+//            if(!$epoch->notified_end && $circle->telegram_id) {
+//                $protocol = $circle->protocol;
+//                $circle_name = $protocol->name.'/'.$circle->name;
+//                $circle->notify(new EpochEnd($epoch_number,$circle_name,$unalloc_users));
+//                $epoch->notified_end = Carbon::now();
+//                $epoch->save();
+//                Utils::purgeCache($circle_id);
+//            }
 
             if($epoch->repeat) {
                 $days = $epoch->days;
@@ -93,8 +82,9 @@ class EpochRepository
                         break;
                     //monthly
                     case 2:
-                        $dayOfMonth = $epoch->start_date->day;
-                        $start_date = $start_date->addMonths(1)->day($dayOfMonth);
+                        $dayOfMonth = $epoch->repeat_day_of_month ?:$epoch->start_date->day;
+                        $start_date = $start_date->addMonths(1);
+                        $start_date = $start_date->day(min($dayOfMonth, $start_date->daysInMonth));
                         break;
                 }
 
@@ -105,16 +95,28 @@ class EpochRepository
 
                     // check overlap with existing epochs
                     $exist = Epoch::checkOverlapDatetime(['circle_id' => $circle_id,
-                                    'start_date' => $start_date, 'end_date' => $end_date ])->exists();
+                                    'start_date' => $start_date, 'end_date' => $end_date ])->first();
                     if(!$exist) {
-                        $newEpoch = new Epoch();
-                        $newEpoch->start_date = $start_date;
-                        $newEpoch->end_date = $end_date;
-                        $newEpoch->circle_id = $circle_id;
-                        $newEpoch->repeat = $epoch->repeat;
-                        $newEpoch->days = $days;
+                        $epochData = [
+                            'start_date' => $start_date,
+                            'end_date' => $end_date,
+                            'circle_id' => $circle_id,
+                            'repeat' => $epoch->repeat,
+                            'repeat_day_of_month' => $epoch->repeat_day_of_month,
+                            'days' => $days
+                        ];
+                        $newEpoch = new Epoch($epochData);
                         $newEpoch->save();
+                        $circle->notify(new SendSocialMessage("A new repeating epoch has just been created $start_date to $end_date ", false));
+                    } else {
+                        Log::warning('Repeating epoch cannot be created because of overlap', [
+                            'overlapped_epoch' => $exist, 'new_start_date' => $start_date, 'new_end_date', $end_date
+                        ]);
                     }
+                } else {
+                    Log::warning('Start date is earlier than current epoch end_date', [
+                        'epoch' => $epoch, 'new_start_date' => $start_date
+                    ]);
                 }
             }
         }

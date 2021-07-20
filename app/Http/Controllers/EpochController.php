@@ -33,6 +33,7 @@ class EpochController extends Controller
         $now = Carbon::now();
         $data = $request->only('start_date','grant','start_time','days','repeat');
         $start_date = Carbon::createFromFormat('Y-m-d G:i', $data['start_date'] ." ". $data['start_time']);
+        $end_date = $start_date->copy()->addDays($data['days']);
 
         if($epoch->circle_id != $circle_id) {
             return response()->json(
@@ -51,8 +52,10 @@ class EpochController extends Controller
                 return response()->json(
                     ['message'=> "You cannot have more than one repeating active epoch"], 422);
             }
+            if($data['repeat'] == 2) {
+                $data['repeat_day_of_month'] = $end_date->day;
+            }
         }
-        $end_date = $start_date->copy()->addDays($data['days']);
         $exist = Epoch::where('id','!=',$epoch->id)->checkOverlapDatetime(['circle_id'=> $circle_id,
             'start_date' => $start_date, 'end_date' => $end_date])->first();
         if($exist){
@@ -77,6 +80,10 @@ class EpochController extends Controller
             if($repeating) {
                 return response()->json(
                     ['message'=> "You cannot have more than one repeating active epoch"], 422);
+            }
+
+            if($data['repeat'] == 2) {
+                $data['repeat_day_of_month'] = $end_date->day;
             }
         }
         $exist = Epoch::checkOverlapDatetime(['circle_id'=> $circle_id,

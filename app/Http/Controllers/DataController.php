@@ -3,30 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\NewGiftRequest;
-use App\Models\Profile;
-use App\Notifications\AddNewUser;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use App\Models\PendingTokenGift;
-use App\Http\Requests\UserRequest;
 use DB;
 use App\Models\TokenGift;
 use App\Repositories\EpochRepository;
 use App\Http\Requests\CsvRequest;
 use App\Http\Requests\TeammatesRequest;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use Intervention\Image\Facades\Image;
-use App\Http\Requests\FileUploadRequest;
 use App\Helper\Utils;
-use App\Http\Requests\AdminCreateUserRequest;
-use App\Http\Requests\AdminUserRequest;
 use App\Models\Epoch;
 use App\Models\Protocol;
 use App\Models\Burn;
-use App\Http\Requests\DeleteUserRequest;
 
 class DataController extends Controller
 {
@@ -129,28 +118,6 @@ class DataController extends Controller
             return 'Epoch Not found';
 
         return $this->repo->getEpochCsv($epoch, $circle_id, $request->grant);
-    }
-
-    public function uploadAvatar(FileUploadRequest $request, $circle_id=null) : JsonResponse {
-
-        $file = $request->file('file');
-        $resized = Image::make($request->file('file'))
-            ->resize(100, null, function ($constraint) { $constraint->aspectRatio(); } )
-            ->encode($file->getCLientOriginalExtension(),80);
-        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
-        $ret = Storage::put($new_file_name, $resized);
-        if($ret) {
-            $user = User::byAddress($request->get('address'))->where('circle_id',$request->circle_id)->first();
-            if($user->avatar && Storage::exists($user->avatar)) {
-                Storage::delete($user->avatar);
-            }
-
-            $user->avatar = $new_file_name;
-            $user->save();
-            return response()->json($user);
-        }
-
-        return response()->json(['error' => 'File Upload Failed' ,422]);
     }
 
      public function burns(Request $request, $circle_id) : JsonResponse  {

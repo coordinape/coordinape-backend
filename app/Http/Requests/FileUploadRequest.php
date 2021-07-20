@@ -20,7 +20,7 @@ class FileUploadRequest extends FormRequest
         $address  = strtolower($this->get('address'));
         $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $circle_id = $this->route('circle_id');
-        $existing_user =  User::byAddress($address);
+        $existing_user =  User::byAddress($address)->isAdmin();
         if($circle_id) {
             $existing_user = $existing_user->where('circle_id', $circle_id);
         }

@@ -18,7 +18,8 @@ class Circle extends Model
         'vouching',
         'min_vouches',
         'nomination_days_limit',
-        'vouching_text'
+        'vouching_text',
+        'logo'
     ];
     protected $searchable = [
         'protocol_id',

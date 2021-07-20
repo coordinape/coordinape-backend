@@ -33,6 +33,8 @@ Route::prefix('{circle_id}')->group(function () {
         Route::post('/v2/epoches', [EpochController::class, 'newCreateEpoch']);
         Route::put('/epoches/{epoch}', [EpochController::class, 'updateEpoch']);
         Route::delete('/epoches/{epoch}', [EpochController::class, 'deleteEpoch']);
+        Route::post('/upload-logo', [CircleController::class, 'uploadCircleLogo']);
+
     });
     Route::get('/circles', [CircleController::class, 'getCircles']);
     Route::get('/users/{address}', [UserController::class, 'getUser2']);
@@ -42,7 +44,6 @@ Route::prefix('{circle_id}')->group(function () {
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
     Route::post('/v2/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
     Route::post('/teammates', [DataController::class, 'updateTeammates']);
-    Route::post('/upload', [DataController::class, 'uploadAvatar']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
     Route::get('/burns', [DataController::class, 'burns']);
     Route::post('/nominees', [NominationController::class, 'createNominee']);
