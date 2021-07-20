@@ -42,33 +42,33 @@ class EpochRepository
             $epoch_number = $epoch_number + 1;
             $circle = $epoch->circle;
             $unalloc_users = $circle->users()->where('non_giver',0)->yetToSend()->get();
-//            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
-//                foreach($pending_gifts as $gift) {
-//                    $tokenGift = new TokenGift($gift->replicate()->toArray());
-//                    $tokenGift->epoch_id = $epoch->id;
-//                    $tokenGift->save();
-//                }
-//
-//                $this->model->where('circle_id',$circle_id)->delete();
-//                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
-//                User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
-//                $users = User::where('circle_id',$circle_id)->get();
-//                foreach($users as $user) {
-//                    $user->histories()->create(['bio' => $user->bio,'epoch_id' => $epoch->id, 'circle_id' => $circle_id]);
-//                }
-//                $epoch->ended = 1;
-//                $epoch->number = $epoch_number;
-//                $epoch->save();
-//
-//            });
-//            if(!$epoch->notified_end && $circle->telegram_id) {
-//                $protocol = $circle->protocol;
-//                $circle_name = $protocol->name.'/'.$circle->name;
-//                $circle->notify(new EpochEnd($epoch_number,$circle_name,$unalloc_users));
-//                $epoch->notified_end = Carbon::now();
-//                $epoch->save();
-//                Utils::purgeCache($circle_id);
-//            }
+            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
+                foreach($pending_gifts as $gift) {
+                    $tokenGift = new TokenGift($gift->replicate()->toArray());
+                    $tokenGift->epoch_id = $epoch->id;
+                    $tokenGift->save();
+                }
+
+                $this->model->where('circle_id',$circle_id)->delete();
+                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
+                User::where('circle_id',$circle_id)->update(['give_token_received'=>0, 'give_token_remaining'=>DB::raw("`starting_tokens`"), 'epoch_first_visit' => 1]);
+                $users = User::where('circle_id',$circle_id)->get();
+                foreach($users as $user) {
+                    $user->histories()->create(['bio' => $user->bio,'epoch_id' => $epoch->id, 'circle_id' => $circle_id]);
+                }
+                $epoch->ended = 1;
+                $epoch->number = $epoch_number;
+                $epoch->save();
+
+            });
+            if(!$epoch->notified_end && $circle->telegram_id) {
+                $protocol = $circle->protocol;
+                $circle_name = $protocol->name.'/'.$circle->name;
+                $circle->notify(new EpochEnd($epoch_number,$circle_name,$unalloc_users));
+                $epoch->notified_end = Carbon::now();
+                $epoch->save();
+                Utils::purgeCache($circle_id);
+            }
 
             if($epoch->repeat) {
                 $days = $epoch->days;
