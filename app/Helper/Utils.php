@@ -51,7 +51,7 @@ class Utils
         $queryString = http_build_query($queryParams);
 
         $fullUrl = "{$url}?{$queryString}";
-        if(env('CACHE_DRIVER')=='redis')
+        if(config('cache.default') == 'redis')
             return Cache::tags($tags)->remember($fullUrl, $minutes, $callback);
 
         return Cache::remember($fullUrl, $minutes, $callback);
@@ -60,7 +60,7 @@ class Utils
 
     public static function purgeCache($tag)
     {
-        if(env('CACHE_DRIVER')=='redis')
+        if(config('cache.default') == 'redis')
             Cache::tags([$tag,'default'])->flush();
     }
 

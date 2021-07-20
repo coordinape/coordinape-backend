@@ -67,9 +67,8 @@ class EpochRepository
                 $circle->notify(new EpochEnd($epoch_number,$circle_name,$unalloc_users));
                 $epoch->notified_end = Carbon::now();
                 $epoch->save();
-                Utils::purgeCache($circle_id);
             }
-
+            Utils::purgeCache($circle_id);
             if($epoch->repeat) {
                 $days = $epoch->days;
                 $start_date = $epoch->start_date;
