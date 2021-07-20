@@ -53,7 +53,7 @@ class EpochController extends Controller
                     ['message'=> "You cannot have more than one repeating active epoch"], 422);
             }
             if($data['repeat'] == 2) {
-                $data['repeat_day_of_month'] = $end_date->day;
+                $data['repeat_day_of_month'] = $start_date->day;
             }
         }
         $exist = Epoch::where('id','!=',$epoch->id)->checkOverlapDatetime(['circle_id'=> $circle_id,
@@ -83,7 +83,7 @@ class EpochController extends Controller
             }
 
             if($data['repeat'] == 2) {
-                $data['repeat_day_of_month'] = $end_date->day;
+                $data['repeat_day_of_month'] = $start_date->day;
             }
         }
         $exist = Epoch::checkOverlapDatetime(['circle_id'=> $circle_id,
