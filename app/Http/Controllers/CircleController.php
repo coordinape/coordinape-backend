@@ -30,7 +30,7 @@ class CircleController extends Controller
         return response()->json($this->repo->createCircle($request));
     }
 
-    public function updateCircle( CircleRequest $request, $circle_id=null, Circle $circle): JsonResponse
+    public function updateCircle( CircleRequest $request, Circle $circle, $circle_id=null): JsonResponse
     {
         return response()->json($this->repo->updateCircle($circle, $request));
     }
