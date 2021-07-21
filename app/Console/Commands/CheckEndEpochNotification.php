@@ -50,7 +50,7 @@ class CheckEndEpochNotification extends Command
         foreach($epoches as $epoch) {
             $circle = $epoch->circle;
 
-            if($circle->telegram_id && $epoch->number)
+            if(($circle->telegram_id || $circle->discord_webhook) && $epoch->number)
             {
                 $protocol = $circle->protocol;
                 $circle_name = $protocol->name.'/'.$circle->name;

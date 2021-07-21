@@ -300,7 +300,7 @@ class EpochRepository
                 }
                 $updateData['give_token_received'] = 0;
                 $circle = $user->circle;
-                if($circle->telegram_id)
+                if($circle->telegram_id || $circle->discord_webhook)
                 {
                     $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
                 }

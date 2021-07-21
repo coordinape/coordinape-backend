@@ -46,9 +46,9 @@ class CheckEpochNotifications extends Command
              return $q->whereNull('notified_start')->orWhereNull('notified_before_end');
         })->get();
 
-//        dd($epoches);
         foreach($epoches as $epoch) {
-            if($epoch->circle->telegram_id && $epoch->ended == 0)
+            $circle = $epoch->circle;
+            if(($circle->telegram_id || $circle->discord_webhook) && $epoch->ended == 0)
                 $this->repo->checkEpochNotifications($epoch);
         }
     }

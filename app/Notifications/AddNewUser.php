@@ -10,6 +10,8 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use App\Helper\Utils;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 
 class AddNewUser extends Notification implements ShouldQueue
 {
@@ -35,17 +37,39 @@ class AddNewUser extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+        if($notifiable->discord_webhook)
+            $channels[] = DiscordWebhookChannel::class;
+
+        return $channels;
+    }
+
+    private function getContent() {
+        $user_name = Utils::cleanStr($this->user->name);
+        $user_address = $this->user->address;
+        $admin_user_name = Utils::cleanStr($this->admin_user->name);
+        return "$user_name $user_address has just been added by $admin_user_name";
     }
 
     public function toTelegram($notifiable=null)
     {
-        $user_name = Utils::cleanStr($this->user->name);
-        $user_address = $this->user->address;
-        $admin_user_name = Utils::cleanStr($this->admin_user->name);
+
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$user_name $user_address has just been added by $admin_user_name");
+            ->content($this->getContent());
+    }
+
+    public function toDiscord($notifiable=null)
+    {
+        $message = DiscordMessage::create()
+            ->content($this->getContent());
+        if($this->admin_user->avatar) {
+            $message->avatar('https://coordinape.s3.amazonaws.com/'.$this->admin_user->avatar);
+        }
+        return $message;
+
     }
 
     /**

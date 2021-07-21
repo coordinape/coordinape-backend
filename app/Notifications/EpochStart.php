@@ -8,6 +8,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramMessage;
 use NotificationChannels\Telegram\TelegramChannel;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 
 
 class EpochStart extends Notification implements ShouldQueue
@@ -36,21 +38,36 @@ class EpochStart extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+        if($notifiable->discord_webhook)
+            $channels[] = DiscordWebhookChannel::class;
+
+        return $channels;
     }
 
-    public function toTelegram($notifiable=null)
-    {
+    private function getContent() {
         $name = '_'.$this->circle_name.'_';
         $start_date = $this->epoch->start_date->format('Y/m/d H:i T');
         $end_date = $this->epoch->end_date->format('Y/m/d H:i T');
         $usersCount = $this->circle->users()->where('is_hidden',0)->count();
+        return "A new $name epoch is active !\n$usersCount users will be participating and the duration of the epoch will be between:\n$start_date - $end_date";
+    }
+
+    public function toTelegram($notifiable=null)
+    {
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("A new $name epoch is active !\n$usersCount users will be participating and the duration of the epoch will be between:\n$start_date - $end_date")
+            ->content($this->getContent())
             ->button('Start Allocating GIVES', 'https://app.coordinape.com/allocation');
     }
 
+    public function toDiscord($notifiable=null)
+    {
+        return DiscordMessage::create()
+            ->content($this->getContent());
+    }
 //    /**
 //     * Get the mail representation of the notification.
 //     *

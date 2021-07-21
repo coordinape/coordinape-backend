@@ -9,6 +9,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 
 class SendSocialMessage extends Notification implements ShouldQueue
 {
@@ -36,15 +38,31 @@ class SendSocialMessage extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+        if($notifiable->discord_webhook)
+            $channels[] = DiscordWebhookChannel::class;
+
+        return $channels;
+    }
+
+    private function getContent() {
+        return  $this->sanitize? Utils::cleanStr($this->message): $this->message;
     }
 
     public function toTelegram($notifiable=null)
     {
-        $message = $this->sanitize? Utils::cleanStr($this->message): $this->message;
         return TelegramMessage::create()
             // Markdown supported.
-            ->content($message);
+            ->content($this->getContent());
+    }
+
+    public function toDiscord($notifiable=null)
+    {
+        return DiscordMessage::create()
+            ->content($this->getContent());
+
     }
 
     /**

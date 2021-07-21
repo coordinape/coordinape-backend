@@ -19,7 +19,8 @@ class Circle extends Model
         'min_vouches',
         'nomination_days_limit',
         'vouching_text',
-        'logo'
+        'logo',
+        'discord_webhook'
     ];
     protected $searchable = [
         'protocol_id',
@@ -31,6 +32,11 @@ class Circle extends Model
             return '-573708082';
 
         return $this->telegram_id;
+    }
+
+    public function routeNotificationForDiscord()
+    {
+        return $this->discord_webhook;
     }
 
     public function scopeFilter($query, $filters) {
