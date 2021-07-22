@@ -636,4 +636,8 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
         return $user;
     }
+
+    public function discordTest(Request $request) {
+        Log::info($request->all());
+    }
 }
