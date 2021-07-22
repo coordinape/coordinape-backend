@@ -46,7 +46,7 @@ class CircleRequest extends FormRequest
             'vouching'  => !empty($data['vouching']) ? $data['vouching']:1,
             'min_vouches'  => !empty($data['min_vouches']) ? $data['min_vouches']:3,
             'nomination_days_limit' => !empty($data['nomination_days_limit']) ? $data['nomination_days_limit']:14,
-            'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:null,
+            'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:'',
         ]);
     }
 
@@ -65,8 +65,8 @@ class CircleRequest extends FormRequest
             'vouching' => 'integer|min:0|max:1',
             'min_vouches' => 'integer|min:1',
             'nomination_days_limit' => 'integer|min:1',
-            'vouching_text' => 'string:max:5000',
-            'alloc_text' => 'string:max:5000',
+            'vouching_text' => 'string|max:5000',
+            'alloc_text' => 'string|max:5000',
         ];
     }
 }
