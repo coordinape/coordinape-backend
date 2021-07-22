@@ -30,12 +30,12 @@ class CircleController extends Controller
         return response()->json($this->repo->createCircle($request));
     }
 
-    public function updateCircle( CircleRequest $request, Circle $circle, $circle_id=null): JsonResponse
+    public function updateCircle( CircleRequest $request, Circle $circle, $circle_id): JsonResponse
     {
         return response()->json($this->repo->updateCircle($circle, $request));
     }
 
-    public function uploadCircleLogo(FileUploadRequest $request, $circle_id=null) : JsonResponse {
+    public function uploadCircleLogo(FileUploadRequest $request, $circle_id) : JsonResponse {
 
         $file = $request->file('file');
         $resized = Image::make($request->file('file'))
