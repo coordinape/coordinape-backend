@@ -16,7 +16,7 @@ class Utils
 
     const VALID = '0x1626ba7e';
     public static function validateSignature(string $address, string $message, string $signature, string $hash = null) {
-
+        $address = strtolower($address);
         if($hash) {
             return self::validateContractSignature($address, $hash, $signature);
         }
