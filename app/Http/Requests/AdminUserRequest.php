@@ -26,14 +26,13 @@ class AdminUserRequest extends FormRequest
             $admin_user = User::byAddress($address)->isAdmin()->where('circle_id', $circle_id)->first();
             $updating_user = User::byAddress($this->route('address'))->where('circle_id', $circle_id)->first();
         }
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $this->merge([
             'user' => $updating_user,
             'circle_id' => $circle_id
         ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-
-        return $admin_user && $updating_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+        return $admin_user && $valid_signature;
     }
 
     protected function prepareForValidation()

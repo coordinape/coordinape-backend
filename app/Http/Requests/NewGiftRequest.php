@@ -19,7 +19,6 @@ class NewGiftRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = strtolower($this->get('address'));
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $existing_user = null;
         $circle_id = $this->route('circle_id');
         if($this->route('address')) {
@@ -33,8 +32,9 @@ class NewGiftRequest extends FormRequest
             'user' => $existing_user,
             'circle_id' => $circle_id
         ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-        return $existing_user  && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+        return $existing_user  && $valid_signature;
     }
 
     protected function prepareForValidation()

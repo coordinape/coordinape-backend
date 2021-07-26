@@ -24,13 +24,14 @@ class DeleteEpochRequest extends FormRequest
         } else {
             return false;
         }
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $this->merge([
             'circle_id' => $circle_id
         ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
 
-        return $admin_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+
+        return $admin_user && $valid_signature;
     }
 
     /**

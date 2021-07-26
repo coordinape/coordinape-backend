@@ -3,7 +3,6 @@
 
 namespace App\Repositories;
 use App\Models\PendingTokenGift;
-use App\Models\Teammate;
 use App\Models\TokenGift;
 use App\Models\Epoch;
 use App\Notifications\BotLaunch;
@@ -205,20 +204,19 @@ class EpochRepository
 
     public function newUpdateGifts($request, $address) {
 
-        $user = $request->user;
-        $gifts = $request->gifts;
-
-        $ids = [];
-        foreach($gifts as $gift) {
-            $ids[] = $gift['recipient_id'];
-        }
-
-        $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
-        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
-        $epoch_id = $activeEpoch->id;
-        $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
-        DB::transaction(function () use ($users, $user, $gifts, $ids, $pendingSentGiftsMap, $address, $epoch_id) {
+        DB::transaction(function () use ($address, $request) {
             $token_used = 0;
+            $user = $request->user;
+            $gifts = $request->gifts;
+
+            $ids = [];
+            foreach($gifts as $gift) {
+                $ids[] = $gift['recipient_id'];
+            }
+            $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
+            $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
+            $epoch_id = $activeEpoch->id;
+            $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
             foreach ($gifts as $gift) {
                 $recipient_id = $gift['recipient_id'];
                 if ($users->has($recipient_id)) {

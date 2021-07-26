@@ -322,7 +322,6 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                     foreach($lastEpochGifts as $epochGift) {
                         $recipientUser = $epochGift->recipient;
                         if($epochGift->recipient) {
-                            $user->teammates()->syncWithoutDetaching([$recipientUser->id]);
                             $tokenGift = new PendingTokenGift($epochGift->replicate(['created_at','updated_at','epoch_id','dts_created'])->toArray());
                             $tokenGift->sender_address = $user->address;
                             $tokenGift->recipient_address = $recipientUser->address;
@@ -420,7 +419,6 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                     DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername, $optOutText,$epoch_id) {
                         $pendingSentGifts = $user->pendingSentGifts;
                         $remainingGives = $user->give_token_remaining;
-                        $user->teammates()->syncWithoutDetaching([$recipientUser->id]);
                         foreach($pendingSentGifts as $gift) {
                             if($gift->recipient_id==$recipientUser->id) {
                                 if(($remainingGives + $gift->tokens - $amount) < 0) {
