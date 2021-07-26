@@ -73,6 +73,9 @@ Route::get('/active-epochs',[EpochController::class, 'getActiveEpochs']);
 Route::post("/".config('telegram.token')."/bot-update", [BotController::class,'webHook']);
 
 Route::post('/discord-bot', [BotController::class, 'discordTest']);
+Route::get('/debug-sentry', function () {
+    throw new Exception('My first Sentry error!');
+});
 Route::fallback(function(){
     return response()->json(['message' => 'Endpoint Not Found'], 404);
 })->name('api.fallback.404');
