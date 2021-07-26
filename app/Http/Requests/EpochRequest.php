@@ -18,7 +18,6 @@ class EpochRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = $this->get('address');
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $existing_user =  User::byAddress($address)->isAdmin();
         if(!$this->route('circle_id'))
             return false;
@@ -30,8 +29,10 @@ class EpochRequest extends FormRequest
             'user' => $existing_user,
             'circle_id' => $circle_id
         ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-        return $existing_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+
+        return $existing_user && $valid_signature;
     }
 
     protected function prepareForValidation() {

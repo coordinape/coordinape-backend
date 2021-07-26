@@ -21,13 +21,14 @@ class AdminCreateUserRequest extends FormRequest
         } else {
             return false;
         }
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
         $this->merge([
             'circle_id' => $circle_id,
             'admin_user' => $admin_user
         ]);
-        return $admin_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+        return $admin_user && $valid_signature;
     }
 
     protected function prepareForValidation()

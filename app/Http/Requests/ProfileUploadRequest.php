@@ -18,13 +18,13 @@ class ProfileUploadRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = strtolower($this->route('address'));
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $profile =  Profile::byAddress($address)->first();
         $this->merge([
             'profile' => $profile,
         ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-        return $profile && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+        return $profile && $valid_signature;
     }
 
     /**

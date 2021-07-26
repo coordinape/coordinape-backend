@@ -16,14 +16,14 @@ class VouchRequest extends FormRequest
         $address  = $this->get('address');
         $circle_id =  $this->route('circle_id');
         $user = User::with('circle')->byAddress($address)->where('circle_id', $circle_id)->first();
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $this->merge([
             'user' => $user,
             'circle_id' => $circle_id,
             'circle' => $user->circle
         ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-        return $user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+        return $user && $valid_signature;
     }
 
     protected function prepareForValidation()

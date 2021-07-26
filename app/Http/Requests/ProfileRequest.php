@@ -20,11 +20,10 @@ class ProfileRequest extends FormRequest
         $data = $this->get('data');
         $signature = $this->get('signature');
         $address  = $this->route('address');
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
         $user = User::byAddress($address)->first();
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-
-        return $user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        $hash = $this->get('hash');
+        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
+        return $user && $valid_signature;
     }
 
     protected function prepareForValidation()
