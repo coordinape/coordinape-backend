@@ -16,6 +16,8 @@ use App\Helper\Utils;
 use App\Models\Epoch;
 use App\Models\Protocol;
 use App\Models\Burn;
+use Illuminate\Support\Facades\Log;
+
 
 class DataController extends Controller
 {
@@ -34,6 +36,10 @@ class DataController extends Controller
     public function newUpdateGifts(NewGiftRequest $request, $circle_id, $address): JsonResponse
     {
         $user = $request->user;
+        if ($user->non_giver) {
+            return response()->json(['error'=>'User does not have permission to give'], 403);
+        };
+
         $this->repo->newUpdateGifts($request, $address);
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
