@@ -53,11 +53,6 @@ class TeammatesRequest extends FormRequest
      */
     public function rules()
     {
-//        $user = $this->user;
-//        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
-//        if($activeEpoch && $activeEpoch->is_regift_phase) {
-//            throw new ConflictHttpException('Not allowed to edit teammates in regifting phase');
-//        }
         return ['teammates.*'=> 'integer'];
     }
 }
