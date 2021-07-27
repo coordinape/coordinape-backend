@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AdminCreateUserRequest;
 use App\Http\Requests\AdminUserRequest;
-use App\Http\Requests\DeleteUserRequest;
 use App\Http\Requests\UserRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,7 +78,7 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function deleteUser(DeleteUserRequest $request, $circle_id, $address) : JsonResponse  {
+    public function deleteUser(Request $request, $circle_id, $address) : JsonResponse  {
 
         $user = $request->user;
         $data = $this->repo->deleteUser($user);

@@ -2,10 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
@@ -23,10 +20,8 @@ class UserRequest extends FormRequest
     {
         $data = json_decode($this->get('data'), true);
         $circle_id = $this->route('circle_id');
-        $existing_user =  User::byAddress($this->route('address'))->where('circle_id', $circle_id)->first();
         $this->merge([
             'data' => $data,
-            'user' => $existing_user,
             'name' => !empty($data['name']) ? $data['name']:null,
             'circle_id' => $circle_id,
             'non_receiver' => !empty($data['non_receiver']) ? $data['non_receiver']:0,

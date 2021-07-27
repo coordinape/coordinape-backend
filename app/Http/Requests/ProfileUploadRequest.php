@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\Profile;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProfileUploadRequest extends FormRequest

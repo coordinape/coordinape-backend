@@ -2,10 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Log;
 
 class TeammatesRequest extends FormRequest
 {

@@ -26,7 +26,7 @@ class VerifySignature
         if($request->route('circle_id'))
         {
             $circle_id = $request->route('circle_id');
-            $existing_user =  User::byAddress($request->route('address'))->where('circle_id', $circle_id)->first();
+            $existing_user =  User::byAddress($address)->where('circle_id', $circle_id)->first();
             $request->merge([
                 'user' => $existing_user,
             ]);

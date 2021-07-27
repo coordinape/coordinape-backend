@@ -15,7 +15,6 @@ use App\Http\Requests\TeammatesRequest;
 use App\Helper\Utils;
 use App\Models\Epoch;
 use App\Models\Protocol;
-use App\Models\Burn;
 use Illuminate\Support\Facades\Log;
 
 

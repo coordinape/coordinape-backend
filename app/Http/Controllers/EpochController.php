@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\DeleteEpochRequest;
 use App\Http\Requests\EpochRequest;
 use App\Http\Requests\NewEpochRequest;
 use App\Models\Epoch;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use App\Repositories\EpochRepository;
 
 class EpochController extends Controller
@@ -114,7 +112,7 @@ class EpochController extends Controller
         return response()->json($epoch);
     }
 
-    public function deleteEpoch(DeleteEpochRequest $request, $circle_id, Epoch $epoch) : JsonResponse {
+    public function deleteEpoch(Request $request, $circle_id, Epoch $epoch) : JsonResponse {
         $today = Carbon::now();
         if($epoch->circle_id != $circle_id) {
             return response()->json(['message'=> 'You are not authorized to delete this epoch'], 403);
