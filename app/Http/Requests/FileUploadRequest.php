@@ -42,7 +42,7 @@ class FileUploadRequest extends FormRequest
     public function rules()
     {
         return [
-            'file' => 'required|image|max:10240',
+            'file' => 'required|image|max:10240|mimes:jpg,bmp,png,gif',
             'address' => 'required',
             'signature' => 'required',
             'data' => 'required'
