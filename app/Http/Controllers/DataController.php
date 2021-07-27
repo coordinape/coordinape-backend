@@ -40,7 +40,7 @@ class DataController extends Controller
             return response()->json(['message'=>'User does not have permission to give'], 403);
         };
 
-        $this->repo->newUpdateGifts($request, $address, $circle_id);
+        $this->repo->newUpdateGifts($request, $user->address, $circle_id);
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }

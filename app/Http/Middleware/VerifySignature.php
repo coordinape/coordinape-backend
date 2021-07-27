@@ -30,9 +30,11 @@ class VerifySignature
             $request->merge([
                 'user' => $existing_user,
             ]);
+            if(!$existing_user)
+                abort(403, 'You are not authorized to perform this action');
         }
 
-        if(!$existing_user || !Utils::validateSignature($address, $data, $signature, $hash))
+        if(!Utils::validateSignature($address, $data, $signature, $hash))
             abort(403, 'You are not authorized to perform this action');
 
         return $next($request);

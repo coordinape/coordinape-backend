@@ -21,11 +21,11 @@ class ProfileController extends Controller
     }
 
     public function saveProfile(ProfileRequest $request, $address) {
-        return response()->json($this->repo->saveProfile($request, $address));
+        return response()->json($this->repo->saveProfile($request, $request->address));
     }
 
     public function uploadProfileAvatar(ProfileUploadRequest $request, $address) : JsonResponse {
-        $profile = $this->repo->uploadProfileAvatar($request, $address);
+        $profile = $this->repo->uploadProfileAvatar($request, $request->address);
         if($profile)
             return response()->json($profile);
 
@@ -33,7 +33,7 @@ class ProfileController extends Controller
     }
 
     public function uploadProfileBackground(ProfileUploadRequest $request, $address) : JsonResponse {
-       $profile = $this->repo->uploadProfileBackground($request, $address);
+       $profile = $this->repo->uploadProfileBackground($request, $request->address);
        if($profile)
            return response()->json($profile);
 
