@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\Profile;
@@ -17,22 +15,17 @@ class ProfileRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->route('address');
-        $user = User::byAddress($address)->first();
-        $hash = $this->get('hash');
-        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
-        return $user && $valid_signature;
+        return true;
     }
 
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $profile = Profile::byAddress($this->route('address'))->first();
+        $profile =  Profile::byAddress($this->get('address'))->first();
+        $profile_id = $profile ? $profile->id : null;
         $this->merge([
             'data' => $data,
-            'profile' => $profile,
+            'profile_id' => $profile_id,
             'bio' => !empty($data['bio']) ? $data['bio']:null,
             'skills' => !empty($data['skills']) ? $data['skills']:null,
             'github_username' => !empty($data['github_username']) ? $data['github_username']:null,
@@ -51,7 +44,7 @@ class ProfileRequest extends FormRequest
      */
     public function rules()
     {
-        $profile_id = $this->profile ? $this->profile->id:null;
+        $profile_id = $this->profile_id;
         return [
             'telegram_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
             'discord_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],

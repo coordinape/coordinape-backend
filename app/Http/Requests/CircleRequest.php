@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CircleRequest extends FormRequest
@@ -15,23 +13,7 @@ class CircleRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->get('address');
-        $circle_id = $this->route('circle_id');
-        $existing_user =  User::byAddress($address)->isAdmin();
-        if($circle_id) {
-            $existing_user = $existing_user->where('circle_id', $circle_id);
-        }
-        $existing_user = $existing_user->first();
-        $this->merge([
-            'user' => $existing_user,
-            'circle_id' => $circle_id
-        ]);
-
-        $hash = $this->get('hash');
-        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
-        return $existing_user && $valid_signature;
+       return true;
     }
 
     protected function prepareForValidation()

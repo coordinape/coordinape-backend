@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CircleRequest;
 use App\Http\Requests\FileUploadRequest;
 use App\Models\Circle;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Repositories\CircleRepository;
@@ -52,7 +51,7 @@ class CircleController extends Controller
             $circle->save();
             return response()->json($circle);
         }
-        return response()->json(['error' => 'File Upload Failed' ,422]);
+        return response()->json(['message'=> 'File Upload Failed' ,422]);
     }
 
 }

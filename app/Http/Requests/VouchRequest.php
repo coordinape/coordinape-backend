@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -11,19 +9,7 @@ class VouchRequest extends FormRequest
 {
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->get('address');
-        $circle_id =  $this->route('circle_id');
-        $user = User::with('circle')->byAddress($address)->where('circle_id', $circle_id)->first();
-        $this->merge([
-            'user' => $user,
-            'circle_id' => $circle_id,
-            'circle' => $user->circle
-        ]);
-        $hash = $this->get('hash');
-        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
-        return $user && $valid_signature;
+        return true;
     }
 
     protected function prepareForValidation()
