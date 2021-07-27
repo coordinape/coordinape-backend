@@ -202,9 +202,9 @@ class EpochRepository
         return response()->stream($callback, 200, $headers);
     }
 
-    public function newUpdateGifts($request, $address) {
+    public function newUpdateGifts($request, $address, $circle_id) {
 
-        DB::transaction(function () use ($address, $request) {
+        DB::transaction(function () use ($address, $request, $circle_id) {
             $token_used = 0;
             $user = $request->user;
             $gifts = $request->gifts;
@@ -213,7 +213,7 @@ class EpochRepository
             foreach($gifts as $gift) {
                 $ids[] = $gift['recipient_id'];
             }
-            $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
+            $users = User::where('circle_id',$circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
             $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
             $epoch_id = $activeEpoch->id;
             $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');

@@ -16,11 +16,7 @@ class UserRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->get('address');
-        $hash = $this->get('hash');
-        return Utils::validateSignature($address, $data, $signature, $hash);
+       return true;
     }
 
     protected function prepareForValidation()

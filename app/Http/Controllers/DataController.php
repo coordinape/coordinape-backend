@@ -37,10 +37,10 @@ class DataController extends Controller
     {
         $user = $request->user;
         if ($user->non_giver) {
-            return response()->json(['error'=>'User does not have permission to give'], 403);
+            return response()->json(['message'=>'User does not have permission to give'], 403);
         };
 
-        $this->repo->newUpdateGifts($request, $address);
+        $this->repo->newUpdateGifts($request, $address, $circle_id);
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
@@ -90,11 +90,11 @@ class DataController extends Controller
         }, 60, $circle_id));
     }
 
-    public function updateTeammates(TeammatesRequest $request, $circle_id=null) : JsonResponse {
+    public function updateTeammates(TeammatesRequest $request, $circle_id) : JsonResponse {
 
         $user = $request->user;
         $teammates = $request->teammates;
-        $circle_teammates = User::where('circle_id', $request->circle_id)->where('is_hidden',0)->where('id','<>',$user->id)->whereIn('id',$teammates)->pluck('id');
+        $circle_teammates = User::where('circle_id', $circle_id)->where('is_hidden',0)->where('id','<>',$user->id)->whereIn('id',$teammates)->pluck('id');
         DB::transaction(function () use ($circle_teammates, $user) {
             if ($circle_teammates) {
                 $user->teammates()->sync($circle_teammates);
@@ -108,7 +108,7 @@ class DataController extends Controller
     {
         if (!$circle_id) {
             if (!$request->circle_id)
-                return response()->json(['error' => 'Circle not Found'], 422);
+                return response()->json(['message'=> 'Circle not Found'], 422);
             $circle_id = $request->circle_id;
         }
 
@@ -124,11 +124,5 @@ class DataController extends Controller
 
         return $this->repo->getEpochCsv($epoch, $circle_id, $request->grant);
     }
-
-     public function burns(Request $request, $circle_id) : JsonResponse  {
-         $burns = Burn::where('circle_id',$circle_id)->filter($request->all())->get();
-         return response()->json($burns);
-     }
-
 
 }

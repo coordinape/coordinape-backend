@@ -15,16 +15,7 @@ class ProfileUploadRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = strtolower($this->route('address'));
-        $profile =  Profile::byAddress($address)->first();
-        $this->merge([
-            'profile' => $profile,
-        ]);
-        $hash = $this->get('hash');
-        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
-        return $profile && $valid_signature;
+        return true;
     }
 
     /**

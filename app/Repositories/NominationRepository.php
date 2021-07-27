@@ -51,13 +51,12 @@ class NominationRepository {
 
     public function createNominee($request) {
         $today = Carbon::today();
-        $circle = $request->circle;
         $user = $request->user;
+        $circle = $user->circle;
         $data = $request->only('name','address','description');
         $data = array_merge($data, ['nominated_by_user_id' => $user->id, 'circle_id' => $circle->id, 'nominated_date' => $today,
             'expiry_date' => $today->copy()->addDays($circle->nomination_days_limit), 'vouches_required' => $circle->min_vouches]);
-        $nominee = $this->model->create($data);
-        return $nominee;
+        return $this->model->create($data);
     }
 
     public function checkExpiry() {

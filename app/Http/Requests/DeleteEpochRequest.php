@@ -15,23 +15,7 @@ class DeleteEpochRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->get('address');
-        $circle_id = $this->route('circle_id');
-        if($circle_id) {
-            $admin_user = User::byAddress($this->get('address'))->isAdmin()->where('circle_id', $circle_id)->first();
-        } else {
-            return false;
-        }
-        $this->merge([
-            'circle_id' => $circle_id
-        ]);
-
-        $hash = $this->get('hash');
-        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
-
-        return $admin_user && $valid_signature;
+        return true;
     }
 
     /**

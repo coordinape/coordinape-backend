@@ -17,22 +17,14 @@ class ProfileRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->route('address');
-        $user = User::byAddress($address)->first();
-        $hash = $this->get('hash');
-        $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
-        return $user && $valid_signature;
+        return true;
     }
 
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $profile = Profile::byAddress($this->route('address'))->first();
         $this->merge([
             'data' => $data,
-            'profile' => $profile,
             'bio' => !empty($data['bio']) ? $data['bio']:null,
             'skills' => !empty($data['skills']) ? $data['skills']:null,
             'github_username' => !empty($data['github_username']) ? $data['github_username']:null,
