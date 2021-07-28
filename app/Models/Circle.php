@@ -19,10 +19,13 @@ class Circle extends Model
         'min_vouches',
         'nomination_days_limit',
         'vouching_text',
-        'logo'
+        'logo',
+        'default_opt_in',
+        'team_selection'
     ];
     protected $searchable = [
         'protocol_id',
+        'id'
     ];
 
     public function routeNotificationForTelegram()

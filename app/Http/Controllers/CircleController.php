@@ -36,21 +36,10 @@ class CircleController extends Controller
 
     public function uploadCircleLogo(FileUploadRequest $request, $circle_id) : JsonResponse {
 
-        $file = $request->file('file');
-        $resized = Image::make($request->file('file'))
-            ->resize(100, null, function ($constraint) { $constraint->aspectRatio(); } )
-            ->encode($file->getCLientOriginalExtension(),80);
-        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
-        $ret = Storage::put($new_file_name, $resized);
-        if($ret) {
-            $circle = $request->user->circle;
-            if($circle->logo && Storage::exists($circle->logo)) {
-                Storage::delete($circle->logo);
-            }
-            $circle->logo = $new_file_name;
-            $circle->save();
+        $circle = $this->repo->uploadCircleLogo($request);
+        if($circle)
             return response()->json($circle);
-        }
+
         return response()->json(['message'=> 'File Upload Failed' ,422]);
     }
 
