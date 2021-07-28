@@ -3,6 +3,7 @@
 
 namespace App\Repositories;
 use App\Models\PendingTokenGift;
+use App\Models\Profile;
 use App\Models\TokenGift;
 use App\Models\Epoch;
 use App\Notifications\BotLaunch;
@@ -269,44 +270,6 @@ class EpochRepository
                 $user->save();
             }
         },2);
-    }
-
-    public function removeAllPendingGiftsReceived($user, $updateData = []) {
-
-        return DB::transaction(function () use ($user, $updateData) {
-            $optOutStr = "";
-            if( (!empty($updateData['fixed_non_receiver']) && $updateData['fixed_non_receiver'] != $user->fixed_non_receiver && $updateData['fixed_non_receiver'] == 1) ||
-                (!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
-            )
-            {
-                $pendingGifts = $user->pendingReceivedGifts;
-                $pendingGifts->load(['sender.pendingSentGifts']);
-                $totalRefunded = 0;
-                foreach($pendingGifts as $gift) {
-                    if(!$gift->tokens && $gift->note)
-                        continue;
-
-                    $sender = $gift->sender;
-                    $gift_token = $gift->tokens;
-                    $totalRefunded += $gift_token;
-                    $senderName = Utils::cleanStr($sender->name);
-                    $optOutStr .= "$senderName: $gift_token\n";
-                    $gift->delete();
-                    $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-                    $sender->give_token_remaining = $sender->starting_tokens-$token_used;
-                    $sender->save();
-                }
-                $updateData['give_token_received'] = 0;
-                $circle = $user->circle;
-                if($circle->telegram_id)
-                {
-                    $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
-                }
-            }
-
-            $user->update($updateData);
-            return $user;
-        });
     }
 
     public function checkEpochNotifications($epoch) {
