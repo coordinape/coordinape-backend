@@ -3,10 +3,12 @@
 
 namespace App\Repositories;
 
+use App\Helper\Utils;
 use App\Models\Profile;
 use App\Models\Teammate;
 use App\Models\User;
 use App\Notifications\AddNewUser;
+use App\Notifications\OptOutEpoch;
 use DB;
 
 class UserRepository
@@ -89,5 +91,46 @@ class UserRepository
             $user->delete();
             return $user;
         },2);
+    }
+
+    public function updateUserData($user, $updateData = []) {
+
+        return DB::transaction(function () use ($user, $updateData) {
+            $optOutStr = "";
+            if( (!empty($updateData['fixed_non_receiver']) && $updateData['fixed_non_receiver'] != $user->fixed_non_receiver && $updateData['fixed_non_receiver'] == 1) ||
+                (!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
+            )
+            {
+                $pendingGifts = $user->pendingReceivedGifts;
+                $pendingGifts->load(['sender.pendingSentGifts']);
+                $totalRefunded = 0;
+                foreach($pendingGifts as $gift) {
+                    if(!$gift->tokens && $gift->note)
+                        continue;
+
+                    $sender = $gift->sender;
+                    $gift_token = $gift->tokens;
+                    $totalRefunded += $gift_token;
+                    $senderName = Utils::cleanStr($sender->name);
+                    $optOutStr .= "$senderName: $gift_token\n";
+                    $gift->delete();
+                    $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
+                    $sender->give_token_remaining = $sender->starting_tokens-$token_used;
+                    $sender->save();
+                }
+                $updateData['give_token_received'] = 0;
+                $circle = $user->circle;
+                if($circle->telegram_id)
+                {
+                    $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
+                }
+            }
+
+            $user->update($updateData);
+            if(!$this->profileModel::byAddress($user->address)->exists()) {
+                $this->profileModel->create(['address' => $user->address]);
+            }
+            return $user;
+        });
     }
 }

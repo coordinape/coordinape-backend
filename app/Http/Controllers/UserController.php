@@ -6,6 +6,7 @@ use App\Http\Requests\AdminCreateUserRequest;
 use App\Http\Requests\AdminUserRequest;
 use App\Http\Requests\DeleteUserRequest;
 use App\Http\Requests\UserRequest;
+use App\Models\Profile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;
@@ -53,7 +54,7 @@ class UserController extends Controller
         if($user->fixed_non_receiver ==1 ) {
             $data['non_receiver'] = 1;
         }
-        $user = $this->epochRepo->removeAllPendingGiftsReceived($user, $data);
+        $user = $this->repo->updateUserData($user, $data);
         return response()->json($user);
     }
 
@@ -75,7 +76,7 @@ class UserController extends Controller
             }
         }
         $data['address'] =  strtolower($data['address']);
-        $user = $this->epochRepo->removeAllPendingGiftsReceived($user, $data);
+        $user = $this->repo->updateUserData($user, $data);
         return response()->json($user);
     }
 
