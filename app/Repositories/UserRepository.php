@@ -9,6 +9,7 @@ use App\Models\Teammate;
 use App\Models\User;
 use App\Notifications\AddNewUser;
 use App\Notifications\OptOutEpoch;
+use App\Models\Circle;
 use DB;
 
 class UserRepository
@@ -54,6 +55,8 @@ class UserRepository
         if($data['fixed_non_receiver'] ==1 ) {
             $data['non_receiver'] = 1;
         }
+        $circle = Circle::find($circle_id);
+        $data['non_receiver'] = $data['fixed_non_receiver'] == 1 || $circle->default_opt_in == 0 ? 1:0;
         $data['address'] =  strtolower($data['address']);
         $data['circle_id'] =  $circle_id;
         $user = $this->model->create($data);
