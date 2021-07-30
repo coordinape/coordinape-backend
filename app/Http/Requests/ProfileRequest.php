@@ -19,7 +19,7 @@ class ProfileRequest extends FormRequest
     {
         $data = $this->get('data');
         $signature = $this->get('signature');
-        $address  = $this->route('address');
+        $address  = $this->get('address');
         $user = User::byAddress($address)->first();
         $hash = $this->get('hash');
         $valid_signature = Utils::validateSignature($address, $data, $signature, $hash);
@@ -29,7 +29,7 @@ class ProfileRequest extends FormRequest
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $profile = Profile::byAddress($this->route('address'))->first();
+        $profile = Profile::byAddress($this->get('address'))->first();
         $this->merge([
             'data' => $data,
             'profile' => $profile,
