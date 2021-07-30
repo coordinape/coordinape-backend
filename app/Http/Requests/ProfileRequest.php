@@ -21,11 +21,10 @@ class ProfileRequest extends FormRequest
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $profile =  Profile::byAddress($this->get('address'))->first();
-        $profile_id = $profile ? $profile->id : null;
+        $profile = Profile::byAddress($this->get('address'))->first();
         $this->merge([
             'data' => $data,
-            'profile_id' => $profile_id,
+            'profile' => $profile,
             'bio' => !empty($data['bio']) ? $data['bio']:null,
             'skills' => !empty($data['skills']) ? $data['skills']:null,
             'github_username' => !empty($data['github_username']) ? $data['github_username']:null,
@@ -44,7 +43,7 @@ class ProfileRequest extends FormRequest
      */
     public function rules()
     {
-        $profile_id = $this->profile_id;
+        $profile_id = $this->profile->id;
         return [
             'telegram_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
             'discord_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
