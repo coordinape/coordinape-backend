@@ -18,17 +18,11 @@ class ProfileRepository
         return $this->model->with(['users.circle.protocol','users.teammates','users.histories.epoch'])->byAddress($address)->first();
     }
 
-    public function saveProfile($request, $address) {
+    public function saveProfile($request) {
         $data = $request->only('skills','bio','telegram_username',
             'discord_username','twitter_username','github_username','medium_username','website');
-        $profile =  $this->model->byAddress($address)->first();
-
-        if(!$profile) {
-            $data['address'] = strtolower($address);
-            $profile = $this->model->create($data);
-        } else {
-            $profile->update($data);
-        }
+        $profile = $request->profile;
+        $profile->update($data);
         if(!empty($data['telegram_username']) || !empty($data['discord_username'])) {
             $profile->users()->update($request->only('telegram_username','discord_username'));
         }

@@ -43,7 +43,7 @@ class UserController extends Controller
         return response()->json($this->repo->createUser($request,$circle_id));
     }
 
-    public function updateUser(UserRequest $request, $circle_id, $address): JsonResponse
+    public function updateMyUser(UserRequest $request): JsonResponse
     {
         $user = $request->user;
         if(!$user)

@@ -46,7 +46,8 @@ Route::prefix('{circle_id}')->group(function () {
 
     Route::get('/circles', [CircleController::class, 'getCircles']);
     Route::get('/users/{address}', [UserController::class, 'getUser2']);
-    Route::get('/users', [UserController::class, 'getUsers']);
+    Route::put('/users', [UserController::class, 'updateMyUser']);
+    Route::put('/users/{address}', [UserController::class, 'updateMyUser']); // deprecated
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
 
@@ -60,6 +61,8 @@ Route::middleware(['verify-sign'])->group(function () {
     Route::post('/upload-avatar/{address}', [ProfileController::class, 'uploadProfileAvatar']);
     Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
     Route::post('/profile/{address}',[ProfileController::class, 'saveProfile']);
+    Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
+    Route::post('/profile/{address}',[ProfileController::class, 'updateMyProfile']); // deprecated
 });
 
 Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
