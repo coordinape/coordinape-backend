@@ -37,7 +37,8 @@ Route::prefix('{circle_id}')->group(function () {
 
     });
     Route::middleware(['verify-sign'])->group(function () {
-        Route::put('/users/{address}', [UserController::class, 'updateUser']);
+        Route::put('/users', [UserController::class, 'updateMyUser']);
+        Route::put('/users/{address}', [UserController::class, 'updateMyUser']); // deprecated
         Route::post('/v2/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
         Route::post('/teammates', [DataController::class, 'updateTeammates']);
         Route::post('/nominees', [NominationController::class, 'createNominee']);
@@ -46,8 +47,6 @@ Route::prefix('{circle_id}')->group(function () {
 
     Route::get('/circles', [CircleController::class, 'getCircles']);
     Route::get('/users/{address}', [UserController::class, 'getUser2']);
-    Route::put('/users', [UserController::class, 'updateMyUser']);
-    Route::put('/users/{address}', [UserController::class, 'updateMyUser']); // deprecated
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
 
