@@ -11,14 +11,17 @@ use App\Notifications\AddNewUser;
 use App\Notifications\OptOutEpoch;
 use App\Models\Circle;
 use DB;
+use App\Models\Nominee;
 
 class UserRepository
 {
     protected $model;
     protected $profileModel;
-    public function __construct(User $model, Profile $profileModel) {
+    protected $nomineeModel;
+    public function __construct(User $model, Profile $profileModel, Nominee $nomineeModel) {
         $this->model = $model;
         $this->profileModel = $profileModel;
+        $this->nomineeModel = $nomineeModel;
     }
 
     public function getUser($address) {
@@ -60,6 +63,10 @@ class UserRepository
         $data['address'] =  strtolower($data['address']);
         $data['circle_id'] =  $circle_id;
         $user = $this->model->create($data);
+        $nominee = $this->nomineeModel->where('circle_id',$circle_id)->where('address', $data['address'])->where('ended',0)->first();
+        if($nominee) {
+            $nominee->update(['ended' => 1, 'user_id' => $user->id]);
+        }
         if(!$this->profileModel->where('address' , $data['address'])->exists()) {
             $this->profileModel->create(['address' => $data['address']]);
         }
@@ -100,6 +107,8 @@ class UserRepository
 
         return DB::transaction(function () use ($user, $updateData) {
             $optOutStr = "";
+            $circle = $user->circle;
+
             if( (!empty($updateData['fixed_non_receiver']) && $updateData['fixed_non_receiver'] != $user->fixed_non_receiver && $updateData['fixed_non_receiver'] == 1) ||
                 (!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
             )
@@ -122,7 +131,6 @@ class UserRepository
                     $sender->save();
                 }
                 $updateData['give_token_received'] = 0;
-                $circle = $user->circle;
                 if($circle->telegram_id)
                 {
                     $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
@@ -130,6 +138,10 @@ class UserRepository
             }
 
             $user->update($updateData);
+            $nominee = $this->nomineeModel->where('circle_id',$circle->id)->where('address', $user->address)->where('ended',0)->first();
+            if($nominee) {
+                $nominee->update(['ended' => 1, 'user_id' => $user->id]);
+            }
             if(!$this->profileModel::byAddress($user->address)->exists()) {
                 $this->profileModel->create(['address' => $user->address]);
             }
