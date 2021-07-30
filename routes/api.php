@@ -39,7 +39,8 @@ Route::prefix('{circle_id}')->group(function () {
     Route::get('/circles', [CircleController::class, 'getCircles']);
     Route::get('/users/{address}', [UserController::class, 'getUser2']);
     Route::get('/users', [UserController::class, 'getUsers']);
-    Route::put('/users/{address}', [UserController::class, 'updateUser']);
+    Route::put('/users', [UserController::class, 'updateMyUser']);
+    Route::put('/users/{address}', [UserController::class, 'updateMyUser']); // deprecated
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
     Route::post('/v2/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
@@ -56,7 +57,8 @@ Route::prefix('{circle_id}')->group(function () {
 Route::post('/upload-avatar/{address}', [ProfileController::class, 'uploadProfileAvatar']);
 Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
 Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
-Route::post('/profile/{address}',[ProfileController::class, 'saveProfile']);
+Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
+Route::post('/profile/{address}',[ProfileController::class, 'updateMyProfile']); // deprecated
 
 Route::get('/protocols', [DataController::class, 'getProtocols']);
 Route::get('/circles', [CircleController::class, 'getCircles']);

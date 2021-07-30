@@ -27,7 +27,7 @@ class UserRequest extends FormRequest
     {
         $data = json_decode($this->get('data'), true);
         $circle_id = $this->route('circle_id');
-        $existing_user =  User::byAddress($this->route('address'))->where('circle_id', $circle_id)->first();
+        $existing_user =  User::byAddress($this->get('address'))->where('circle_id', $circle_id)->first();
         $this->merge([
             'data' => $data,
             'user' => $existing_user,

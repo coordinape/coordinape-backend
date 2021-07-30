@@ -20,8 +20,8 @@ class ProfileController extends Controller
         return response()->json($this->repo->getProfile($request,$address));
     }
 
-    public function saveProfile(ProfileRequest $request, $address) {
-        return response()->json($this->repo->saveProfile($request, $address));
+    public function updateMyProfile(ProfileRequest $request) {
+        return response()->json($this->repo->saveProfile($request));
     }
 
     public function uploadProfileAvatar(ProfileUploadRequest $request, $address) : JsonResponse {
