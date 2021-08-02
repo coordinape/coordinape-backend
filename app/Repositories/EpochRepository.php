@@ -285,12 +285,6 @@ class EpochRepository
                 if($circle->id == 1)
                     $protocol->notify(new BotLaunch());
             }
-            if(!$epoch->number && $epoch->ended == 0)
-            {
-                $epoch_number = Epoch::where('ended',1)->where('circle_id',$circle->id)->count();
-                $epoch_number = $epoch_number + 1;
-                $epoch->number = $epoch_number;
-            }
 
             $epoch->notified_start = Carbon::now();
             $epoch->save();

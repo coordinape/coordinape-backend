@@ -46,10 +46,19 @@ class CheckEpochNotifications extends Command
              return $q->whereNull('notified_start')->orWhereNull('notified_before_end');
         })->get();
 
-//        dd($epoches);
         foreach($epoches as $epoch) {
-            if($epoch->circle->telegram_id && $epoch->ended == 0)
-                $this->repo->checkEpochNotifications($epoch);
+            if($epoch->ended == 0) {
+                if(!$epoch->number)
+                {
+                    $epoch_number = Epoch::where('ended',1)->where('circle_id',$epoch->circle->id)->count();
+                    $epoch->number = $epoch_number + 1;
+                    $epoch->save();
+                }
+
+                if($epoch->circle->telegram_id)
+                    $this->repo->checkEpochNotifications($epoch);
+
+            }
         }
     }
 }
