@@ -137,6 +137,21 @@ class UserRepository
                 }
             }
 
+            if($user->non_giver == 0 && !empty($updateData['non_giver']) && $updateData['non_giver'] ==1) {
+                $pendingSentGifts = $user->pendingSentGifts;
+                foreach($pendingSentGifts as $gift) {
+                    if(!$gift->tokens && $gift->note)
+                        continue;
+
+                    $recipient = $gift->recipient;
+                    $gift->delete();
+                    $recipient->give_token_received = $recipient->pendingReceivedGifts->SUM('tokens');
+                    $recipient->save();
+                }
+                $updateData['give_token_remaining'] = $user->starting_tokens;
+
+            }
+
             $user->update($updateData);
             $nominee = $this->nomineeModel->where('circle_id',$circle->id)->where('address', $user->address)->where('ended',0)->first();
             if($nominee) {

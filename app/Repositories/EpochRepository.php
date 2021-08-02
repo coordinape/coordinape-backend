@@ -225,7 +225,7 @@ class EpochRepository
                         continue;
 
                     $recipient = $users[$recipient_id];
-                    if($recipient->non_receiver == 1 || $recipient->fixed_non_receiver == 1) {
+                    if($user->non_giver == 1 || $recipient->non_receiver == 1 || $recipient->fixed_non_receiver == 1) {
                         $gift['tokens'] = 0;
                     }
 
