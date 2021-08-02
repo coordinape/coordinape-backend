@@ -27,6 +27,13 @@ class ProfileSeeder extends Seeder
                 $profile->address = $user->address;
                 $profile->save();
             }
+
+            if($user->admin_view) {
+                $profile = $user->profile;
+                $profile->admin_view = $user->admin_view;
+                $profile->save();
+            }
+
         }
     }
 }
