@@ -35,10 +35,6 @@ class DataController extends Controller
     public function newUpdateGifts(NewGiftRequest $request, $circle_id, $address): JsonResponse
     {
         $user = $request->user;
-        if ($user->non_giver) {
-            return response()->json(['message'=>'User does not have permission to give'], 403);
-        };
-
         $this->repo->newUpdateGifts($request, $user->address, $circle_id);
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
