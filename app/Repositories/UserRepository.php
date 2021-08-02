@@ -140,11 +140,15 @@ class UserRepository
             if($user->non_giver == 0 && !empty($updateData['non_giver']) && $updateData['non_giver'] ==1) {
                 $pendingSentGifts = $user->pendingSentGifts;
                 foreach($pendingSentGifts as $gift) {
-                    if(!$gift->tokens && $gift->note)
-                        continue;
 
                     $recipient = $gift->recipient;
-                    $gift->delete();
+                    if(!$gift->note) {
+                        $gift->delete();
+                    }
+                    else {
+                        $gift->tokens = 0;
+                        $gift->save();
+                    }
                     $recipient->give_token_received = $recipient->pendingReceivedGifts->SUM('tokens');
                     $recipient->save();
                 }
