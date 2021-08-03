@@ -43,4 +43,8 @@ class CircleController extends Controller
         return response()->json(['message'=> 'File Upload Failed' ,422]);
     }
 
+    public function updateWebhook(Request $request, $circle_id) {
+//        $circle->discord_webhook = $request->discord_webhook;
+
+    }
 }

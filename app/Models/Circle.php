@@ -30,6 +30,8 @@ class Circle extends Model
         'id'
     ];
 
+    protected $hidden = ['discord_webhook'];
+
     public function routeNotificationForTelegram()
     {
         if(config('app.domain') != 'coordinape.me')
@@ -40,6 +42,10 @@ class Circle extends Model
 
     public function routeNotificationForDiscord()
     {
+        if(config('services.discord.test-webhook')) {
+            return config('services.discord.test-webhook');
+        }
+
         return $this->discord_webhook;
     }
 
