@@ -20,13 +20,13 @@ class NominationRepository {
     }
 
     public function getNominees($request, $circle_id) {
-        return $this->model->with('nominations')->where('circle_id', $circle_id)->filter($request->all())->get();
+        return $this->model->with('nominations','nominator')->where('circle_id', $circle_id)->filter($request->all())->get();
     }
 
     public function addVouch($request, $circle_id) {
         $user = $request->user;
         $nominee_id = $request->nominee_id;
-        $nominee = $this->model->with('nominations')->find($nominee_id);
+        $nominee = $this->model->with('nominations','nominator')->find($nominee_id);
         if($nominee->ended == 0) {
             DB::transaction(function () use($user, $nominee, $nominee_id, $circle_id) {
                 $user->nominations()->syncWithoutDetaching([$nominee_id]);
@@ -56,7 +56,9 @@ class NominationRepository {
         $data = $request->only('name','address','description');
         $data = array_merge($data, ['nominated_by_user_id' => $user->id, 'circle_id' => $circle->id, 'nominated_date' => $today,
             'expiry_date' => $today->copy()->addDays($circle->nomination_days_limit), 'vouches_required' => $circle->min_vouches]);
-        return $this->model->create($data);
+        $nominee = $this->model->create($data);
+        $nominee->load('nominations','nominator');
+        return $nominee;
     }
 
     public function checkExpiry() {

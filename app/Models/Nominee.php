@@ -44,6 +44,10 @@ class Nominee extends Model
         return $this->belongsToMany('App\Models\User','vouches','nominee_id','voucher_id');
     }
 
+    public function nominator() {
+        return $this->belongsTo('App\Models\User','nominated_by_user_id');
+    }
+
     public function user() {
         return $this->belongsTo('App\Models\User','user_id');
     }
