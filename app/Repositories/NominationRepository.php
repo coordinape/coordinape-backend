@@ -5,7 +5,7 @@ use App\Models\Profile;
 use App\Models\User;
 use App\Notifications\SendSocialMessage;
 use Carbon\Carbon;
-use App\Models\Circle;
+use DB;
 
 class NominationRepository {
 
