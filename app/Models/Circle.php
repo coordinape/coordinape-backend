@@ -20,10 +20,14 @@ class Circle extends Model
         'nomination_days_limit',
         'vouching_text',
         'logo',
+        'default_opt_in',
+        'team_selection',
         'discord_webhook'
+
     ];
     protected $searchable = [
         'protocol_id',
+        'id'
     ];
 
     public function routeNotificationForTelegram()

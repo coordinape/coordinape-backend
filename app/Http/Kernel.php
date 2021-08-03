@@ -3,6 +3,8 @@
 namespace App\Http;
 
 use App\Http\Middleware\AddAjaxHeader;
+use App\Http\Middleware\VerifyAdminSignature;
+use App\Http\Middleware\VerifySignature;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -45,6 +47,12 @@ class Kernel extends HttpKernel
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
+        'verify-sign' => [
+            VerifySignature::class
+        ],
+        'verify-admin-sign' => [
+            VerifyAdminSignature::class
+        ]
     ];
 
     /**

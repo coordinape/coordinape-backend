@@ -48,8 +48,17 @@ class CheckEpochNotifications extends Command
 
         foreach($epoches as $epoch) {
             $circle = $epoch->circle;
-            if(($circle->telegram_id || $circle->discord_webhook) && $epoch->ended == 0)
+            if($epoch->ended == 0) {
+                if(!$epoch->number)
+                {
+                    $epoch_number = Epoch::where('ended',1)->where('circle_id',$circle->id)->count();
+                    $epoch->number = $epoch_number + 1;
+                    $epoch->save();
+                }
+
+              if(($circle->telegram_id || $circle->discord_webhook) && $epoch->ended == 0)
                 $this->repo->checkEpochNotifications($epoch);
+            }
         }
     }
 }

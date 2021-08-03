@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CircleRequest extends FormRequest
@@ -15,23 +13,7 @@ class CircleRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->get('address');
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $circle_id = $this->route('circle_id');
-        $existing_user =  User::byAddress($address)->isAdmin();
-        if($circle_id) {
-            $existing_user = $existing_user->where('circle_id', $circle_id);
-        }
-        $existing_user = $existing_user->first();
-        $this->merge([
-            'user' => $existing_user,
-            'circle_id' => $circle_id
-        ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-
-        return $existing_user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+       return true;
     }
 
     protected function prepareForValidation()
@@ -46,7 +28,9 @@ class CircleRequest extends FormRequest
             'vouching'  => !empty($data['vouching']) ? $data['vouching']:1,
             'min_vouches'  => !empty($data['min_vouches']) ? $data['min_vouches']:3,
             'nomination_days_limit' => !empty($data['nomination_days_limit']) ? $data['nomination_days_limit']:14,
-            'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:null,
+            'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:'',
+            'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:1,
+            'default_opt_in'  => !empty($data['default_opt_in']) ? $data['default_opt_in']:0,
         ]);
     }
 
@@ -65,8 +49,10 @@ class CircleRequest extends FormRequest
             'vouching' => 'integer|min:0|max:1',
             'min_vouches' => 'integer|min:1',
             'nomination_days_limit' => 'integer|min:1',
-            'vouching_text' => 'string:max:5000',
-            'alloc_text' => 'string:max:5000',
+            'vouching_text' => 'string|max:5000',
+            'alloc_text' => 'string|max:5000',
+            'team_selection' => 'integer|min:0|max:1',
+            'default_opt_in' => 'integer|min:0|max:1',
         ];
     }
 }

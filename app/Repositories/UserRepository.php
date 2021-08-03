@@ -3,19 +3,25 @@
 
 namespace App\Repositories;
 
+use App\Helper\Utils;
 use App\Models\Profile;
 use App\Models\Teammate;
 use App\Models\User;
 use App\Notifications\AddNewUser;
+use App\Notifications\OptOutEpoch;
+use App\Models\Circle;
 use DB;
+use App\Models\Nominee;
 
 class UserRepository
 {
     protected $model;
     protected $profileModel;
-    public function __construct(User $model, Profile $profileModel) {
+    protected $nomineeModel;
+    public function __construct(User $model, Profile $profileModel, Nominee $nomineeModel) {
         $this->model = $model;
         $this->profileModel = $profileModel;
+        $this->nomineeModel = $nomineeModel;
     }
 
     public function getUser($address) {
@@ -52,9 +58,15 @@ class UserRepository
         if($data['fixed_non_receiver'] ==1 ) {
             $data['non_receiver'] = 1;
         }
+        $circle = Circle::find($circle_id);
+        $data['non_receiver'] = $data['fixed_non_receiver'] == 1 || $circle->default_opt_in == 0 ? 1:0;
         $data['address'] =  strtolower($data['address']);
         $data['circle_id'] =  $circle_id;
         $user = $this->model->create($data);
+        $nominee = $this->nomineeModel->where('circle_id',$circle_id)->where('address', $data['address'])->where('ended',0)->first();
+        if($nominee) {
+            $nominee->update(['ended' => 1, 'user_id' => $user->id]);
+        }
         if(!$this->profileModel->where('address' , $data['address'])->exists()) {
             $this->profileModel->create(['address' => $data['address']]);
         }
@@ -89,5 +101,70 @@ class UserRepository
             $user->delete();
             return $user;
         },2);
+    }
+
+    public function updateUserData($user, $updateData = []) {
+
+        return DB::transaction(function () use ($user, $updateData) {
+            $optOutStr = "";
+            $circle = $user->circle;
+
+            if( (!empty($updateData['fixed_non_receiver']) && $updateData['fixed_non_receiver'] != $user->fixed_non_receiver && $updateData['fixed_non_receiver'] == 1) ||
+                (!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
+            )
+            {
+                $pendingGifts = $user->pendingReceivedGifts;
+                $pendingGifts->load(['sender.pendingSentGifts']);
+                $totalRefunded = 0;
+                foreach($pendingGifts as $gift) {
+                    if(!$gift->tokens && $gift->note)
+                        continue;
+
+                    $sender = $gift->sender;
+                    $gift_token = $gift->tokens;
+                    $totalRefunded += $gift_token;
+                    $senderName = Utils::cleanStr($sender->name);
+                    $optOutStr .= "$senderName: $gift_token\n";
+                    $gift->delete();
+                    $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
+                    $sender->give_token_remaining = $sender->starting_tokens-$token_used;
+                    $sender->save();
+                }
+                $updateData['give_token_received'] = 0;
+                if($circle->telegram_id)
+                {
+                    $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
+                }
+            }
+
+            if($user->non_giver == 0 && !empty($updateData['non_giver']) && $updateData['non_giver'] ==1) {
+                $pendingSentGifts = $user->pendingSentGifts;
+                foreach($pendingSentGifts as $gift) {
+
+                    $recipient = $gift->recipient;
+                    if(!$gift->note) {
+                        $gift->delete();
+                    }
+                    else {
+                        $gift->tokens = 0;
+                        $gift->save();
+                    }
+                    $recipient->give_token_received = $recipient->pendingReceivedGifts->SUM('tokens');
+                    $recipient->save();
+                }
+                $updateData['give_token_remaining'] = $user->starting_tokens;
+
+            }
+
+            $user->update($updateData);
+            $nominee = $this->nomineeModel->where('circle_id',$circle->id)->where('address', $user->address)->where('ended',0)->first();
+            if($nominee) {
+                $nominee->update(['ended' => 1, 'user_id' => $user->id]);
+            }
+            if(!$this->profileModel::byAddress($user->address)->exists()) {
+                $this->profileModel->create(['address' => $user->address]);
+            }
+            return $user;
+        });
     }
 }

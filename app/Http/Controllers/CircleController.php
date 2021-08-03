@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CircleRequest;
 use App\Http\Requests\FileUploadRequest;
 use App\Models\Circle;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Repositories\CircleRepository;
@@ -30,29 +29,18 @@ class CircleController extends Controller
         return response()->json($this->repo->createCircle($request));
     }
 
-    public function updateCircle( CircleRequest $request, $circle_id=null, Circle $circle): JsonResponse
+    public function updateCircle(CircleRequest $request, $circle_id, Circle $circle): JsonResponse
     {
         return response()->json($this->repo->updateCircle($circle, $request));
     }
 
-    public function uploadCircleLogo(FileUploadRequest $request, $circle_id=null) : JsonResponse {
+    public function uploadCircleLogo(FileUploadRequest $request, $circle_id) : JsonResponse {
 
-        $file = $request->file('file');
-        $resized = Image::make($request->file('file'))
-            ->resize(100, null, function ($constraint) { $constraint->aspectRatio(); } )
-            ->encode($file->getCLientOriginalExtension(),80);
-        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$file->getCLientOriginalExtension();
-        $ret = Storage::put($new_file_name, $resized);
-        if($ret) {
-            $circle = $request->user->circle;
-            if($circle->logo && Storage::exists($circle->logo)) {
-                Storage::delete($circle->logo);
-            }
-            $circle->logo = $new_file_name;
-            $circle->save();
+        $circle = $this->repo->uploadCircleLogo($request);
+        if($circle)
             return response()->json($circle);
-        }
-        return response()->json(['error' => 'File Upload Failed' ,422]);
+
+        return response()->json(['message'=> 'File Upload Failed' ,422]);
     }
 
 }

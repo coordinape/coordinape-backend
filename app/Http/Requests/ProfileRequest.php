@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\Profile;
@@ -17,20 +15,13 @@ class ProfileRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = $this->route('address');
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $user = User::byAddress($address)->first();
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-
-        return $user && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        return true;
     }
 
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $profile = Profile::byAddress($this->route('address'))->first();
+        $profile = Profile::byAddress($this->get('address'))->first();
         $this->merge([
             'data' => $data,
             'profile' => $profile,
@@ -52,7 +43,7 @@ class ProfileRequest extends FormRequest
      */
     public function rules()
     {
-        $profile_id = $this->profile ? $this->profile->id:null;
+        $profile_id = $this->profile->id;
         return [
             'telegram_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
             'discord_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],

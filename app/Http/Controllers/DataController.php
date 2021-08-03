@@ -15,7 +15,8 @@ use App\Http\Requests\TeammatesRequest;
 use App\Helper\Utils;
 use App\Models\Epoch;
 use App\Models\Protocol;
-use App\Models\Burn;
+use Illuminate\Support\Facades\Log;
+
 
 class DataController extends Controller
 {
@@ -34,7 +35,7 @@ class DataController extends Controller
     public function newUpdateGifts(NewGiftRequest $request, $circle_id, $address): JsonResponse
     {
         $user = $request->user;
-        $this->repo->newUpdateGifts($request, $address);
+        $this->repo->newUpdateGifts($request, $user->address, $circle_id);
         $user->load(['teammates','pendingSentGifts']);
         return response()->json($user);
     }
@@ -84,11 +85,11 @@ class DataController extends Controller
         }, 60, $circle_id));
     }
 
-    public function updateTeammates(TeammatesRequest $request, $circle_id=null) : JsonResponse {
+    public function updateTeammates(TeammatesRequest $request, $circle_id) : JsonResponse {
 
         $user = $request->user;
         $teammates = $request->teammates;
-        $circle_teammates = User::where('circle_id', $request->circle_id)->where('is_hidden',0)->where('id','<>',$user->id)->whereIn('id',$teammates)->pluck('id');
+        $circle_teammates = User::where('circle_id', $circle_id)->where('is_hidden',0)->where('id','<>',$user->id)->whereIn('id',$teammates)->pluck('id');
         DB::transaction(function () use ($circle_teammates, $user) {
             $this->repo->resetGifts($user, $circle_teammates);
             if ($circle_teammates) {
@@ -103,7 +104,7 @@ class DataController extends Controller
     {
         if (!$circle_id) {
             if (!$request->circle_id)
-                return response()->json(['error' => 'Circle not Found'], 422);
+                return response()->json(['message'=> 'Circle not Found'], 422);
             $circle_id = $request->circle_id;
         }
 
@@ -119,11 +120,5 @@ class DataController extends Controller
 
         return $this->repo->getEpochCsv($epoch, $circle_id, $request->grant);
     }
-
-     public function burns(Request $request, $circle_id) : JsonResponse  {
-         $burns = Burn::where('circle_id',$circle_id)->filter($request->all())->get();
-         return response()->json($burns);
-     }
-
 
 }

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AdminCreateUserRequest;
 use App\Http\Requests\AdminUserRequest;
-use App\Http\Requests\DeleteUserRequest;
 use App\Http\Requests\UserRequest;
+use App\Models\Profile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Repositories\UserRepository;
@@ -24,14 +24,14 @@ class UserController extends Controller
     public function getUser($address): JsonResponse {
         $user = $this->repo->getUser($address);
         if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
+            return response()->json(['message'=> 'Address not found'],422);
         return response()->json($user);
     }
 
     public function getUser2($circle_id, $address): JsonResponse {
         $user = $this->repo->getUser2($address,$circle_id);
         if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
+            return response()->json(['message'=> 'Address not found'],422);
         return response()->json($user);
     }
 
@@ -43,17 +43,17 @@ class UserController extends Controller
         return response()->json($this->repo->createUser($request,$circle_id));
     }
 
-    public function updateUser(UserRequest $request, $circle_id, $address): JsonResponse
+    public function updateMyUser(UserRequest $request): JsonResponse
     {
         $user = $request->user;
         if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
+            return response()->json(['message'=> 'Address not found'],422);
 
         $data = $request->only('name','non_receiver','bio','epoch_first_visit');
         if($user->fixed_non_receiver ==1 ) {
             $data['non_receiver'] = 1;
         }
-        $user = $this->epochRepo->removeAllPendingGiftsReceived($user, $data);
+        $user = $this->repo->updateUserData($user, $data);
         return response()->json($user);
     }
 
@@ -61,7 +61,7 @@ class UserController extends Controller
     {
         $user = $request->user;
         if(!$user)
-            return response()->json(['error'=> 'Address not found'],422);
+            return response()->json(['message'=> 'Address not found'],422);
         $data = $request->only('name','address','starting_tokens','non_giver','fixed_non_receiver', 'role');
 
         if($data['fixed_non_receiver'] ==1 ) {
@@ -69,17 +69,17 @@ class UserController extends Controller
         }
         if($user->starting_tokens != $data['starting_tokens']) {
             if( $user->circle->epoches()->isActiveDate()->first()) {
-                return response()->json(['error'=> 'Cannot update starting tokens during an active epoch'],422);
+                return response()->json(['message'=> 'Cannot update starting tokens during an active epoch'],422);
             } else {
                 $data['give_token_remaining'] = $data['starting_tokens'];
             }
         }
         $data['address'] =  strtolower($data['address']);
-        $user = $this->epochRepo->removeAllPendingGiftsReceived($user, $data);
+        $user = $this->repo->updateUserData($user, $data);
         return response()->json($user);
     }
 
-    public function deleteUser(DeleteUserRequest $request, $circle_id, $address) : JsonResponse  {
+    public function deleteUser(Request $request, $circle_id, $address) : JsonResponse  {
 
         $user = $request->user;
         $data = $this->repo->deleteUser($user);

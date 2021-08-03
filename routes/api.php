@@ -24,7 +24,7 @@ use App\Http\Controllers\UserController;
 //});
 
 Route::prefix('{circle_id}')->group(function () {
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware(['verify-admin-sign'])->group(function () {
         Route::put('/circles/{circle}', [CircleController::class, 'updateCircle']);
         Route::put('/users/{address}', [UserController::class, 'adminUpdateUser']);
         Route::post('/users', [UserController::class, 'createUser']);
@@ -36,28 +36,35 @@ Route::prefix('{circle_id}')->group(function () {
         Route::post('/upload-logo', [CircleController::class, 'uploadCircleLogo']);
 
     });
+    Route::middleware(['verify-sign'])->group(function () {
+        Route::put('/users', [UserController::class, 'updateMyUser']);
+        Route::put('/users/{address}', [UserController::class, 'updateMyUser']); // deprecated
+        Route::post('/v2/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
+        Route::post('/teammates', [DataController::class, 'updateTeammates']);
+        Route::post('/nominees', [NominationController::class, 'createNominee']);
+        Route::post('/vouch', [NominationController::class, 'addVouch']);
+    });
+
     Route::get('/circles', [CircleController::class, 'getCircles']);
     Route::get('/users/{address}', [UserController::class, 'getUser2']);
-    Route::get('/users', [UserController::class, 'getUsers']);
-    Route::put('/users/{address}', [UserController::class, 'updateUser']);
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
-    Route::post('/v2/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
-    Route::post('/teammates', [DataController::class, 'updateTeammates']);
+
     Route::get('/csv', [DataController::class, 'generateCsv']);
-    Route::get('/burns', [DataController::class, 'burns']);
-    Route::post('/nominees', [NominationController::class, 'createNominee']);
     Route::get('/nominees', [NominationController::class, 'getNominees']);
-    Route::post('/vouch', [NominationController::class, 'addVouch']);
     Route::get('/epoches',[EpochController::class, 'epoches']);
 
 });
 
-Route::post('/upload-avatar/{address}', [ProfileController::class, 'uploadProfileAvatar']);
-Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
-Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
-Route::post('/profile/{address}',[ProfileController::class, 'saveProfile']);
+Route::middleware(['verify-sign'])->group(function () {
+    Route::post('/upload-avatar/{address}', [ProfileController::class, 'uploadProfileAvatar']);
+    Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
+    Route::post('/profile/{address}',[ProfileController::class, 'saveProfile']);
+    Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
+    Route::post('/profile/{address}',[ProfileController::class, 'updateMyProfile']); // deprecated
+});
 
+Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
 Route::get('/protocols', [DataController::class, 'getProtocols']);
 Route::get('/circles', [CircleController::class, 'getCircles']);
 //// not used for now
@@ -72,6 +79,11 @@ Route::get('/active-epochs',[EpochController::class, 'getActiveEpochs']);
 
 Route::post("/".config('telegram.token')."/bot-update", [BotController::class,'webHook']);
 
+Route::post('/discord-bot', [BotController::class, 'discordTest']);
+Route::get('/debug-sentry', function () {
+    throw new Exception('My first Sentry error!');
+});
 Route::fallback(function(){
     return response()->json(['message' => 'Endpoint Not Found'], 404);
 })->name('api.fallback.404');
+

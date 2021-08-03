@@ -20,24 +20,24 @@ class ProfileController extends Controller
         return response()->json($this->repo->getProfile($request,$address));
     }
 
-    public function saveProfile(ProfileRequest $request, $address) {
-        return response()->json($this->repo->saveProfile($request, $address));
+    public function updateMyProfile(ProfileRequest $request) {
+        return response()->json($this->repo->saveProfile($request));
     }
 
     public function uploadProfileAvatar(ProfileUploadRequest $request, $address) : JsonResponse {
-        $profile = $this->repo->uploadProfileAvatar($request);
+        $profile = $this->repo->uploadProfileAvatar($request, $request->address);
         if($profile)
             return response()->json($profile);
 
-        return response()->json(['error' => 'File Upload Failed' ,422]);
+        return response()->json(['message' => 'File Upload Failed' ,422]);
     }
 
     public function uploadProfileBackground(ProfileUploadRequest $request, $address) : JsonResponse {
-       $profile = $this->repo->uploadProfileBackground($request);
+       $profile = $this->repo->uploadProfileBackground($request, $request->address);
        if($profile)
            return response()->json($profile);
 
-        return response()->json(['error' => 'File Upload Failed' ,422]);
+        return response()->json(['message' => 'File Upload Failed' ,422]);
     }
 
 }

@@ -6,10 +6,59 @@ namespace App\Helper;
 use Elliptic\EC;
 use Illuminate\Support\Facades\Cache;
 use kornrunner\Keccak;
-use App\Models\Circle;
+use Web3\Contract;
+use Web3\Providers\HttpProvider;
+use Web3\RequestManagers\HttpRequestManager;
+use Web3\Web3;
 
 class Utils
 {
+
+    const VALID = '0x1626ba7e';
+    public static function validateSignature(string $address, string $message, string $signature, string $hash = null) {
+        $address = strtolower($address);
+        if($hash) {
+            return self::validateContractSignature($address, $hash, $signature);
+        }
+
+        return $address == strtolower(self::personalEcRecover( $message,  $signature)) ||
+                $address == strtolower(self::personalEcRecover( $message,  $signature, false));
+    }
+
+    public static function validateContractSignature(string $address, string $hash, string $signature): bool {
+        $contractABI = '[{
+            "inputs": [{
+                "internalType": "bytes32",
+                "name": "_message",
+                "type": "bytes32"
+            }, {
+                "internalType": "bytes",
+                "name": "_signature",
+                "type": "bytes"
+            }],
+            "name": "isValidSignature",
+            "outputs": [{
+                "internalType": "bytes4",
+                "name": "",
+                "type": "bytes4"
+            }],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        }]';
+
+        $web3 = new Web3(new HttpProvider(new HttpRequestManager(env('INFURA_API'),5)));
+        $contract = new Contract($web3->provider, $contractABI);
+        $valid = false;
+        $contract->at($address)->call('isValidSignature',$hash,$signature, null , function($err,$ret) use (&$valid) {
+            if($ret && count($ret))
+            {
+                $valid = $ret[0] == self::VALID;
+            }
+        });
+
+        return $valid;
+    }
 
     public static function personalEcRecover(string $message, string $signature, $withPrefix = true)
     {
@@ -21,10 +70,7 @@ class Utils
 
     public static function phpEcRecover(string $message_hash, string $signature)
     {
-        $return = NULL;
-
         $ec = new EC('secp256k1');
-
         $sign   = ["r" => substr($signature, 2, 64), "s" => substr($signature, 66, 64)];
         $val = ord(hex2bin(substr($signature, 130, 2)));
         $recid  = ($val - 27) < 0 ? $val:($val - 27);

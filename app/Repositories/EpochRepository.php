@@ -3,7 +3,7 @@
 
 namespace App\Repositories;
 use App\Models\PendingTokenGift;
-use App\Models\Teammate;
+use App\Models\Profile;
 use App\Models\TokenGift;
 use App\Models\Epoch;
 use App\Notifications\BotLaunch;
@@ -203,22 +203,21 @@ class EpochRepository
         return response()->stream($callback, 200, $headers);
     }
 
-    public function newUpdateGifts($request, $address) {
+    public function newUpdateGifts($request, $address, $circle_id) {
 
-        $user = $request->user;
-        $gifts = $request->gifts;
-
-        $ids = [];
-        foreach($gifts as $gift) {
-            $ids[] = $gift['recipient_id'];
-        }
-
-        $users = User::where('circle_id',$request->circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
-        $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
-        $epoch_id = $activeEpoch->id;
-        $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
-        DB::transaction(function () use ($users, $user, $gifts, $ids, $pendingSentGiftsMap, $address, $epoch_id) {
+        DB::transaction(function () use ($address, $request, $circle_id) {
             $token_used = 0;
+            $user = $request->user;
+            $gifts = $request->gifts;
+
+            $ids = [];
+            foreach($gifts as $gift) {
+                $ids[] = $gift['recipient_id'];
+            }
+            $users = User::where('circle_id',$circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
+            $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
+            $epoch_id = $activeEpoch->id;
+            $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
             foreach ($gifts as $gift) {
                 $recipient_id = $gift['recipient_id'];
                 if ($users->has($recipient_id)) {
@@ -226,7 +225,7 @@ class EpochRepository
                         continue;
 
                     $recipient = $users[$recipient_id];
-                    if($recipient->non_receiver == 1 || $recipient->fixed_non_receiver == 1) {
+                    if($user->non_giver == 1 || $recipient->non_receiver == 1 || $recipient->fixed_non_receiver == 1) {
                         $gift['tokens'] = 0;
                     }
 
@@ -273,44 +272,6 @@ class EpochRepository
         },2);
     }
 
-    public function removeAllPendingGiftsReceived($user, $updateData = []) {
-
-        return DB::transaction(function () use ($user, $updateData) {
-            $optOutStr = "";
-            if( (!empty($updateData['fixed_non_receiver']) && $updateData['fixed_non_receiver'] != $user->fixed_non_receiver && $updateData['fixed_non_receiver'] == 1) ||
-                (!empty($updateData['non_receiver']) && $updateData['non_receiver'] != $user->non_receiver && $updateData['non_receiver'] == 1)
-            )
-            {
-                $pendingGifts = $user->pendingReceivedGifts;
-                $pendingGifts->load(['sender.pendingSentGifts']);
-                $totalRefunded = 0;
-                foreach($pendingGifts as $gift) {
-                    if(!$gift->tokens && $gift->note)
-                        continue;
-
-                    $sender = $gift->sender;
-                    $gift_token = $gift->tokens;
-                    $totalRefunded += $gift_token;
-                    $senderName = Utils::cleanStr($sender->name);
-                    $optOutStr .= "$senderName: $gift_token\n";
-                    $gift->delete();
-                    $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-                    $sender->give_token_remaining = $sender->starting_tokens-$token_used;
-                    $sender->save();
-                }
-                $updateData['give_token_received'] = 0;
-                $circle = $user->circle;
-                if($circle->telegram_id || $circle->discord_webhook)
-                {
-                    $circle->notify(new OptOutEpoch($user,$totalRefunded, $optOutStr));
-                }
-            }
-
-            $user->update($updateData);
-            return $user;
-        });
-    }
-
     public function checkEpochNotifications($epoch) {
         if(!$epoch->notified_start) {
             $circle = $epoch->circle;
@@ -323,12 +284,6 @@ class EpochRepository
                 $protocol->notify(new EpochStart($epoch,$circle_name,$circle));
                 if($circle->id == 1)
                     $protocol->notify(new BotLaunch());
-            }
-            if(!$epoch->number && $epoch->ended == 0)
-            {
-                $epoch_number = Epoch::where('ended',1)->where('circle_id',$circle->id)->count();
-                $epoch_number = $epoch_number + 1;
-                $epoch->number = $epoch_number;
             }
 
             $epoch->notified_start = Carbon::now();

@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Helper\Utils;
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -16,25 +14,7 @@ class NewGiftRequest extends FormRequest
      */
     public function authorize()
     {
-        $data = $this->get('data');
-        $signature = $this->get('signature');
-        $address  = strtolower($this->get('address'));
-        $recoveredAddress = Utils::personalEcRecover($data,$signature);
-        $existing_user = null;
-        $circle_id = $this->route('circle_id');
-        if($this->route('address')) {
-            $existing_user =  User::byAddress($this->route('address'));
-            if($circle_id) {
-                $existing_user = $existing_user->where('circle_id', $circle_id);
-            }
-            $existing_user = $existing_user->first();
-        }
-        $this->merge([
-            'user' => $existing_user,
-            'circle_id' => $circle_id
-        ]);
-        $recoveredAddressWC = Utils::personalEcRecover($data,$signature, false);
-        return $existing_user  && (strtolower($recoveredAddress)==strtolower($address) || $recoveredAddressWC == strtolower($address));
+        return true;
     }
 
     protected function prepareForValidation()
@@ -72,8 +52,6 @@ class NewGiftRequest extends FormRequest
         $user = $this->user;
         if(!$user)
             throw new ConflictHttpException('User cannot be found');
-
-//        $this->merge(['user' => $user]);
 
         if($sum > $user->starting_tokens) {
             throw new ConflictHttpException('Sum of tokens is more than '. $user->starting_tokens);
