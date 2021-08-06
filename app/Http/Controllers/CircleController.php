@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CircleRequest;
 use App\Http\Requests\FileUploadRequest;
+use App\Http\Requests\UpdateWebhookRequest;
 use App\Models\Circle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Repositories\CircleRepository;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 
 class CircleController extends Controller
 {
@@ -29,6 +27,10 @@ class CircleController extends Controller
         return response()->json($this->repo->createCircle($request));
     }
 
+    public function getWebhook(Request $request, $circle_id) {
+        return response()->json($this->repo->getWebhook($circle_id));
+    }
+
     public function updateCircle(CircleRequest $request, $circle_id, Circle $circle): JsonResponse
     {
         return response()->json($this->repo->updateCircle($circle, $request));
@@ -43,8 +45,7 @@ class CircleController extends Controller
         return response()->json(['message'=> 'File Upload Failed' ,422]);
     }
 
-    public function updateWebhook(Request $request, $circle_id) {
-//        $circle->discord_webhook = $request->discord_webhook;
-
+    public function updateWebhook(UpdateWebhookRequest $request, $circle_id) {
+      return response()->json($this->repo->updateWebhook($request, $circle_id));
     }
 }
