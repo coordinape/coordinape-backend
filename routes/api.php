@@ -34,6 +34,8 @@ Route::prefix('{circle_id}')->group(function () {
         Route::put('/epoches/{epoch}', [EpochController::class, 'updateEpoch']);
         Route::delete('/epoches/{epoch}', [EpochController::class, 'deleteEpoch']);
         Route::post('/upload-logo', [CircleController::class, 'uploadCircleLogo']);
+        Route::put('/update-webhook', [CircleController::class, 'updateWebhook']);
+        Route::post('/webhook', [CircleController::class, 'getWebhook']);
 
     });
     Route::middleware(['verify-sign'])->group(function () {
@@ -49,7 +51,6 @@ Route::prefix('{circle_id}')->group(function () {
     Route::get('/users/{address}', [UserController::class, 'getUser2']);
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
-
     Route::get('/csv', [DataController::class, 'generateCsv']);
     Route::get('/nominees', [NominationController::class, 'getNominees']);
     Route::get('/epoches',[EpochController::class, 'epoches']);

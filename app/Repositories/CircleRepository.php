@@ -54,4 +54,16 @@ class CircleRepository {
 
         return null;
     }
+
+    public function getWebhook($circle_id) {
+        $circle = $this->model->find($circle_id);
+       return $circle->discord_webhook ?:'';
+    }
+
+    public function updateWebhook($request, $circle_id) {
+        $circle = $this->model->find($circle_id);
+        $circle->discord_webhook = $request->discord_webhook;
+        $circle->save();
+        return $circle->discord_webhook;
+    }
 }

@@ -34,4 +34,7 @@ return [
         'token' => env('TELEGRAM_BOT_TOKEN', 'YOUR BOT TOKEN HERE')
     ],
 
+    'discord' => [
+        'test-webhook' => env('TEST_DISCORD_WEBHOOK')
+    ]
 ];

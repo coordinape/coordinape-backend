@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use Carbon\Carbon;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 
 class DailyUpdate extends Notification implements ShouldQueue
 {
@@ -43,11 +45,17 @@ class DailyUpdate extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+        if($notifiable->discord_webhook)
+            $channels[] = DiscordWebhookChannel::class;
+
+        return $channels;
     }
 
-    public function toTelegram($notifiable=null)
-    {
+    private function getContent() {
+
         $alloc_str = $this->name_str;
         $name = '_'.$this->circle_name.'_';
         if($alloc_str) {
@@ -58,9 +66,21 @@ class DailyUpdate extends Notification implements ShouldQueue
         $end_date = $this->epoch->end_date->format('Y/m/d');
 
         $stats_content = "Total Allocations: *$this->total_gifts_sent*\nGIVES sent: *$this->total_tokens_sent*\nOpt Outs: *$this->opt_outs*\nUsers Allocated: *$this->has_sent/$this->total_users*";
+        return "$name - *epoch $this->epoch_num*\n\n_{$start_date} to {$end_date}_\n\n$stats_content\nepoch ending *$diff* !\n\n$alloc_str";
+    }
+
+    public function toTelegram($notifiable=null)
+    {
+
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$name - *epoch $this->epoch_num*\n\n_{$start_date} to {$end_date}_\n\n$stats_content\nepoch ending *$diff* !\n\n$alloc_str");
+            ->content($this->getContent());
+    }
+
+    public function toDiscord($notifiable=null)
+    {
+        return DiscordMessage::create()
+            ->content($this->getContent());
     }
     /**
      * Get the array representation of the notification.

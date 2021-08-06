@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use App\Helper\Utils;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 
 class EpochEnd extends Notification implements ShouldQueue
 {
@@ -35,11 +37,16 @@ class EpochEnd extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+        if($notifiable->discord_webhook)
+            $channels[] = DiscordWebhookChannel::class;
+
+        return $channels;
     }
 
-    public function toTelegram($notifiable=null)
-    {
+    private function getContent() {
         $name = '_'.$this->circle_name.'_';
         $unalloc_users = $this->unallocated_users;
         $unalloc_str = '';
@@ -57,14 +64,29 @@ class EpochEnd extends Notification implements ShouldQueue
 //            $unalloc_str = "All users has fully allocated all their GIVE tokens !";
 //        }
 
+
+
+        return "$name epoch has just ended !\n$unalloc_str";
+    }
+
+    public function toTelegram($notifiable=null)
+    {
         $app_domain = 'coordinape.me';
         $url = $app_domain== 'localhost:8000' ?
             'http://'.$app_domain."/api/$notifiable->id/csv" : 'https://'.$app_domain."/api/$notifiable->id/csv";
         $url .=  "?epoch=". $this->epoch_num;
+
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$name epoch has just ended !\n$unalloc_str")
+            ->content($this->getContent())
             ->button('Click to Download CSV', $url);
+    }
+
+    public function toDiscord($notifiable=null)
+    {
+        return DiscordMessage::create()
+            ->content($this->getContent());
+
     }
     /**
      * Get the array representation of the notification.
