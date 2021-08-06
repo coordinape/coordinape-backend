@@ -44,7 +44,7 @@ class OptOutEpoch extends Notification implements ShouldQueue
     private function getContent() {
 //        $circle_name = $notifiable->protocol->name .'/'. $notifiable->name;
         $name = Utils::cleanStr($this->user->name);
-        return "$name has just opt out of the current epoch !\nA total of $this->totalRefunded GIVE is refunded\n$this->refundStr";
+        return "$name opted out of the current epoch!\nA total of $this->totalRefunded GIVE was refunded\n$this->refundStr";
     }
 
     public function toTelegram($notifiable=null)
