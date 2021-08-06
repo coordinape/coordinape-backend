@@ -25,7 +25,7 @@ class CircleRequest extends FormRequest
             'token_name' => !empty($data['token_name']) ? $data['token_name']:null,
             'team_sel_text' => !empty($data['team_sel_text']) ? $data['team_sel_text']:null,
             'alloc_text' => !empty($data['alloc_text']) ? $data['alloc_text']:null,
-            'vouching'  => !empty($data['vouching']) ? $data['vouching']:1,
+            'vouching'  => !empty($data['vouching']) ? $data['vouching']:0,
             'min_vouches'  => !empty($data['min_vouches']) ? $data['min_vouches']:3,
             'nomination_days_limit' => !empty($data['nomination_days_limit']) ? $data['nomination_days_limit']:14,
             'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:'',
