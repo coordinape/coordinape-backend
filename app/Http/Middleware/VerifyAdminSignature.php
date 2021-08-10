@@ -37,5 +37,6 @@ class VerifyAdminSignature
         if(!$admin_user || !Utils::validateSignature($address, $data, $signature, $hash))
             abort(403, 'You are not authorized to perform this action');
 
-        return $next($request);    }
+        return $next($request);
+    }
 }

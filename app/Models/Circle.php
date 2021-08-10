@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -44,6 +45,8 @@ class Circle extends Model
     {
         if(config('services.discord.test-webhook')) {
             return config('services.discord.test-webhook');
+        } else if(config('app.env') == 'local') {
+            throw new Exception('Please set TEST_DISCORD_WEBHOOK in your .env ');
         }
 
         return $this->discord_webhook;

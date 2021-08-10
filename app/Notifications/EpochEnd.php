@@ -66,7 +66,7 @@ class EpochEnd extends Notification implements ShouldQueue
 
 
 
-        return "$name epoch has just ended !\n$unalloc_str";
+        return "$name epoch has just ended!\n$unalloc_str";
     }
 
     public function toTelegram($notifiable=null)

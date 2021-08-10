@@ -35,7 +35,7 @@ Route::prefix('{circle_id}')->group(function () {
         Route::delete('/epoches/{epoch}', [EpochController::class, 'deleteEpoch']);
         Route::post('/upload-logo', [CircleController::class, 'uploadCircleLogo']);
         Route::put('/update-webhook', [CircleController::class, 'updateWebhook']);
-        Route::post('/webhook', [CircleController::class, 'getWebhook']);
+        Route::get('/webhook', [CircleController::class, 'getWebhook']);
 
     });
     Route::middleware(['verify-sign'])->group(function () {
