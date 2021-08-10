@@ -65,7 +65,7 @@ class EpochAlmostEnd extends Notification implements ShouldQueue
             $unalloc_str = "All users has fully allocated all their GIVE tokens !";
         }
 
-        return "$name epoch is almost ending in less than 24HRS !\n$unalloc_str";
+        return "$name epoch ends in less than 24 hours!\n$unalloc_str";
     }
 
 

@@ -32,6 +32,12 @@ class CircleRequest extends FormRequest
             'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:1,
             'default_opt_in'  => !empty($data['default_opt_in']) ? $data['default_opt_in']:0,
         ]);
+
+        if(array_key_exists('discord_webhook', $data)) {
+            $this->merge([
+                'discord_webhook' => $data['discord_webhook']
+            ]);
+        }
     }
 
     /**
@@ -53,6 +59,7 @@ class CircleRequest extends FormRequest
             'alloc_text' => 'string|max:5000',
             'team_selection' => 'integer|min:0|max:1',
             'default_opt_in' => 'integer|min:0|max:1',
+            'discord_webhook' => 'url'
         ];
     }
 }
