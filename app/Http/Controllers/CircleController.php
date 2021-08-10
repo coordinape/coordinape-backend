@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CircleRequest;
 use App\Http\Requests\FileUploadRequest;
-use App\Http\Requests\UpdateWebhookRequest;
 use App\Models\Circle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,7 +44,4 @@ class CircleController extends Controller
         return response()->json(['message'=> 'File Upload Failed' ,422]);
     }
 
-    public function updateWebhook(UpdateWebhookRequest $request, $circle_id) {
-      return response()->json($this->repo->updateWebhook($request, $circle_id));
-    }
 }
