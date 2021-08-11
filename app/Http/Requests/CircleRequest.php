@@ -33,7 +33,10 @@ class CircleRequest extends FormRequest
             'default_opt_in'  => !empty($data['default_opt_in']) ? $data['default_opt_in']:0,
         ]);
 
-        if(array_key_exists('discord_webhook', $data)) {
+        if(array_key_exists('discord_webhook', $data) &&
+            array_key_exists('update_webhook', $data) &&
+            $data['update_webhook'] == 1
+        ) {
             $this->merge([
                 'discord_webhook' => $data['discord_webhook']
             ]);

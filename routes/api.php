@@ -34,7 +34,6 @@ Route::prefix('{circle_id}')->group(function () {
         Route::put('/epoches/{epoch}', [EpochController::class, 'updateEpoch']);
         Route::delete('/epoches/{epoch}', [EpochController::class, 'deleteEpoch']);
         Route::post('/upload-logo', [CircleController::class, 'uploadCircleLogo']);
-        Route::put('/update-webhook', [CircleController::class, 'updateWebhook']);
         Route::get('/webhook', [CircleController::class, 'getWebhook']);
 
     });
