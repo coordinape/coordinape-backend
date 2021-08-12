@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use App\Helper\Utils;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 
 class OptOutEpoch extends Notification implements ShouldQueue
 {
@@ -30,17 +32,35 @@ class OptOutEpoch extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+        if($notifiable->discord_webhook)
+            $channels[] = DiscordWebhookChannel::class;
+
+        return $channels;
+    }
+
+    private function getContent() {
+//        $circle_name = $notifiable->protocol->name .'/'. $notifiable->name;
+        $name = Utils::cleanStr($this->user->name);
+        return "$name opted out of the current epoch!\nA total of $this->totalRefunded GIVE was refunded\n$this->refundStr";
     }
 
     public function toTelegram($notifiable=null)
     {
-        $circle_name = $notifiable->protocol->name .'/'. $notifiable->name;
-        $name = Utils::cleanStr($this->user->name);
+
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$name has just opt out of the current epoch !\nA total of $this->totalRefunded GIVE is refunded\n$this->refundStr")
+            ->content($this->getContent())
             ->button('Reallocate your GIVES', 'https://app.coordinape.com/allocation');
+    }
+
+    public function toDiscord($notifiable=null)
+    {
+        return DiscordMessage::create()
+            ->content($this->getContent());
+
     }
 
     /**

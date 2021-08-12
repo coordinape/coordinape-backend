@@ -6,6 +6,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 
@@ -25,7 +27,11 @@ class BotLaunch extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+
+        return $channels;
     }
 
     public function toTelegram($notifiable=null)

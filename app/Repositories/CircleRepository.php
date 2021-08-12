@@ -25,7 +25,7 @@ class CircleRepository {
 
     public function updateCircle($circle, $request) {
         $circle->update($request->only('name','token_name','team_sel_text','alloc_text','vouching',
-            'min_vouches','nomination_days_limit','vouching_text','team_selection','default_opt_in'));
+            'min_vouches','nomination_days_limit','vouching_text','team_selection','default_opt_in','discord_webhook'));
 
         if(!$circle->vouching) {
             $circle->nominees()->update(['ended' => 1]);
@@ -53,5 +53,10 @@ class CircleRepository {
         }
 
         return null;
+    }
+
+    public function getWebhook($circle_id) {
+        $circle = $this->model->find($circle_id);
+       return $circle->discord_webhook ?:'';
     }
 }

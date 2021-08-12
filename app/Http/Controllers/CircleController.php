@@ -8,9 +8,6 @@ use App\Models\Circle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Repositories\CircleRepository;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 
 class CircleController extends Controller
 {
@@ -27,6 +24,10 @@ class CircleController extends Controller
     public function createCircle(CircleRequest $request)
     {
         return response()->json($this->repo->createCircle($request));
+    }
+
+    public function getWebhook(Request $request, $circle_id) {
+        return response()->json($this->repo->getWebhook($circle_id));
     }
 
     public function updateCircle(CircleRequest $request, $circle_id, Circle $circle): JsonResponse

@@ -25,13 +25,22 @@ class CircleRequest extends FormRequest
             'token_name' => !empty($data['token_name']) ? $data['token_name']:null,
             'team_sel_text' => !empty($data['team_sel_text']) ? $data['team_sel_text']:null,
             'alloc_text' => !empty($data['alloc_text']) ? $data['alloc_text']:null,
-            'vouching'  => !empty($data['vouching']) ? $data['vouching']:1,
+            'vouching'  => !empty($data['vouching']) ? $data['vouching']:0,
             'min_vouches'  => !empty($data['min_vouches']) ? $data['min_vouches']:3,
             'nomination_days_limit' => !empty($data['nomination_days_limit']) ? $data['nomination_days_limit']:14,
             'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:'',
             'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:1,
             'default_opt_in'  => !empty($data['default_opt_in']) ? $data['default_opt_in']:0,
         ]);
+
+        if(array_key_exists('discord_webhook', $data) &&
+            array_key_exists('update_webhook', $data) &&
+            $data['update_webhook'] == 1
+        ) {
+            $this->merge([
+                'discord_webhook' => $data['discord_webhook']
+            ]);
+        }
     }
 
     /**
@@ -53,6 +62,7 @@ class CircleRequest extends FormRequest
             'alloc_text' => 'string|max:5000',
             'team_selection' => 'integer|min:0|max:1',
             'default_opt_in' => 'integer|min:0|max:1',
+            'discord_webhook' => 'url'
         ];
     }
 }

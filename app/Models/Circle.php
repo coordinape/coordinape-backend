@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -21,12 +22,16 @@ class Circle extends Model
         'vouching_text',
         'logo',
         'default_opt_in',
-        'team_selection'
+        'team_selection',
+        'discord_webhook'
+
     ];
     protected $searchable = [
         'protocol_id',
         'id'
     ];
+
+    protected $hidden = ['discord_webhook'];
 
     public function routeNotificationForTelegram()
     {
@@ -34,6 +39,17 @@ class Circle extends Model
             return '-573708082';
 
         return $this->telegram_id;
+    }
+
+    public function routeNotificationForDiscord()
+    {
+        if(config('services.discord.test-webhook')) {
+            return config('services.discord.test-webhook');
+        } else if(config('app.env') == 'local') {
+            throw new Exception('Please set TEST_DISCORD_WEBHOOK in your .env ');
+        }
+
+        return $this->discord_webhook;
     }
 
     public function scopeFilter($query, $filters) {

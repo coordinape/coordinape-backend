@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 use App\Helper\Utils;
+use SnoerenDevelopment\DiscordWebhook\DiscordMessage;
+use SnoerenDevelopment\DiscordWebhook\DiscordWebhookChannel;
 
 class EpochAlmostEnd extends Notification implements ShouldQueue
 {
@@ -32,12 +34,19 @@ class EpochAlmostEnd extends Notification implements ShouldQueue
      * @param  mixed  $notifiable
      * @return array
      */
+
     public function via($notifiable)
     {
-        return config('telegram.token') ? [TelegramChannel::class] : [];
+        $channels = [];
+        if(config('telegram.token'))
+            $channels[] = TelegramChannel::class;
+        if($notifiable->discord_webhook)
+            $channels[] = DiscordWebhookChannel::class;
+
+        return $channels;
     }
 
-    public function toTelegram($notifiable=null)
+    private function getContent()
     {
         $name = '_'.$this->circle_name.'_';
         $unalloc_users = $this->unallocated_users;
@@ -55,10 +64,24 @@ class EpochAlmostEnd extends Notification implements ShouldQueue
         else {
             $unalloc_str = "All users has fully allocated all their GIVE tokens !";
         }
+
+        return "$name epoch ends in less than 24 hours!\n$unalloc_str";
+    }
+
+
+    public function toTelegram($notifiable=null)
+    {
         return TelegramMessage::create()
             // Markdown supported.
-            ->content("$name epoch is almost ending in less than 24HRS !\n$unalloc_str")
+            ->content($this->getContent())
             ->button('Start Allocating GIVES', 'https://app.coordinape.com/allocation');
+    }
+
+    public function toDiscord($notifiable=null)
+    {
+        return DiscordMessage::create()
+            ->content($this->getContent());
+
     }
     /**
      * Get the array representation of the notification.
