@@ -19,6 +19,7 @@ use App\Helper\Utils;
 use App\Notifications\EpochEnd;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Str;
 
 class EpochRepository
 {
@@ -187,9 +188,11 @@ class EpochRepository
         }
 
         $protocol = $epoch->circle->protocol;
+        $protocol_name = Str::slug($protocol->name);
+        $circle_name = Str::slug($epoch->circle->name);
         $headers = [
                'Content-type'        => "text/csv"
-           ,   'Content-Disposition' => "attachment; filename={$protocol->name}-{$epoch->circle->name}-{$epoch->number}.csv"
+           ,   'Content-Disposition' => "attachment; filename={$protocol_name}-{$circle_name}-{$epoch->number}.csv"
         ];
 
         $callback = function() use ($list)
