@@ -32,7 +32,7 @@ class NominationRepository {
                 $user->nominations()->syncWithoutDetaching([$nominee_id]);
                 $nominee->load('nominations');
                 $circle = $user->circle;
-                $circle->notify(new SendSocialMessage("$nominee->name has been just been vouched by $user->name!", false));
+                $circle->notify(new SendSocialMessage("$nominee->name has been vouched for by $user->name!", false));
 
                 // nomination apparently is 1 vouch
                 if ( ($nominee->vouches_required - 1) <= count($nominee->nominations)) {
@@ -48,7 +48,7 @@ class NominationRepository {
                     $nominee->save();
                     $nominee->load('user');
                     $circle->notify(new SendSocialMessage(
-                        "$nominee->name has just received the required vouches and added into the circle!", false));
+                        "$nominee->name has received enough vouches and is now in the circle!", false));
 
                 }
             });
@@ -66,7 +66,7 @@ class NominationRepository {
         $nominee = $this->model->create($data);
         $nominee->load('nominations','nominator');
         $circle->notify(new SendSocialMessage(
-            "$nominee->name has been just been nominated by $user->name! You can vouch for him at https://app.coordinape.com/vouching", false));
+            "$nominee->name has been nominated by $user->name! You can vouch for them at https://app.coordinape.com/vouching", false));
 
         // nomination = 1 vouch hence user gets immediately created ??
         if($circle->min_vouches == 1) {
@@ -79,7 +79,7 @@ class NominationRepository {
             $nominee->user_id = $createdUser->id;
             $nominee->save();
             $circle->notify(new SendSocialMessage(
-                "$nominee->name has just received the required vouches and added into the circle!", false));
+                "$nominee->name has received enough vouches and is now in the circle!", false));
         }
 
         return $nominee;
