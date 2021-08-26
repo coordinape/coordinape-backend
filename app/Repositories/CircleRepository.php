@@ -20,12 +20,13 @@ class CircleRepository {
 
     public function createCircle($request) {
         return $this->model->create($request->only('name','token_name','team_sel_text','alloc_text','vouching',
-            'min_vouches','nomination_days_limit','vouching_text','team_selection','default_opt_in'));
+            'min_vouches','nomination_days_limit','vouching_text','team_selection','default_opt_in','only_giver_vouch'));
     }
 
     public function updateCircle($circle, $request) {
         $circle->update($request->only('name','token_name','team_sel_text','alloc_text','vouching',
-            'min_vouches','nomination_days_limit','vouching_text','team_selection','default_opt_in','discord_webhook'));
+            'min_vouches','nomination_days_limit','vouching_text','team_selection','default_opt_in',
+            'discord_webhook','only_giver_vouch'));
 
         if(!$circle->vouching) {
             $circle->nominees()->update(['ended' => 1]);

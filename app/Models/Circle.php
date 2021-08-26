@@ -23,7 +23,8 @@ class Circle extends Model
         'logo',
         'default_opt_in',
         'team_selection',
-        'discord_webhook'
+        'discord_webhook',
+        'only_giver_vouch'
 
     ];
     protected $searchable = [
