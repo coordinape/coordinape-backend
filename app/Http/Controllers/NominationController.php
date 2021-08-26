@@ -21,10 +21,16 @@ class NominationController extends Controller
     }
 
     public function addVouch(VouchRequest $request, $circle_id) : JsonResponse {
+        if($request->user->circle->only_giver_vouch == 1 && $request->user->non_giver == 1) {
+            return response()->json(['message'=> 'Non-givers are not allowed to vouch for users'],403);
+        }
         return response()->json($this->repo->addVouch($request,$circle_id));
     }
 
     public function createNominee(NomineeRequest $request, $circle_id) : JsonResponse {
+        if($request->user->circle->only_giver_vouch == 1 && $request->user->non_giver == 1) {
+            return response()->json(['message'=> 'Non-givers are not allowed to nominate users'],403);
+        }
         return response()->json($this->repo->createNominee($request));
     }
 }

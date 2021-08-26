@@ -31,6 +31,7 @@ class CircleRequest extends FormRequest
             'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:'',
             'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:1,
             'default_opt_in'  => !empty($data['default_opt_in']) ? $data['default_opt_in']:0,
+            'only_giver_vouch'  => !empty($data['only_giver_vouch']) ? $data['only_giver_vouch']:1,
         ]);
 
         if(array_key_exists('discord_webhook', $data) &&
@@ -62,7 +63,8 @@ class CircleRequest extends FormRequest
             'alloc_text' => 'string|max:5000',
             'team_selection' => 'integer|min:0|max:1',
             'default_opt_in' => 'integer|min:0|max:1',
-            'discord_webhook' => 'url'
+            'discord_webhook' => 'url',
+            'only_giver_vouch' => 'integer|min:0|max:1',
         ];
     }
 }
