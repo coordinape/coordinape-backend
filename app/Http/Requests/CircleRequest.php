@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class CircleRequest extends FormRequest
 {
@@ -29,9 +30,9 @@ class CircleRequest extends FormRequest
             'min_vouches'  => !empty($data['min_vouches']) ? $data['min_vouches']:3,
             'nomination_days_limit' => !empty($data['nomination_days_limit']) ? $data['nomination_days_limit']:14,
             'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:'',
-            'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:1,
+            'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:0,
             'default_opt_in'  => !empty($data['default_opt_in']) ? $data['default_opt_in']:0,
-            'only_giver_vouch'  => !empty($data['only_giver_vouch']) ? $data['only_giver_vouch']:1,
+            'only_giver_vouch'  => !empty($data['only_giver_vouch']) ? $data['only_giver_vouch']:0,
         ]);
 
         if(array_key_exists('discord_webhook', $data) &&
