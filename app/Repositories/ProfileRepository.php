@@ -23,9 +23,6 @@ class ProfileRepository
             'discord_username','twitter_username','github_username','medium_username','website');
         $profile = $request->profile;
         $profile->update($data);
-        if(!empty($data['telegram_username']) || !empty($data['discord_username'])) {
-            $profile->users()->update($request->only('telegram_username','discord_username'));
-        }
         $profile->load(['users.circle.protocol','users.teammates','users.histories.epoch']);
         return $profile;
     }

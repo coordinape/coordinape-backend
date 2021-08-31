@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feedback;
 use App\Models\PendingTokenGift;
+use App\Models\Profile;
 use App\Models\TokenGift;
 use Carbon\Carbon;
 use Exception;
@@ -31,7 +32,7 @@ class BotController extends Controller
         $updates = Telegram::getWebhookUpdates();
         $message = $updates->message;
         Log::info($message);
-        if($updates && !empty($message) &&
+        if(!empty($message) &&
             ((!empty($message['entities'][0]['type']) && ($message['entities'][0]['type']=='bot_command' )) ||
             (!empty($message['text']['entities'][0]['type']) && ($message['text']['entities'][0]['type']=='bot_command' ))
             )
@@ -49,10 +50,10 @@ class BotController extends Controller
         $is_group = $message['chat']['type'] == 'group' || $message['chat']['type'] == 'supergroup';
         switch($command) {
             case '/start':
-                $user = $this->addUserChatId($message);
-                if($user) {
-                    $user->notify(new SendSocialMessage(
-                        "Congrats {$user->name} You have successfully registered your Telegram to Coordinape !\nI will occasionally send you important reminders and updates!"
+                $profile = $this->addProfileChatId($message);
+                if($profile) {
+                    $profile->notify(new SendSocialMessage(
+                        "Congrats {$profile->name} You have successfully registered your Telegram to Coordinape !\nI will occasionally send you important reminders and updates!"
                     ));
                 }
                 break;
@@ -113,8 +114,9 @@ class BotController extends Controller
     private function feedbacks($message, $is_group) {
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
+
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
 
                 $feedbacks = Feedback::limit(20)->orderBy('id','desc')->get();
                 $fullStr = '';
@@ -125,10 +127,10 @@ class BotController extends Controller
                     $fullStr .= "\n{$feedback_no} {$name} :\n$messageStr\n";
                 }
 
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username\n$fullStr", false
+                    "@$profile->telegram_username\n$fullStr", false
                 ));
             }
         }
@@ -137,19 +139,19 @@ class BotController extends Controller
     private function feedback($message, $is_group) {
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
 
                 $msg = substr($message['text'],10);
-                $feedback = new Feedback(['user_id' => $user->id,
-                    'telegram_username' => $user->telegram_username, 'message'=> $msg ]);
+                $feedback = new Feedback(['user_id' => $profile->users[0]->id,
+                    'telegram_username' => $profile->telegram_username, 'message'=> $msg ]);
 
                 $feedback->save();
                 $feedback_no = sprintf('%04d', $feedback->id);
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username your feedback #$feedback_no has been logged "
+                    "@$profile->telegram_username your feedback #$feedback_no has been logged "
                 ));
             }
         }
@@ -158,12 +160,12 @@ class BotController extends Controller
     private function getHelp($message, $is_group) {
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username https://docs.coordinape.com", false
+                    "@$profile->telegram_username https://docs.coordinape.com", false
                 ));
             }
         }
@@ -172,12 +174,12 @@ class BotController extends Controller
     private function getDiscord($message,$is_group) {
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username https://discord.gg/7MWSTamFX4", false
+                    "@$profile->telegram_username https://discord.gg/7MWSTamFX4", false
                 ));
             }
         }
@@ -187,12 +189,12 @@ class BotController extends Controller
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username https://coordinape.com", false
+                    "@$profile->telegram_username https://coordinape.com", false
                 ));
             }
         }
@@ -202,12 +204,12 @@ class BotController extends Controller
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username https://yearnfinance.typeform.com/to/egGYEbrC", false
+                    "@$profile->telegram_username https://yearnfinance.typeform.com/to/egGYEbrC", false
                 ));
             }
         }
@@ -217,10 +219,10 @@ class BotController extends Controller
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 $commands = "/regive - Allocate according to your previous epoch's allocations, your current existing allocations will be reset
 /give - Add username, tokens and note (optional) after the command separated by a space e.g /give @zashtoneth 20 thank you note
 /gives - Get all the allocations that you have sent
@@ -247,14 +249,15 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         }
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
+                $user = $profile->users[0];
                 if(count($circle->epoches) == 0)
                 {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                        "@$profile->telegram_username Sorry $user->name ser, there is currently no active epochs"
                     ));
                     return false;
                 }
@@ -263,7 +266,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 });
 
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username $user->name ser, You have deallocated all your tokens, you have now $user->starting_tokens tokens remaining"
+                    "@$profile->telegram_username $user->name ser, You have deallocated all your tokens, you have now $user->starting_tokens tokens remaining"
                 ));
             }
         }
@@ -277,20 +280,21 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
+                $user = $profile->users[0];
                 if(count($circle->epoches) == 0)
                 {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                        "@$profile->telegram_username Sorry $user->name ser, there is currently no active epochs"
                     ));
                     return false;
                 }
                 if($user->non_giver) {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, You are not allowed to give allocations"
+                        "@$profile->telegram_username Sorry $user->name ser, You are not allowed to give allocations"
                     ));
                     return false;
                 }
@@ -303,19 +307,19 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 $lastEpochGifts = TokenGift::with(['recipient'])->where('sender_id', $user->id)->where('epoch_id',$latestEpoch->id)->get();
                 if(count($lastEpochGifts) == 0) {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, you didn't allocate any tokens to anyone in the previous epoch"
+                        "@$profile->telegram_username Sorry $user->name ser, you didn't allocate any tokens to anyone in the previous epoch"
                     ));
                     return false;
                 }
                 $sentSum = $lastEpochGifts->SUM('tokens');
                 if($sentSum > $user->starting_tokens) {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, you don't have sufficient starting tokens to give the same allocations"
+                        "@$profile->telegram_username Sorry $user->name ser, you don't have sufficient starting tokens to give the same allocations"
                     ));
                     return false;
                 }
                 $epoch_id = $circle->epoches[0]->id;
-                DB::transaction(function() use ($lastEpochGifts, $user, $circle, $notifyModel, $epoch_id) {
+                DB::transaction(function() use ($lastEpochGifts, $user, $circle, $notifyModel, $epoch_id, $profile) {
                     $totalTokens = 0;
                     $startingTokens = $user->starting_tokens;
                     $this->repo->resetGifts($user,[]);
@@ -338,7 +342,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                     $user->give_token_remaining = $startingTokens - $user->pendingSentGifts()->get()->SUM('tokens');
                     if($user->give_token_remaining < 0) {
                         $notifyModel->notify(new SendSocialMessage(
-                            "@$user->telegram_username Sorry $user->name ser, something went wrong"
+                            "@$profile->telegram_username Sorry $user->name ser, something went wrong"
                         ));
                         throw new Exception;
                     }
@@ -357,7 +361,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 }
 
                 $notifyModel->notify(new SendSocialMessage(
-                    "@$user->telegram_username $user->name ser, you have allocated $sent/$user->starting_tokens of your tokens\n$allocStr", false
+                    "@$profile->telegram_username $user->name ser, you have allocated $sent/$user->starting_tokens of your tokens\n$allocStr", false
                 ));
             }
         }
@@ -379,13 +383,15 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         $note = !empty($noteArray[1]) ? trim($noteArray[1]):'';
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::with('pendingSentGifts')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle : $user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $user = $profile->users[0];
+                $user->load('pendingSentGifts');
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle : $profile;
                 if(strtolower($recipientUsername) == strtolower($message['from']['username'])) {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, you can't give to yourself"
+                        "@$profile->telegram_username Sorry $user->name ser, you can't give to yourself"
                     ));
                     return false;
                 }
@@ -393,19 +399,19 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                 if(count($circle->epoches) == 0)
                 {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                        "@$profile->telegram_username Sorry $user->name ser, there is currently no active epochs"
                     ));
                     return false;
                 }
                 if($user->non_giver) {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, You are not allowed to give allocations"
+                        "@$profile->telegram_username Sorry $user->name ser, You are not allowed to give allocations"
                     ));
                     return false;
                 }
-                $recipientUser = User::where('telegram_username',$recipientUsername)->where('circle_id', $circle->id)->first();
-                Log::info($recipientUser);
-                if($recipientUser) {
+                $recipientProfile = $this->findProfileByTelegramNcircle($recipientUsername, $circle->id);
+                if($recipientProfile) {
+                    $recipientUser = $recipientProfile->users[0];
                     $noteOnly = false;
                     $optOutText = "";
                     if($recipientUser->non_receiver || $recipientUser->fixed_non_receiver) {
@@ -416,14 +422,14 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                         $noteOnly = true;
 
                     $epoch_id = $circle->epoches[0]->id;
-                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername, $optOutText,$epoch_id) {
+                    DB::transaction(function () use($user, $recipientUser, $circle, $notifyModel, $amount, $note, $noteOnly, $recipientUsername, $optOutText,$epoch_id, $profile) {
                         $pendingSentGifts = $user->pendingSentGifts;
                         $remainingGives = $user->give_token_remaining;
                         foreach($pendingSentGifts as $gift) {
                             if($gift->recipient_id==$recipientUser->id) {
                                 if(($remainingGives + $gift->tokens - $amount) < 0) {
                                     $notifyModel->notify(new SendSocialMessage(
-                                        "@$user->telegram_username Sorry $user->name ser, You only have $remainingGives tokens remaining you're ngmi"
+                                        "@$profile->telegram_username Sorry $user->name ser, You only have $remainingGives tokens remaining you're ngmi"
                                     ));
                                     return false;
                                 }
@@ -441,7 +447,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                                 $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                                 $user->save();
                                 $notifyModel->notify(new SendSocialMessage(
-                                    "@$user->telegram_username $user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name @$recipientUsername $optOutText to $amount tokens. You have $user->give_token_remaining tokens remaining"
+                                    "@$profile->telegram_username $user->name ser, You have successfully updated your allocated $current tokens for $recipientUser->name @$recipientUsername $optOutText to $amount tokens. You have $user->give_token_remaining tokens remaining"
                                 ));
                                 return true;
                             }
@@ -451,7 +457,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                             if($optOutText)
                             {
                                 $notifyModel->notify(new SendSocialMessage(
-                                    "@$user->telegram_username Sorry $user->name ser, You are only sending tokens to an Opt Out recipient, please include at least a note"
+                                    "@$profile->telegram_username Sorry $user->name ser, You are only sending tokens to an Opt Out recipient, please include at least a note"
                                 ));
                             }
                             return false;
@@ -459,7 +465,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
                         if($amount > $user->give_token_remaining) {
                             $notifyModel->notify(new SendSocialMessage(
-                                "@$user->telegram_username Sorry $user->name ser, You only have $remainingGives tokens remaining you're ngmi"
+                                "@$profile->telegram_username Sorry $user->name ser, You only have $remainingGives tokens remaining you're ngmi"
                             ));
                             return false;
                         }
@@ -478,7 +484,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                         $recipientUser->save();
                         $user->give_token_remaining = $user->starting_tokens - $user->pendingSentGifts()->get()->SUM('tokens');
                         $user->save();
-                        $msg = $noteOnly? "@$user->telegram_username $user->name ser, You have successfully sent a note to $recipientUser->name $optOutText":"@$user->telegram_username $user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
+                        $msg = $noteOnly? "@$profile->telegram_username $user->name ser, You have successfully sent a note to $recipientUser->name $optOutText":"@$profile->telegram_username $user->name ser, You have successfully allocated $amount tokens to $recipientUser->name @$recipientUsername. You have $user->give_token_remaining tokens remaining";
                         $notifyModel->notify(new SendSocialMessage(
                             $msg
                         ));
@@ -486,7 +492,7 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
                 } else {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, $recipientUsername does not exist in this circle"
+                        "@$profile->telegram_username Sorry $user->name ser, $recipientUsername does not exist in this circle"
                     ));
                 }
             }
@@ -516,14 +522,16 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
 
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::with('pendingSentGifts.recipient')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $user = $profile->users[0];
+                $user->load('pendingSentGifts.recipient');
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 if(count($circle->epoches) == 0)
                 {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                        "@$profile->telegram_username Sorry $user->name ser, there is currently no active epochs"
                     ));
                     return false;
                 }
@@ -537,9 +545,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                     $sent += $gift->tokens;
                 }
                 if(!$allocStr)
-                    $allocStr = "@$user->telegram_username You have sent no allocations currently";
+                    $allocStr = "@$profile->telegram_username You have sent no allocations currently";
                 else
-                    $allocStr = "@$user->telegram_username Allocations: $sent\n$allocStr";
+                    $allocStr = "@$profile->telegram_username Allocations: $sent\n$allocStr";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $allocStr
@@ -556,14 +564,16 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
         }
         $circle = $this->getCircle($message, $is_group);
         if($circle) {
-            $user = User::with('pendingReceivedGifts.sender')->where('telegram_username', $message['from']['username'])->where('circle_id',$circle->id)->first();
-            if($user) {
-                $user = $this->checkForUserChatId($user,$message);
-                $notifyModel = $is_group ? $circle:$user;
+            $profile = $this->findProfileByTelegramNcircle($message['from']['username'], $circle->id);
+            if($profile) {
+                $user = $profile->users[0];
+                $user->load('pendingReceivedGifts.sender');
+                $profile = $this->checkForProfileChatId($profile,$message);
+                $notifyModel = $is_group ? $circle:$profile;
                 if(count($circle->epoches) == 0)
                 {
                     $notifyModel->notify(new SendSocialMessage(
-                        "@$user->telegram_username Sorry $user->name ser, there is currently no active epochs"
+                        "@$profile->telegram_username Sorry $user->name ser, there is currently no active epochs"
                     ));
                     return false;
                 }
@@ -573,9 +583,9 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
                     $allocStr .= "{$gift->sender->name} > $gift->tokens tokens\n";
                 }
                 if(!$allocStr)
-                    $allocStr = "@$user->telegram_username You received no allocations currently";
+                    $allocStr = "@$profile->telegram_username You received no allocations currently";
                 else
-                    $allocStr = "@$user->telegram_username Received\n$allocStr";
+                    $allocStr = "@$profile->telegram_username Received\n$allocStr";
 
                 $notifyModel->notify(new SendSocialMessage(
                     $allocStr
@@ -587,55 +597,55 @@ The commands all can be executed in group chats/PM , the bot is exclusively link
     private function sendAnnouncement($message) {
 
         $annText = substr($message['text'],10);
-        $user = User::where('telegram_username', $message['from']['username'])
-            ->where(function($q) {
-                $q->where('ann_power', 1)->orWhere('super',1);
-            })->first();
+        $profile = $this->findProfileByTelegramNcircle($message['from']['username'])->first();
 
-        if($user) {
-            $circles = Circle::whereNotNull('telegram_id')->get();
+        if($profile && $profile->ann_power) {
+            $circles = Circle::whereNotNull('telegram_id')->orWhereNotNull('discord_webhook')->get();
             foreach($circles as $circle) {
                 $circle->notify(new SendSocialMessage(
-                    $annText
+                    $annText, true
                 ));
             }
         }
     }
 
-    private function addUserChatId($message) {
+    private function addProfileChatId($message) {
         if(empty($message['from']['username'])) {
             return false;
         }
         $is_private = $message['chat']['type'] == 'private';
         if($is_private) {
-            $users = User::where('telegram_username', $message['from']['username'])->get();
-            if(count($users)==0) {
-                // don't exist
+            $profile = Profile::leftJoin('users','users.address','profiles.address')
+                        ->where('profiles.telegram_username', $message['from']['username'])
+                        ->select(['profiles.*','users.circle_id','users.name'])
+                        ->first();
+            if(!$profile) {
                 return false;
             } else {
-                foreach($users as $user) {
-                    $user->chat_id = $message['chat']['id'];
-                    $user->save();
-                }
-
-              return $users[0];
+                $profile->update(['chat_id' => $message['chat']['id']]);
+                return $profile;
             }
         }
 
         return false;
     }
 
-    private function checkForUserChatId($user,$message) {
-        $is_private = $message['chat']['type'] == 'private';
-        if($is_private && !$user->chat_id) {
-            $result = $this->addUserChatId($message);
-            return $result ?:$user;
-        }
+    private function findProfileByTelegramNcircle($telegram_username, $circle_id = null) {
+        $query =  Profile::leftJoin('users','profiles.address','users.address')
+                    ->where('profiles.telegram_username', $telegram_username);
+        if($circle_id)
+            $query->where('users.circle_id',$circle_id);
 
-        return $user;
+        return $query->first();
     }
 
-    public function discordTest(Request $request) {
-        Log::info($request->all());
+    private function checkForProfileChatId($profile,$message) {
+        $is_private = $message['chat']['type'] == 'private';
+        if($is_private && !$profile->chat_id) {
+            $result = $this->addProfileChatId($message);
+            return $result ?:$profile;
+        }
+
+        return $profile;
     }
 }
