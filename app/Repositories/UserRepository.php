@@ -29,17 +29,6 @@ class UserRepository
                 ->byAddress($address)->first();
     }
 
-    public function getUser2($address, $circle_id) {
-        $query = $this->model->with(['teammates','pendingSentGifts','profile'])->byAddress($address);
-        if($circle_id)
-            $query->where('circle_id',$circle_id);
-        $user = $query->first();
-        if(!$user)
-            $user =  $this->model->with(['teammates','pendingSentGifts','profile'])->byAddress($address)->where('admin_view', 1)->first();
-
-        return $user;
-    }
-
     public function getUsers($request, $circle_id) {
         $data = $request->all();
         $users = !empty($data['protocol_id']) ? $this->model->with(['profile'])->protocolFilter($data) :

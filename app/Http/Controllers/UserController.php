@@ -28,13 +28,6 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function getUser2($circle_id, $address): JsonResponse {
-        $user = $this->repo->getUser2($address,$circle_id);
-        if(!$user)
-            return response()->json(['message'=> 'Address not found'],422);
-        return response()->json($user);
-    }
-
     public function getUsers(Request $request, $circle_id = null): JsonResponse {
         return response()->json($this->repo->getUsers($request, $circle_id));
     }

@@ -16,7 +16,6 @@ class User extends Authenticatable
       'circle_id',
       'address',
       'id',
-      'is_hidden',
       'non_giver'
     ];
 
@@ -36,7 +35,6 @@ class User extends Authenticatable
         'epoch_first_visit',
         'non_giver',
         'starting_tokens',
-        'regift_percent',
         'fixed_non_receiver',
         'role'
     ];

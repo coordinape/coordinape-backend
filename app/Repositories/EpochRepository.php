@@ -155,7 +155,7 @@ class EpochRepository
             $q->where('epoch_id', $epoch->id);
         }])->withTrashed()->where(function($q) use($end_date) {
             $q->whereNull('deleted_at')->orWhere('deleted_at','>',$end_date);
-        })->where('circle_id',$circle_id)->where('is_hidden',0)->orderBy('name','asc')->get();
+        })->where('circle_id',$circle_id)->orderBy('name','asc')->get();
 
         $grant = $grant ?:$epoch->grant;
         $header = ['No.','name','address','received','sent','epoch number', 'Date'];
@@ -218,7 +218,7 @@ class EpochRepository
             foreach($gifts as $gift) {
                 $ids[] = $gift['recipient_id'];
             }
-            $users = User::where('circle_id',$circle_id)->where('is_hidden',0)->whereIn('id',$ids)->get()->keyBy('id');
+            $users = User::where('circle_id',$circle_id)->whereIn('id',$ids)->get()->keyBy('id');
             $activeEpoch = $user->circle->epoches()->isActiveDate()->first();
             $epoch_id = $activeEpoch->id;
             $pendingSentGiftsMap = $user->pendingSentGifts()->get()->keyBy('recipient_id');
@@ -293,7 +293,7 @@ class EpochRepository
             $now = Carbon::now()->addDays(1);
             if($epoch->end_date <= $now) {
                 $circle = $epoch->circle;
-                $unalloc_users = $circle->users()->where('non_giver',0)->where('is_hidden',0)->where('give_token_remaining','>',0)->get();
+                $unalloc_users = $circle->users()->where('non_giver',0)->where('give_token_remaining','>',0)->get();
                 $protocol = $circle->protocol;
                 $circle_name = $protocol->name.'/'.$circle->name;
                 $circle->notify(new EpochAlmostEnd($circle_name,$unalloc_users));
@@ -318,12 +318,12 @@ class EpochRepository
     public function dailyUpdate($epoch) {
 
         $circle = $epoch->circle;
-        $users = $circle->users()->where('is_hidden',0)->get();
+        $users = $circle->users()->get();
         $pending_gifts = $circle->pending_gifts;
         $total_gifts_sent = count($pending_gifts);
         $total_tokens_sent = $pending_gifts->SUM('tokens');
-        $opt_outs = $circle->users()->where('is_hidden',0)->optOuts()->count();
-        $has_sent = $circle->users()->where('is_hidden',0)->hasSent()->count();
+        $opt_outs = $circle->users()->optOuts()->count();
+        $has_sent = $circle->users()->hasSent()->count();
         $total_users = count($users);
         $sent_today_gifts = $circle->pending_gifts()->with('sender')->sentToday()->get();
 
