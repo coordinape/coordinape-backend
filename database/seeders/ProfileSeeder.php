@@ -20,20 +20,9 @@ class ProfileSeeder extends Seeder
         foreach($users as $user) {
             if(!$user->profile) {
                 $profile = new Profile();
-                if($user->avatar)
-                    $profile->avatar = $user->avatar;
-                if($user->telegram_username)
-                    $profile->telegram_username = $user->telegram_username;
                 $profile->address = $user->address;
                 $profile->save();
             }
-
-            if($user->admin_view) {
-                $profile = $user->profile;
-                $profile->admin_view = $user->admin_view;
-                $profile->save();
-            }
-
         }
     }
 }
