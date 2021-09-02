@@ -51,7 +51,7 @@ class EpochStart extends Notification implements ShouldQueue
         $name = '_'.$this->circle_name.'_';
         $start_date = $this->epoch->start_date->format('Y/m/d H:i T');
         $end_date = $this->epoch->end_date->format('Y/m/d H:i T');
-        $usersCount = $this->circle->users()->where('is_hidden',0)->count();
+        $usersCount = $this->circle->users()->count();
         return "A new $name epoch is active!\n$usersCount users will be participating and the duration of the epoch will be:\n$start_date - $end_date";
     }
 

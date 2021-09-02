@@ -63,12 +63,8 @@ class AddNewUser extends Notification implements ShouldQueue
 
     public function toDiscord($notifiable=null)
     {
-        $message = DiscordMessage::create()
+        return DiscordMessage::create()
             ->content($this->getContent());
-        if($this->admin_user->avatar) {
-            $message->avatar('https://coordinape.s3.amazonaws.com/'.$this->admin_user->avatar);
-        }
-        return $message;
 
     }
 

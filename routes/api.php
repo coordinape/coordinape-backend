@@ -47,7 +47,6 @@ Route::prefix('{circle_id}')->group(function () {
     });
 
     Route::get('/circles', [CircleController::class, 'getCircles']);
-    Route::get('/users/{address}', [UserController::class, 'getUser2']);
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
@@ -79,7 +78,6 @@ Route::get('/active-epochs',[EpochController::class, 'getActiveEpochs']);
 
 Route::post("/".config('telegram.token')."/bot-update", [BotController::class,'webHook']);
 
-Route::post('/discord-bot', [BotController::class, 'discordTest']);
 Route::get('/debug-sentry', function () {
     throw new Exception('My first Sentry error!');
 });

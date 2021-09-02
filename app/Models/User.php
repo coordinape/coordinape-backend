@@ -16,7 +16,6 @@ class User extends Authenticatable
       'circle_id',
       'address',
       'id',
-      'is_hidden',
       'non_giver'
     ];
 
@@ -32,17 +31,12 @@ class User extends Authenticatable
         'give_token_received',
         'give_token_remaining',
         'bio',
-        'avatar',
         'non_receiver',
         'epoch_first_visit',
         'non_giver',
         'starting_tokens',
-        'regift_percent',
-        'telegram_username',
         'fixed_non_receiver',
-        'role',
-        'telegram_username',
-        'discord_username'
+        'role'
     ];
 
     /**
@@ -78,7 +72,6 @@ class User extends Authenticatable
             'users.give_token_received',
             'users.give_token_remaining',
             'users.bio',
-            'users.avatar',
             'users.non_receiver',
             'users.epoch_first_visit',
             'users.non_giver', 'c.protocol_id',
