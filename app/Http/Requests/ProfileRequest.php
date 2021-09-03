@@ -32,7 +32,9 @@ class ProfileRequest extends FormRequest
             'discord_username' => !empty($data['discord_username']) ? $data['discord_username']:null,
             'twitter_username' => !empty($data['twitter_username']) ? $data['twitter_username']:null,
             'medium_username' => !empty($data['medium_username']) ? $data['medium_username']:null,
-            'website' => !empty($data['website']) ? $data['website']:null
+            'website' => !empty($data['website']) ?
+                        (parse_url($data['website'], PHP_URL_SCHEME) === null ?
+                        "https://" . $data['website'] : $data['website']) : null
         ]);
     }
 
@@ -47,6 +49,7 @@ class ProfileRequest extends FormRequest
         return [
             'telegram_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
             'discord_username' => ['string', 'nullable', Rule::unique('profiles')->ignore($profile_id)],
+            'website' => ['nullable', 'active_url'],
         ];
     }
 }
