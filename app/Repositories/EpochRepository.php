@@ -3,21 +3,17 @@
 
 namespace App\Repositories;
 use App\Models\PendingTokenGift;
-use App\Models\Profile;
 use App\Models\TokenGift;
 use App\Models\Epoch;
-use App\Notifications\BotLaunch;
 use App\Notifications\DailyUpdate;
 use App\Notifications\EpochAlmostEnd;
 use App\Notifications\EpochStart;
-use App\Notifications\OptOutEpoch;
 use App\Notifications\SendSocialMessage;
 use DB;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Helper\Utils;
 use App\Notifications\EpochEnd;
-use Exception;
 use Illuminate\Support\Facades\Log;
 use Str;
 
@@ -267,9 +263,8 @@ class EpochRepository
 
             $token_used = $user->pendingSentGifts()->get()->SUM('tokens');
             if($token_used > $user->starting_tokens) {
-                throw new Exception;
+                abort(422, 'You do not have sufficient tokens to allocate.');
             } else {
-//                $this->resetGifts($user, $toKeep);
                 $user->give_token_remaining = $user->starting_tokens-$token_used;
                 $user->save();
             }

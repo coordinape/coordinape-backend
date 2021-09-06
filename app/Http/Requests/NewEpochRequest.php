@@ -40,8 +40,14 @@ class NewEpochRequest extends FormRequest
             'start_date' => 'required|date',
             'start_time' => 'required|date_format:G:i',
             'repeat' => 'required|min:0|max:2',
-            'days' => 'required|min:1|max:100',
-            'grant' => 'numeric|max:1000000000'
+            'days' => ['required','min:1','max:100',
+                function ($attribute, $value, $fail) {
+                    if($value > 7 && $this->repeat == 1)
+                        return $fail('You cannot have more than 7 days length for a weekly repeating epoch.');
+                    if($value > 28 && $this->repeat == 2)
+                        return $fail('You cannot have more than 28 days length for a monthly repeating epoch.');
+            }],
+            'grant' => 'numeric|max:1000000000',
         ];
     }
 }
