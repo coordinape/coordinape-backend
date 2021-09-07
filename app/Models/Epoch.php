@@ -12,7 +12,7 @@ class Epoch extends Model
 
     protected $fillable = ['number','start_date','end_date','circle_id','ended',
         'notified_start','notified_before_end','notified_end','telegram_id',
-        'grant','days','repeat','start_time', 'repeat_day_of_month'];
+        'grant','days','repeat', 'repeat_day_of_month'];
     protected $dates = ['start_date','end_date'];
 
     public function circle() {
