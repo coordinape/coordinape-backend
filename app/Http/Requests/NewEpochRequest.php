@@ -22,7 +22,6 @@ class NewEpochRequest extends FormRequest
         $this->merge([
             'data' => $data,
             'start_date' => !empty($data['start_date']) ? $data['start_date']:null,
-            'start_time' => !empty($data['start_time']) ? $data['start_time']:'00:00',
             'days' => !empty($data['days']) ? $data['days']:null,
             'repeat' => !empty($data['repeat']) ? $data['repeat']:0,
             'grant' => !empty($data['grant']) ? $data['grant']:0
@@ -37,8 +36,7 @@ class NewEpochRequest extends FormRequest
     public function rules()
     {
         return [
-            'start_date' => 'required|date',
-            'start_time' => 'required|date_format:G:i',
+            'start_date' => 'required|date_format:Y-m-d\TH:i:s.u\Z',
             'repeat' => 'required|min:0|max:2',
             'days' => ['required','min:1','max:100',
                 function ($attribute, $value, $fail) {
