@@ -30,7 +30,7 @@ class EpochController extends Controller
     public function updateEpoch(newEpochRequest $request, $circle_id, Epoch $epoch) {
         $now = Carbon::now();
         $data = $request->only('start_date','grant','days','repeat');
-        $start_date = Carbon::createFromFormat('Y-m-d\TH:i:s.u\Z', $data['start_date']);
+        $start_date = Carbon::createFromFormat('Y-m-d\TH:i:s.v\Z', $data['start_date']);
         $end_date = $start_date->copy()->addDays($data['days']);
 
         if($epoch->circle_id != $circle_id) {
