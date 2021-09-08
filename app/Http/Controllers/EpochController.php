@@ -71,7 +71,7 @@ class EpochController extends Controller
 
     public function newCreateEpoch(newEpochRequest $request, $circle_id) : JsonResponse  {
         $data = $request->only('start_date','grant','days','repeat');
-        $start_date = Carbon::createFromFormat('Y-m-d\TH:i:s.u\Z', $data['start_date']);
+        $start_date = Carbon::createFromFormat('Y-m-d\TH:i:s.v\Z', $data['start_date']);
         $end_date = $start_date->copy()->addDays($data['days']);
         if(!empty($data['repeat']) && $data['repeat'] > 0) {
             $repeating = Epoch::where('circle_id',$circle_id)->where('ended',0)->where('repeat','>',0)->exists();
