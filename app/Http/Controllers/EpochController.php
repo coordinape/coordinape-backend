@@ -66,6 +66,7 @@ class EpochController extends Controller
         $data['end_date'] = $end_date;
         $data['circle_id'] = $circle_id;
         $epoch->update($data);
+        $epoch->refresh();
         return response()->json($epoch);
     }
 
