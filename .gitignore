@@ -25,3 +25,4 @@ Homestead.json
 .editorconfig
 *.xsd
 /.idea
+.DS_Store
