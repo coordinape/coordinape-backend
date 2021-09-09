@@ -36,7 +36,7 @@ class NewEpochRequest extends FormRequest
     public function rules()
     {
         return [
-            'start_date' => 'required|date_format:Y-m-d\TH:i:s.u\Z',
+            'start_date' => 'required|date_format:Y-m-d\TH:i:s.v\Z',
             'repeat' => 'required|min:0|max:2',
             'days' => ['required','min:1','max:100',
                 function ($attribute, $value, $fail) {
