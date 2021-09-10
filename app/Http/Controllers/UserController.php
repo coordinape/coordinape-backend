@@ -73,8 +73,10 @@ class UserController extends Controller
     }
 
     public function deleteUser(Request $request, $circle_id, $address) : JsonResponse  {
-
         $user = $request->user;
+        if(!$user)
+            return response()->json(['message' => 'User not found'], 422);
+
         $data = $this->repo->deleteUser($user);
         if(is_null($data)) {
             $error = ValidationException::withMessages([
