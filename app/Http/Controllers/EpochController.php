@@ -64,9 +64,7 @@ class EpochController extends Controller
         }
         $data['start_date'] = $start_date;
         $data['end_date'] = $end_date;
-        $data['circle_id'] = $circle_id;
         $epoch->update($data);
-        $epoch->refresh();
         return response()->json($epoch);
     }
 
@@ -95,7 +93,7 @@ class EpochController extends Controller
         }
         $data['start_date'] = $start_date;
         $data['end_date'] = $end_date;
-        $data['circle_id'] = $circle_id;
+        $data['circle_id'] = (int)$circle_id;
         $epoch = new Epoch($data);
         $epoch->save();
         return response()->json($epoch);
