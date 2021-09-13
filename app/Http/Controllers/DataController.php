@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\NewGiftRequest;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -71,9 +72,17 @@ class DataController extends Controller
         }
 
         if($circle_id && !empty($filters['latest_epoch']) && $filters['latest_epoch'] == 1) {
-            $epoch = Epoch::where('circle_id', $circle_id)->where('ended', 1)->orderBy('number', 'desc')->limit(1)->first();
+            $query = Epoch::where('circle_id', $circle_id)->where('ended', 1)->orderBy('number', 'desc');
+            if(!empty($filters['timestamp'])) {
+                $before_date = Carbon::createFromTimestamp($filters['timestamp']);
+                $query->where('end_date','<=',$before_date);
+            }
+            $epoch = $query->first();
+
             if($epoch) {
                 $filters['epoch_id'] = $epoch->id;
+            } else {
+                return response()->json([]);
             }
         }
 
