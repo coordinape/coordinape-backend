@@ -70,6 +70,13 @@ class DataController extends Controller
             $filters['circle_id'] = $circle_id;
         }
 
+        if($circle_id && !empty($filters['latest_epoch']) && $filters['latest_epoch'] == 1) {
+            $epoch = Epoch::where('circle_id', $circle_id)->where('ended', 1)->orderBy('number', 'desc')->limit(1)->first();
+            if($epoch) {
+                $filters['epoch_id'] = $epoch->id;
+            }
+        }
+
         if(!empty($filters['recipient_address'])) {
             $user = User::byAddress($request->recipient_address)->where('circle_id',$circle_id)->first();
             $filters['recipient_id'] = $user->id;
