@@ -48,9 +48,8 @@ class AddNewUser extends Notification implements ShouldQueue
 
     private function getContent() {
         $user_name = Utils::cleanStr($this->user->name);
-        $user_address = $this->user->address;
         $admin_user_name = Utils::cleanStr($this->admin_user->name);
-        return "$user_name $user_address has just been added by $admin_user_name";
+        return "$user_name has just been added by $admin_user_name";
     }
 
     public function toTelegram($notifiable=null)
