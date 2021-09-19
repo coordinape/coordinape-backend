@@ -19,6 +19,7 @@ services:
         condition: service_healthy
 
   nginx:
+    container_name: nginx
     image: nginx:alpine
     restart: unless-stopped
     tty: true
@@ -30,10 +31,11 @@ services:
       - ./services/nginx/conf.d/:/etc/nginx/conf.d/
     networks:
       - default
-    depends_on: 
+    depends_on:
       - app
 
   mysql:
+    container_name: mysql
     image: mysql:8.0
     restart: unless-stopped
     tty: true
