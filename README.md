@@ -78,18 +78,22 @@ This can take a while to build the Dockerfile and install all the app dependenci
 
 4. Now you need to populate your local database with some data.
 
-* **Option 0:** create data in the database directly.
+* **Option 0:** create data through console command.
+```bash
+docker exec app php artisan ape:quickstart youraddresshere
+```
+* **Option 1:** create data in the database directly.
     1. Create a protocol
     2. Create a circle - link to protocol_id
     3. Create a user - link circle_id to circle, address=your_address,role = 1 (for admin access)
     4. Create profile - just need an address
 
-* **Option 1:** restore a minimal database to just get the app working.
+* **Option 2:** restore a minimal database to just get the app working.
 ```bash
 docker exec -i mysql mysql -uroot -psecret laravel < database/db_dumps/minimal_dev_db_setup2021-09-17.sql
 ```
 
-* **Option 2:** restore database from a staging db dump (get from another dev)
+* **Option 3:** restore database from a staging db dump (get from another dev)
 ```bash
 docker exec -i mysql mysql -uroot -psecret laravel < database/db_dumps/staging_db_dump.sql
 ```
