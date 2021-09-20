@@ -88,12 +88,7 @@ docker exec app php artisan ape:quickstart youraddresshere
     3. Create a user - link circle_id to circle, address=your_address,role = 1 (for admin access)
     4. Create profile - just need an address
 
-* **Option 2:** restore a minimal database to just get the app working.
-```bash
-docker exec -i mysql mysql -uroot -psecret laravel < database/db_dumps/minimal_dev_db_setup2021-09-17.sql
-```
-
-* **Option 3:** restore database from a staging db dump (get from another dev)
+* **Option 2:** restore database from a staging db dump (get from another dev)
 ```bash
 docker exec -i mysql mysql -uroot -psecret laravel < database/db_dumps/staging_db_dump.sql
 ```
