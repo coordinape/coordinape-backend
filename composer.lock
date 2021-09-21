@@ -4477,16 +4477,16 @@
         },
         {
             "name": "sentry/sentry-laravel",
-            "version": "2.7.0",
+            "version": "2.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-laravel.git",
-                "reference": "91d6644fee3ba447769dc73eda2487a93218c04e"
+                "reference": "21dd07bdd2956e182ffde32d22872ce1a4b3eca9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-laravel/zipball/91d6644fee3ba447769dc73eda2487a93218c04e",
-                "reference": "91d6644fee3ba447769dc73eda2487a93218c04e",
+                "url": "https://api.github.com/repos/getsentry/sentry-laravel/zipball/21dd07bdd2956e182ffde32d22872ce1a4b3eca9",
+                "reference": "21dd07bdd2956e182ffde32d22872ce1a4b3eca9",
                 "shasum": ""
             },
             "require": {
@@ -4552,7 +4552,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-laravel/issues",
-                "source": "https://github.com/getsentry/sentry-laravel/tree/2.7.0"
+                "source": "https://github.com/getsentry/sentry-laravel/tree/2.8.0"
             },
             "funding": [
                 {
@@ -4564,7 +4564,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2021-06-16T09:26:40+00:00"
+            "time": "2021-08-08T09:03:08+00:00"
         },
         {
             "name": "simplito/bigint-wrapper-php",
