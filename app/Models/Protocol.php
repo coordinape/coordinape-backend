@@ -18,4 +18,8 @@ class Protocol extends Model
 
         return $this->telegram_id;
     }
+
+    public function circles() {
+        return $this->hasMany('App\Models\Circle','protocol_id');
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CircleRequest;
+use App\Http\Requests\CreateCircleRequest;
 use App\Http\Requests\FileUploadRequest;
 use App\Models\Circle;
 use Illuminate\Http\JsonResponse;
@@ -16,17 +17,15 @@ class CircleController extends Controller
         $this->repo = $repo;
     }
 
-    public function getCircles(Request $request, $circle_id = null): JsonResponse
-    {
+    public function getCircles(Request $request, $circle_id = null): JsonResponse {
         return response()->json($this->repo->getCircles($request));
     }
 
-    public function createCircle(CircleRequest $request)
-    {
+    public function createCircle(CreateCircleRequest $request) : JsonResponse {
         return response()->json($this->repo->createCircle($request));
     }
 
-    public function getWebhook(Request $request, $circle_id) {
+    public function getWebhook(Request $request, $circle_id) :JsonResponse {
         return response()->json($this->repo->getWebhook($circle_id));
     }
 
