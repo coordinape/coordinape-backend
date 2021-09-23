@@ -32,9 +32,9 @@ class CircleRepository {
         }
 
         $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
-        new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
+        $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
             'role' => 1, 'address'=> $data['address']]);
-
+        $user->save();
         $profile = Profile::firstOrCreate([
             'address' => $data['address']
         ]);
