@@ -43,7 +43,7 @@ class NominationRepository {
                 // nomination apparently is 1 vouch
                 if ( ($nominee->vouches_required - 1) <= count($nominee->nominations)) {
                     $address = strtolower($nominee->address);
-                    $added_user = $this->userModel->where('address', $address)->exists();
+                    $added_user = $this->userModel->where('address', $address)->where('circle_id',$circle_id)->first();
                     if (!$added_user) {
                         $added_user = $this->userModel->create(["address" => $address, "name" => $nominee->name, "circle_id" => $circle_id]);
                     }
