@@ -29,12 +29,25 @@ class CreateCircleRequest extends FormRequest
     {
         $data = json_decode($this->get('data'), true);
         $this->merge([
-            'user_name' => !empty($data['name']) ? $data['name']:null,
+            'user_name' => !empty($data['user_name']) ? $data['user_name']:null,
             'address' => !empty($data['address']) ? strtolower($data['address']):null,
-            'circle_name'  => !empty($data['circle_name']) ? $data['circle_name']:null,
-            'protocol_id' => !empty($data['protocol_id']) ? $data['protocol_id']:null,
-            'protocol_name' => !empty($data['protocol_name']) ? $data['protocol_name']:null,
+            'circle_name'  => !empty($data['circle_name']) ? $data['circle_name']:null
         ]);
+
+        if(array_key_exists('protocol_id', $data) &&
+            $data['protocol_id']) {
+
+            $this->merge([
+                'protocol_id' => $data['protocol_id']
+            ]);
+        }
+        else if(array_key_exists('protocol_name', $data) &&
+            $data['protocol_name']
+        ) {
+            $this->merge([
+                'protocol_name' => $data['protocol_name']
+            ]);
+        }
     }
 
     public function rules()

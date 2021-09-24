@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 class Protocol extends Model
 {
     use HasFactory, Notifiable;
-    protected $fillable = ['name'];
+    protected $fillable = ['name','is_verified'];
 
     public function routeNotificationForTelegram()
     {

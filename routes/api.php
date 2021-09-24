@@ -19,10 +19,6 @@ use App\Http\Controllers\UserController;
 |
 */
 
-//Route::middleware('auth:api')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
-
 Route::prefix('{circle_id}')->group(function () {
     Route::prefix('admin')->middleware(['verify-admin-sign'])->group(function () {
         Route::put('/circles/{circle}', [CircleController::class, 'updateCircle']);

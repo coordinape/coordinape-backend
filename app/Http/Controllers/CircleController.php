@@ -17,7 +17,7 @@ class CircleController extends Controller
         $this->repo = $repo;
     }
 
-    public function getCircles(Request $request, $circle_id = null): JsonResponse {
+    public function getCircles(Request $request, $circle_id = null) : JsonResponse {
         return response()->json($this->repo->getCircles($request));
     }
 
@@ -25,11 +25,11 @@ class CircleController extends Controller
         return response()->json($this->repo->createCircle($request));
     }
 
-    public function getWebhook(Request $request, $circle_id) :JsonResponse {
+    public function getWebhook(Request $request, $circle_id) : JsonResponse {
         return response()->json($this->repo->getWebhook($circle_id));
     }
 
-    public function updateCircle(CircleRequest $request, $circle_id, Circle $circle): JsonResponse
+    public function updateCircle(CircleRequest $request, $circle_id, Circle $circle) : JsonResponse
     {
         return response()->json($this->repo->updateCircle($circle, $request));
     }
