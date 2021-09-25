@@ -55,7 +55,7 @@ class UserController extends Controller
         $user = $request->user;
         if(!$user)
             return response()->json(['message'=> 'Address not found'],422);
-        $data = $request->only('name','address','starting_tokens','non_giver','fixed_non_receiver', 'role');
+        $data = $request->only('name','address','starting_tokens','non_giver','fixed_non_receiver', 'role', 'non_receiver');
 
         if($data['fixed_non_receiver'] ==1 ) {
             $data['non_receiver'] = 1;
