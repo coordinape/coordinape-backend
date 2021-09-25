@@ -19,10 +19,6 @@ use App\Http\Controllers\UserController;
 |
 */
 
-//Route::middleware('auth:api')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
-
 Route::prefix('{circle_id}')->group(function () {
     Route::prefix('admin')->middleware(['verify-admin-sign'])->group(function () {
         Route::put('/circles/{circle}', [CircleController::class, 'updateCircle']);
@@ -66,10 +62,9 @@ Route::middleware(['verify-sign'])->group(function () {
 Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
 Route::get('/protocols', [DataController::class, 'getProtocols']);
 Route::get('/circles', [CircleController::class, 'getCircles']);
-//// not used for now
-//Route::post('/circles', [CircleController::class, 'createCircle']);
-////
-
+Route::middleware(['verify-sign-only'])->group(function() {
+    Route::post('/summon-circle', [CircleController::class, 'createCircle']);
+});
 Route::get('/users/{address}', [UserController::class, 'getUser']);
 Route::get('/users', [UserController::class, 'getUsers']);
 Route::get('/token-gifts', [DataController::class, 'getGifts']);

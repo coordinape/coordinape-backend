@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\AddAjaxHeader;
 use App\Http\Middleware\VerifyAdminSignature;
 use App\Http\Middleware\VerifySignature;
+use App\Http\Middleware\VerifySignatureOnly;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -52,6 +53,9 @@ class Kernel extends HttpKernel
         ],
         'verify-admin-sign' => [
             VerifyAdminSignature::class
+        ],
+        'verify-sign-only' => [
+            VerifySignatureOnly::class
         ]
     ];
 
