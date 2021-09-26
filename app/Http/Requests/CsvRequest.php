@@ -24,9 +24,9 @@ class CsvRequest extends FormRequest
     public function rules()
     {
         return [
-//            'circle_id' => 'required|integer|exists:circles,id',
+            'grant' => 'nullable|numeric',
             'epoch' => 'required_if:epoch_id,=,null|integer',
-            'epoch_id'=>'required_if:epoch,=,null|integer',
+            'epoch_id' => 'required_if:epoch,=,null|integer',
         ];
     }
 }
