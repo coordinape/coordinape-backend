@@ -62,7 +62,7 @@ Route::middleware(['verify-sign'])->group(function () {
 Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
 Route::get('/protocols', [DataController::class, 'getProtocols']);
 Route::get('/circles', [CircleController::class, 'getCircles']);
-Route::middleware(['verify-sign'])->group(function() {
+Route::middleware(['hcaptcha-verify','verify-sign'])->group(function() {
     Route::post('/summon-circle', [CircleController::class, 'createCircle']);
 });
 Route::get('/users/{address}', [UserController::class, 'getUser']);
