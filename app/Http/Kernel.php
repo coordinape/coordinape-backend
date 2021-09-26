@@ -53,9 +53,6 @@ class Kernel extends HttpKernel
         ],
         'verify-admin-sign' => [
             VerifyAdminSignature::class
-        ],
-        'verify-sign-only' => [
-            VerifySignatureOnly::class
         ]
     ];
 
