@@ -6,6 +6,7 @@ use App\Models\Circle;
 use App\Models\Profile;
 use App\Models\Protocol;
 use App\Models\User;
+use App\Models\Uxresearch;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -22,7 +23,7 @@ class CircleRepository {
     }
 
     public function createCircle($request) {
-        $data = $request->only('address','user_name','circle_name','protocol_id','protocol_name');
+        $data = $request->only('address', 'user_name', 'circle_name', 'protocol_id', 'protocol_name', 'uxresearch_json');
         if(empty($data['protocol_id'])) {
             $protocol = new Protocol(['name' => $data['protocol_name']]);
             $protocol->save();
@@ -33,12 +34,16 @@ class CircleRepository {
 
         $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
         $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
-            'role' => 1, 'address'=> $data['address']]);
+            'role' => 1, 'address' => $data['address']]);
         $user->save();
         $profile = Profile::firstOrCreate([
             'address' => $data['address']
         ]);
-        $profile->load(['users.circle.protocol','users.teammates','users.histories.epoch']);
+        $profile->load(['users.circle.protocol', 'users.teammates', 'users.histories.epoch']);
+
+        $research = new Uxresearch(['circle_id' => $circle->id, 'protocol_id' => $protocol_id,
+            'user_id' => $user->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
+        $research->save();
         return $profile;
     }
 
