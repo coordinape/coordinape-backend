@@ -21,8 +21,8 @@ class HCaptchaVerify
         $response = $client->post('https://hcaptcha.com/siteverify',
             [
                 'form_params' => [
-                    //h-captcha-response '10000000-aaaa-bbbb-cccc-000000000001'
-                    "response" => $request->get('h-captcha-response'),
+                    //h-captcha-token '10000000-aaaa-bbbb-cccc-000000000001'
+                    "response" => $request->get('h_captcha_token'),
                     "secret" => config('services.hcaptcha.secret'),
                     "sitekey" => config('services.hcaptcha.sitekey')
                 ]]

@@ -44,7 +44,7 @@ class CircleRepository {
         $research = new Uxresearch(['circle_id' => $circle->id, 'protocol_id' => $protocol_id,
             'user_id' => $user->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
         $research->save();
-        return $profile;
+        return $circle;
     }
 
     public function updateCircle($circle, $request) {
