@@ -63,7 +63,7 @@ Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
 Route::get('/protocols', [DataController::class, 'getProtocols']);
 Route::get('/circles', [CircleController::class, 'getCircles']);
 Route::middleware(['hcaptcha-verify','verify-sign'])->group(function() {
-    Route::post('/summon-circle', [CircleController::class, 'createCircle']);
+    Route::post('/create-circle', [CircleController::class, 'createCircle']);
 });
 Route::get('/users/{address}', [UserController::class, 'getUser']);
 Route::get('/users', [UserController::class, 'getUsers']);
