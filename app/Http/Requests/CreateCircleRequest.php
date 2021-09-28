@@ -29,7 +29,6 @@ class CreateCircleRequest extends FormRequest
         $data = json_decode($this->get('data'), true);
         $this->merge([
             'user_name' => !empty($data['user_name']) ? $data['user_name'] : null,
-            'address' => !empty($data['address']) ? strtolower($data['address']) : null,
             'circle_name' => !empty($data['circle_name']) ? $data['circle_name'] : null
         ]);
 
