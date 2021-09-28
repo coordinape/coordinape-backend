@@ -35,7 +35,7 @@ class CircleRepository {
         $address = strtolower($data['address']);
         $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
         $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
-            'role' => 1, 'address' => $address]);
+            'role' => config('enums.user_types.admin'), 'address' => $address]);
         $user->save();
         Profile::firstOrCreate([
             'address' => $address
