@@ -32,12 +32,13 @@ class CircleRepository {
             $protocol_id = $data['protocol_id'];
         }
 
+        $address = strtolower($data['address']);
         $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
         $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
-            'role' => 1, 'address' => $data['address']]);
+            'role' => 1, 'address' => $address]);
         $user->save();
         Profile::firstOrCreate([
-            'address' => $data['address']
+            'address' => $address
         ]);
 
         $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
