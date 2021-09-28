@@ -56,7 +56,7 @@ class CreateCircleRequest extends FormRequest
                 if ($protocol) {
                     $circles = Circle::where('protocol_id', $this->protocol_id)->pluck('id')->toArray();
                     if (count($circles)) {
-                        $exists = User::byAddress($value)->where('role', 1)->whereIn('circle_id', $circles)->exists();
+                        $exists = User::byAddress($value)->isAdmin()->whereIn('circle_id', $circles)->exists();
                         if (!$exists) {
                             return $fail('Address is not an admin of any circles under this protocol.');
                         }

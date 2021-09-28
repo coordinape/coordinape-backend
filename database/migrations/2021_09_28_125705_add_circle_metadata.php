@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUxresearchTable extends Migration
+class AddCircleMetadata extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,12 @@ class AddUxresearchTable extends Migration
      */
     public function up()
     {
-        Schema::create('uxresearch', function (Blueprint $table) {
+        Schema::create('circle_metadata', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('circle_id');
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('protocol_id');
             $table->json('json')->nullable();
             $table->timestamps();
             $table->foreign('circle_id')->references('id')->on('circles');
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('protocol_id')->references('id')->on('protocols');
         });
     }
 
@@ -33,6 +29,6 @@ class AddUxresearchTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('uxresearch');
+        Schema::dropIfExists('circle_metadata');
     }
 }

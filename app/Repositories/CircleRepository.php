@@ -3,10 +3,10 @@
 namespace App\Repositories;
 
 use App\Models\Circle;
+use App\Models\CircleMetadata;
 use App\Models\Profile;
 use App\Models\Protocol;
 use App\Models\User;
-use App\Models\Uxresearch;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -36,13 +36,11 @@ class CircleRepository {
         $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
             'role' => 1, 'address' => $data['address']]);
         $user->save();
-        $profile = Profile::firstOrCreate([
+        Profile::firstOrCreate([
             'address' => $data['address']
         ]);
-        $profile->load(['users.circle.protocol', 'users.teammates', 'users.histories.epoch']);
 
-        $research = new Uxresearch(['circle_id' => $circle->id, 'protocol_id' => $protocol_id,
-            'user_id' => $user->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
+        $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
         $research->save();
         return $circle;
     }
