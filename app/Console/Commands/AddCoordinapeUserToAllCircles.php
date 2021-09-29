@@ -47,7 +47,7 @@ class AddCoordinapeUserToAllCircles extends Command
         ]);
 
         # Iterate across all circles (TODO: can we do this in one transaction?)
-        Circle::chunk(100, function ($circles) {
+        Circle::chunk(100, function ($circles) use ($address) {
             foreach ($circles as $circle) {
                 User::firstOrCreate([
                     'address' => $address, 'name' => 'Coordinape', 'circle_id' => $circle->id
