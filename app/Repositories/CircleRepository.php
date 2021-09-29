@@ -41,8 +41,10 @@ class CircleRepository {
             'address' => $address
         ]);
 
-        $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
-        $research->save();
+        if (!empty($data['uxresearch_json'])) {
+            $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => $data['uxresearch_json']]);
+            $research->save();
+        }
         return $circle;
     }
 
