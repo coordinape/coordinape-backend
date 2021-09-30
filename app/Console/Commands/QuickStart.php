@@ -49,7 +49,7 @@ class QuickStart extends Command
            'name' => 'testcircle', 'protocol_id' => $protocol->id
         ]);
         User::firstOrCreate([
-            'address' => $address, 'role' => 1, 'name' => 'Admin User', 'circle_id' => $circle->id
+            'address' => $address, 'role' => config('enums.user_types.admin'), 'name' => 'Admin User', 'circle_id' => $circle->id
         ]);
         Profile::firstOrCreate([
             'address' => $address

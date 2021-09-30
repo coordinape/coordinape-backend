@@ -36,5 +36,10 @@ return [
 
     'discord' => [
         'test-webhook' => env('TEST_DISCORD_WEBHOOK')
+    ],
+
+    'hcaptcha' => [
+        'secret' => env('HCAPTCHA_SECRET', '0x0000000000000000000000000000000000000000'),
+        'sitekey' => env('HCAPTCHA_SITEKEY', '10000000-ffff-ffff-ffff-000000000001')
     ]
 ];

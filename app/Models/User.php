@@ -104,7 +104,7 @@ class User extends Authenticatable
     }
 
     public function scopeIsAdmin($query) {
-        return $query->where('role', 1);
+        return $query->where('role', config('enums.user_types.admin'));
     }
 
     public function scopeByAddress($query, $address) {
