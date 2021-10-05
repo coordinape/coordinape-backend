@@ -56,7 +56,6 @@ Route::middleware(['verify-sign'])->group(function () {
     Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
     Route::post('/profile/{address}',[ProfileController::class, 'saveProfile']);
     Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
-    Route::post('/profile/{address}',[ProfileController::class, 'updateMyProfile']); // deprecated
 });
 
 Route::get('/profile/{address}',[ProfileController::class, 'getProfile']);
@@ -72,10 +71,15 @@ Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
 Route::get('/active-epochs',[EpochController::class, 'getActiveEpochs']);
 
 Route::post("/".config('telegram.token')."/bot-update", [BotController::class,'webHook']);
-
-Route::get('/debug-sentry', function () {
-    throw new Exception('My first Sentry error!');
+Route::prefix('v2')->middleware(['auth:sanctum'])->group(function() {
+    Route::get('/testtoken', [ProfileController::class, 'testtoken']);
+    Route::get('/logout', [ProfileController::class, 'logout']);
+    Route::get('/full-circle', [CircleController::class, 'fullCircle']);
 });
+
+// login route
+Route::post('/manifest', [ProfileController::class, 'manifest']);
+
 Route::fallback(function(){
     return response()->json(['message' => 'Endpoint Not Found'], 404);
 })->name('api.fallback.404');

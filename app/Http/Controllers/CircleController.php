@@ -43,4 +43,27 @@ class CircleController extends Controller
         return response()->json(['message'=> 'File Upload Failed' ,422]);
     }
 
+    public function fullCircle(Request $request) {
+        $circle_id = $request->get('circle_id');
+//        dd($request->user()->users);
+        if($circle_id) {
+            $profile = $request->user();
+            $user = $profile->users()->where('circle_id',$circle_id)->first();
+            if($user) {
+                $users = $user->circle->users;
+                $user_id = $user->id;
+                $users->load(['pendingSentGifts' => function ($q) {
+                    $q->select(['id','recipient_id','sender_id','tokens','circle_id','epoch_id','created_at','updated_at']);
+                },
+                'pendingReceivedGifts' => function ($q) {
+                    $q->select(['id','recipient_id','sender_id','tokens','circle_id','epoch_id','created_at','updated_at']);
+                }
+                ]);
+
+                $user->load('pendingSentGifts')
+                dd($users[0]);
+            }
+        }
+
+    }
 }
