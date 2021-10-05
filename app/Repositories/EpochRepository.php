@@ -85,8 +85,8 @@ class EpochRepository
                         break;
                 }
 
-                // check if new start date is later than current epoch enddate
-                if($start_date > $end_date) {
+                // check if new start date is equal or later than current epoch enddate
+                if($start_date >= $end_date) {
                     $end_date = $start_date->copy()->addDays($days)
                                 ->hour($end_date->hour)->minute($end_date->minute);
 
