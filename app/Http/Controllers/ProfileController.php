@@ -64,13 +64,6 @@ class ProfileController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $request->user()->tokens()->delete();
-        return response()->json(true);
-    }
-
-    public function testtoken(Request $request): JsonResponse
-    {
-        $profile = $request->user();
-        $token = $profile->currentAccessToken();
-        dd($token);
+        return response()->json(['success' => true]);
     }
 }
