@@ -154,4 +154,8 @@ class User extends Authenticatable
     public function nominations() {
         return $this->belongsToMany('App\Models\Nominee','vouches','voucher_id','nominee_id');
     }
+
+    public function isCoordinapeUser() {
+        return $this.address == env('COORDINAPE_USER_ADDRESS');
+    }
 }
