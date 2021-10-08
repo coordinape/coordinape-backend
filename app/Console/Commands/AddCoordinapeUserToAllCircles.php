@@ -14,14 +14,14 @@ class AddCoordinapeUserToAllCircles extends Command
      *
      * @var string
      */
-    protected $signature = 'ape:populate_coordinate_user {address}';
+    protected $signature = 'ape:populate_coordinape_user {address}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command to add a Coordinate user to all circles with given address';
+    protected $description = 'Command to add a Coordinape user to all circles with given address';
 
     /**
      * Create a new command instance.
