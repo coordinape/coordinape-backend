@@ -11,19 +11,20 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 
-class CircleRepository {
+class CircleRepository
+{
 
     protected $model;
-    public function __construct(Circle $circle) {
+
+    public function __construct(Circle $circle)
+    {
         $this->model = $circle;
     }
 
-    public function getCircles($request) {
+    public function getCircles($request)
+    {
         $profile = $request->user();
-        if($profile) {
-
-            if($profile->admin_view)
-                return $this->model->all();
+        if ($profile && !$profile->admin_view) {
 
             return $this->model->whereIn('id', $profile->currentAccessToken()->abilities)->with('protocol')->get();
         }
@@ -31,9 +32,10 @@ class CircleRepository {
         return $this->model->filter($request->all())->with('protocol')->get();
     }
 
-    public function createCircle($request) {
+    public function createCircle($request)
+    {
         $data = $request->only('address', 'user_name', 'circle_name', 'protocol_id', 'protocol_name', 'uxresearch_json');
-        if(empty($data['protocol_id'])) {
+        if (empty($data['protocol_id'])) {
             $protocol = new Protocol(['name' => $data['protocol_name']]);
             $protocol->save();
             $protocol_id = $protocol->id;
@@ -57,29 +59,33 @@ class CircleRepository {
         return $circle;
     }
 
-    public function updateCircle($circle, $request) {
-        $circle->update($request->only('name','token_name','team_sel_text','alloc_text','vouching',
-            'min_vouches','nomination_days_limit','vouching_text','team_selection','default_opt_in',
-            'discord_webhook','only_giver_vouch'));
+    public function updateCircle($circle, $request)
+    {
+        $circle->update($request->only('name', 'token_name', 'team_sel_text', 'alloc_text', 'vouching',
+            'min_vouches', 'nomination_days_limit', 'vouching_text', 'team_selection', 'default_opt_in',
+            'discord_webhook', 'only_giver_vouch'));
 
-        if(!$circle->vouching) {
+        if (!$circle->vouching) {
             $circle->nominees()->update(['ended' => 1]);
         }
 
         return $circle;
     }
 
-    public function uploadCircleLogo($request) {
+    public function uploadCircleLogo($request)
+    {
         $file = $request->file('file');
         $extension = strtolower($file->getCLientOriginalExtension()) == 'jfif' ? 'jpeg' : strtolower($file->getCLientOriginalExtension());
         $resized = Image::make($file)
-            ->resize(100, null, function ($constraint) { $constraint->aspectRatio(); } )
-            ->encode($extension,80);
-        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)).'_'.time().'.'.$extension;
+            ->resize(100, null, function ($constraint) {
+                $constraint->aspectRatio();
+            })
+            ->encode($extension, 80);
+        $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)) . '_' . time() . '.' . $extension;
         $ret = Storage::put($new_file_name, $resized);
-        if($ret) {
+        if ($ret) {
             $circle = $request->user->circle;
-            if($circle->logo && Storage::exists($circle->logo)) {
+            if ($circle->logo && Storage::exists($circle->logo)) {
                 Storage::delete($circle->logo);
             }
             $circle->logo = $new_file_name;
@@ -90,12 +96,14 @@ class CircleRepository {
         return null;
     }
 
-    public function getWebhook($circle_id) {
+    public function getWebhook($circle_id)
+    {
         $circle = $this->model->find($circle_id);
-       return $circle->discord_webhook ?:'';
+        return $circle->discord_webhook ?: '';
     }
 
-    public function fullCircle($request, $circle_id) {
+    public function fullCircle($request, $circle_id)
+    {
 
         $profile = $request->user();
         $user = $profile->users()->where('circle_id', $circle_id)->first();
