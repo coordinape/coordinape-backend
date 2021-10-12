@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 /********************************** V2 ENDPOINTs ***************************************************/
 
 // login
-Route::post('/manifest', [ProfileController::class, 'manifest'])->middleware(['verify-sign']);
+Route::post('/v2/manifest', [ProfileController::class, 'manifest'])->middleware(['verify-sign']);
 
 /************************* TOKEN GATED endpoints *********************************/
 
