@@ -44,7 +44,7 @@ class DataController extends Controller
         return response()->json($this->giftRepo->getPendingGifts($request, $circle_id));
     }
 
-    public function newGetGifts(Request $request)
+    public function newGetGifts(Request $request): JsonResponse
     {
         $data = $request->all();
         if (!empty($data['circle_id'])) {
