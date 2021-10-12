@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BotController;
 use App\Http\Controllers\CircleController;
 use App\Http\Controllers\DataController;
 use App\Http\Controllers\EpochController;
@@ -21,14 +22,16 @@ use Illuminate\Support\Facades\Route;
 
 /********************************** V2 ENDPOINTs ***************************************************/
 
-Route::post('/manifest', [ProfileController::class, 'manifest']);
+// login
+Route::post('/manifest', [ProfileController::class, 'manifest'])->middleware(['verify-sign']);
+
+/************************* TOKEN GATED endpoints *********************************/
 
 Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
-    /************************* TOKEN GATED endpoints *********************************/
 
     Route::post('/logout', [ProfileController::class, 'logout']);
     Route::get('/full-circle', [CircleController::class, 'fullCircle']);
-    Route::get('/token-gifts', [DataController::class, 'newGetGifts']);
+    Route::get('/v2-token-gifts', [DataController::class, 'newGetGifts']);
 
     Route::prefix('{circle_id}')->group(function () {
 
@@ -56,7 +59,6 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
             Route::post('/vouch', [NominationController::class, 'addVouch']);
         });
 
-        Route::get('/circles', [CircleController::class, 'getCircles']);
         Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
         Route::get('/token-gifts', [DataController::class, 'getGifts']);
         Route::get('/csv', [DataController::class, 'generateCsv']);
@@ -70,25 +72,30 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
         Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
         Route::post('/profile/{address}', [ProfileController::class, 'saveProfile']);
         Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
+        Route::middleware(['hcaptcha-verify'])->group(function () {
+            Route::post('/circles', [CircleController::class, 'createCircle']);
+        });
     });
-
-    Route::middleware(['hcaptcha-verify', 'verify-sign'])->group(function () {
-        Route::post('/circles', [CircleController::class, 'createCircle']);
-    });
-    /************************* SIGNATURE REQUIRED ENDPOINTS ****************************/
 
     Route::get('/profile/{address}', [ProfileController::class, 'getProfile']);
-    Route::get('/protocols', [DataController::class, 'getProtocols']);
     Route::get('/circles', [CircleController::class, 'getCircles']);
-
-    Route::get('/users/{address}', [UserController::class, 'getUser']);
+    Route::get('/protocols', [DataController::class, 'getProtocols']);
     Route::get('/users', [UserController::class, 'getUsers']);
     Route::get('/token-gifts', [DataController::class, 'getGifts']);
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/active-epochs', [EpochController::class, 'getActiveEpochs']);
 
-    /************************* TOKEN GATED endpoints *********************************/
 });
+
+/************************* TOKEN GATED endpoints *********************************/
+
+/************************* EXTERNAL USED endpoints *********************************/
+
+Route::prefix('{circle_id}')->group(function () {
+    Route::get('/token-gifts', [DataController::class, 'getGifts']);
+});
+/************************* EXTERNAL USED endpoints *********************************/
+
 
 Route::post("/" . config('telegram.token') . "/bot-update", [BotController::class, 'webHook']);
 

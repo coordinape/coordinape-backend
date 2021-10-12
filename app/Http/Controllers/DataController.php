@@ -7,12 +7,10 @@ use App\Http\Requests\CsvRequest;
 use App\Http\Requests\NewGiftRequest;
 use App\Http\Requests\TeammatesRequest;
 use App\Models\Epoch;
-use App\Models\PendingTokenGift;
 use App\Models\Protocol;
-use App\Models\TokenGift;
 use App\Models\User;
 use App\Repositories\EpochRepository;
-use Carbon\Carbon;
+use App\Repositories\GiftRepository;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,11 +18,12 @@ use Illuminate\Http\Request;
 
 class DataController extends Controller
 {
-    protected $repo;
+    protected $repo, $giftRepo;
 
-    public function __construct(EpochRepository $repo)
+    public function __construct(EpochRepository $repo, GiftRepository $giftRepo)
     {
         $this->repo = $repo;
+        $this->giftRepo = $giftRepo;
     }
 
     public function getProtocols(Request $request): JsonResponse
@@ -42,41 +41,16 @@ class DataController extends Controller
 
     public function getPendingGifts(Request $request, $circle_id = null): JsonResponse
     {
-        $filters = $request->all();
-
-        if ($circle_id) {
-            $filters['circle_id'] = $circle_id;
-        } else if (empty($filters['circle_id'])) {
-            return response()->json([]);
-        }
-
-        if (!empty($filters['recipient_address'])) {
-            $user = User::byAddress($request->recipient_address)->where('circle_id', $circle_id)->first();
-            $filters['recipient_id'] = $user->id;
-        }
-
-        if (!empty($filters['sender_address'])) {
-            $user = User::byAddress($request->sender_address)->where('circle_id', $circle_id)->first();
-            $filters['sender_id'] = $user->id;
-        }
-
-        return response()->json(PendingTokenGift::filter($filters)->get());
+        return response()->json($this->giftRepo->getPendingGifts($request, $circle_id));
     }
 
     public function newGetGifts(Request $request)
     {
         $data = $request->all();
         if (!empty($data['circle_id'])) {
-            $profile = $request->user();
-            $user = $profile->users()->where('circle_id', $data['circle_id'])->first();
-            if ($user) {
-                return response()->json(Utils::queryCache($request, function () use ($data, $request) {
-                    $query = TokenGift::fromCircle($data['circle_id']);
-                    if (!empty($data['epoch_id'])) {
-                        $query->fromEpochId($data['epoch_id']);
-                    }
-                    return $query->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created'])->get();
-                }, 60, $data['circle_id']));
+            $gifts = $this->giftRepo->newGetGifts($request, $data['circle_id']);
+            if ($gifts) {
+                return response()->json($gifts);
             }
         }
         return response()->json(['message' => 'Please provide a circle id that the user is part of'], 403);
@@ -85,43 +59,7 @@ class DataController extends Controller
 
     public function getGifts(Request $request, $circle_id = null): JsonResponse
     {
-        $filters = $request->all();
-        if ($circle_id) {
-            $filters['circle_id'] = $circle_id;
-        }
-
-        if ($circle_id && !empty($filters['latest_epoch']) && $filters['latest_epoch'] == 1) {
-            $query = Epoch::where('circle_id', $circle_id)->where('ended', 1)->orderBy('number', 'desc');
-            if (!empty($filters['timestamp'])) {
-                $before_date = Carbon::createFromTimestamp($filters['timestamp']);
-                $query->where('end_date', '<=', $before_date);
-            }
-            $epoch = $query->first();
-
-            if ($epoch) {
-                $filters['epoch_id'] = $epoch->id;
-            } else {
-                return response()->json([]);
-            }
-        }
-
-        if (!empty($filters['recipient_address'])) {
-            $user = User::byAddress($request->recipient_address)->where('circle_id', $circle_id)->first();
-            if ($user) {
-                $filters['recipient_id'] = $user->id;
-            }
-        }
-
-        if (!empty($filters['sender_address'])) {
-            $user = User::byAddress($request->sender_address)->where('circle_id', $circle_id)->first();
-            if ($user) {
-                $filters['sender_id'] = $user->id;
-            }
-        }
-
-        return response()->json(Utils::queryCache($request, function () use ($filters, $request) {
-            return TokenGift::filter($filters)->limit(20000)->get();
-        }, 60, $circle_id));
+        return response()->json($this->giftRepo->getGifts($request, $circle_id));
     }
 
     public function updateTeammates(TeammatesRequest $request, $circle_id): JsonResponse
@@ -148,6 +86,9 @@ class DataController extends Controller
             $circle_id = $request->circle_id;
         }
 
+        if (!Utils::checkTokenPermission($request, $circle_id)) {
+            return response()->json(['message' => 'User has no permission to view this circle'], 403);
+        }
         $epoch = null;
         if ($request->epoch_id) {
             $epoch = Epoch::with('circle.protocol')->where('circle_id', $circle_id)->where('id', $request->epoch_id)->first();

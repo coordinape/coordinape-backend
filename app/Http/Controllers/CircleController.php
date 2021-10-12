@@ -53,38 +53,8 @@ class CircleController extends Controller
     {
         $circle_id = $request->get('circle_id');
         if ($circle_id) {
-            $profile = $request->user();
-            $user = $profile->users()->where('circle_id', $circle_id)->first();
-            if ($user) {
-                $circle = $user->circle;
-                $users = $circle->users;
-                $nominees = $circle->nominees;
-                $latestEpoch = $circle->epoches()->where('epoches.ended', 1)->whereNotNull('epoches.number')->orderBy('epoches.number', 'desc')->first();
-                $latestEpochId = $latestEpoch ? $latestEpoch->id : null;
-                $users->load(['pendingSentGifts' => function ($q) {
-                    $q->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'created_at', 'updated_at']);
-                },
-                    'pendingReceivedGifts' => function ($q) {
-                        $q->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'created_at', 'updated_at']);
-                    }, 'receivedGifts' => function ($q) use ($latestEpochId) {
-                        $q->where('epoch_id', $latestEpochId)->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
-                    }, 'sentGifts' => function ($q) use ($latestEpochId) {
-                        $q->where('epoch_id', $latestEpochId)->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
-                    }
-                ]);
-
-                $user->load(['pendingSentGifts' => function ($q) {
-                    $q->select(['id', 'note', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
-                },
-                    'pendingReceivedGifts' => function ($q) {
-                        $q->select(['id', 'note', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
-                    }, 'receivedGifts' => function ($q) use ($latestEpochId) {
-                        $q->where('epoch_id', $latestEpochId)->select(['id', 'note', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
-                    }, 'sentGifts' => function ($q) use ($latestEpochId) {
-                        $q->where('epoch_id', $latestEpochId)->select(['id', 'note', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
-                    }
-                ]);
-
+            $user = $this->repo->fullCircle($request,$circle_id);
+            if($user) {
                 return response()->json($user);
             }
         }

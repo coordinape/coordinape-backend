@@ -92,7 +92,6 @@ class Utils
 
         $url = $request->url();
         $queryParams = $request->query();
-
         ksort($queryParams);
         $queryString = http_build_query($queryParams);
 
@@ -114,5 +113,15 @@ class Utils
 
         return str_replace(array(':', '-', '/', '*','_','`'), ' ', $str);
 
+    }
+
+    public static function checkTokenPermission($request, $circle_id) {
+        $profile = $request->user();
+        if ($profile && !$profile->admin_view) {
+            if (!in_array($circle_id, $profile->currentAccessToken()->abilities)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

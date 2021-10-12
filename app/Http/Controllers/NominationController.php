@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\Utils;
 use App\Http\Requests\NomineeRequest;
 use App\Http\Requests\VouchRequest;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +18,9 @@ class NominationController extends Controller
     }
 
     public function getNominees(Request $request, $circle_id) : JsonResponse {
+        if (!Utils::checkTokenPermission($request, $circle_id)) {
+            return response()->json(['message' => 'User has no permission to view this circle'], 403);
+        }
         return response()->json($this->repo->getNominees($request,$circle_id));
     }
 

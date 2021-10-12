@@ -38,6 +38,21 @@ class TokenGift extends Model
         return $query;
     }
 
+    public function scopeSelectWithoutNote($query)
+    {
+        return $query->select(['id', 'recipient_address', 'sender_address', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
+    }
+
+    public function scopeSelectWithoutAddressNote($query)
+    {
+        return $query->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
+    }
+
+    public function scopeSelectWithNoteNoAddress($query)
+    {
+        return $query->select(['id', 'note','recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
+    }
+
     public function scopeFromCircle($query, $circle_id)
     {
         return $query->where('circle_id', $circle_id);

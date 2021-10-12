@@ -38,6 +38,21 @@ class PendingTokenGift extends Model
         return $query;
     }
 
+    public function scopeSelectWithoutNote($query)
+    {
+        return $query->select(['id', 'recipient_address', 'sender_address', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
+    }
+
+    public function scopeSelectWithoutAddressNote($query)
+    {
+        return $query->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
+    }
+
+    public function scopeSelectWithNoteNoAddress($query)
+    {
+        return $query->select(['id', 'note','recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
+    }
+
     public function recipient() {
         return $this->belongsTo('App\Models\User','recipient_id','id');
     }

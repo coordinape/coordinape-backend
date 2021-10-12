@@ -19,6 +19,15 @@ class CircleRepository {
     }
 
     public function getCircles($request) {
+        $profile = $request->user();
+        if($profile) {
+
+            if($profile->admin_view)
+                return $this->model->all();
+
+            return $this->model->whereIn('id', $profile->currentAccessToken()->abilities)->with('protocol')->get();
+        }
+
         return $this->model->filter($request->all())->with('protocol')->get();
     }
 
@@ -84,5 +93,42 @@ class CircleRepository {
     public function getWebhook($circle_id) {
         $circle = $this->model->find($circle_id);
        return $circle->discord_webhook ?:'';
+    }
+
+    public function fullCircle($request, $circle_id) {
+
+        $profile = $request->user();
+        $user = $profile->users()->where('circle_id', $circle_id)->first();
+        if ($user) {
+            $circle = $user->circle;
+            $users = $circle->users;
+            $nominees = $circle->nominees;
+            $latestEpoch = $circle->epoches()->where('epoches.ended', 1)->whereNotNull('epoches.number')->orderBy('epoches.number', 'desc')->first();
+            $latestEpochId = $latestEpoch ? $latestEpoch->id : null;
+            $users->load(['pendingSentGifts' => function ($q) {
+                $q->selectWithoutAddressNote();
+            },
+                'pendingReceivedGifts' => function ($q) {
+                    $q->selectWithoutAddressNote();
+                }, 'receivedGifts' => function ($q) use ($latestEpochId) {
+                    $q->where('epoch_id', $latestEpochId)->selectWithoutAddressNote();
+                }, 'sentGifts' => function ($q) use ($latestEpochId) {
+                    $q->where('epoch_id', $latestEpochId)->selectWithoutAddressNote();
+                }
+            ]);
+
+            $user->load(['pendingSentGifts' => function ($q) {
+                $q->selectWithNoteNoAddress();
+            },
+                'pendingReceivedGifts' => function ($q) {
+                    $q->selectWithNoteNoAddress();
+                }, 'receivedGifts' => function ($q) use ($latestEpochId) {
+                    $q->where('epoch_id', $latestEpochId)->selectWithNoteNoAddress();
+                }, 'sentGifts' => function ($q) use ($latestEpochId) {
+                    $q->where('epoch_id', $latestEpochId)->selectWithNoteNoAddress();
+                }
+            ]);
+        }
+        return $user;
     }
 }

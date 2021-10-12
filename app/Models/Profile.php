@@ -17,9 +17,16 @@ class Profile extends Authenticatable
 
     protected $casts = ['skills' => 'array'];
 
+    protected $hidden = ['chat_id'];
+
     public function users()
     {
         return $this->hasMany('App\Models\User', 'address', 'address');
+    }
+
+    public function circles()
+    {
+        return $this->hasManyThrough('App\Models\Circle', 'App\Models\User', 'address', 'id', 'address', 'circle_id');
     }
 
     public function scopeByAddress($query, $address)
@@ -31,4 +38,5 @@ class Profile extends Authenticatable
     {
         return $this->chat_id;
     }
+
 }

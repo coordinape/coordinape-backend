@@ -360,6 +360,10 @@ class EpochRepository
         if($request->circle_id) {
             $query->where('circle_id', $request->circle_id);
         }
+        $profile = $request->user();
+        if ($profile && !$profile->admin_view) {
+            $query->whereIn('circle_id', $profile->currentAccessToken()->abilities);
+        }
         return $query->get();
     }
 }

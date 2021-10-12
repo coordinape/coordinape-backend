@@ -34,7 +34,6 @@ Route::prefix('{circle_id}')->group(function () {
 
     Route::get('/circles', [CircleController::class, 'getCircles']);
     Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
-    Route::get('/token-gifts', [DataController::class, 'getGifts']);
     Route::get('/csv', [DataController::class, 'generateCsv']);
     Route::get('/nominees', [NominationController::class, 'getNominees']);
     Route::get('/epoches', [EpochController::class, 'epoches']);

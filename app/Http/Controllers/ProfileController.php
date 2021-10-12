@@ -19,7 +19,14 @@ class ProfileController extends Controller
 
     public function getProfile(Request $request, $address): JsonResponse
     {
-        return response()->json($this->repo->getProfile($address, ['users.circle.protocol', 'users.teammates', 'users.histories.epoch']));
+        $profile = $request->user();
+        $addressProfile = $this->repo->getProfile($address, ['users.circle.protocol', 'users.teammates', 'users.histories.epoch']);
+        if($profile && !$profile->admin_view) {
+            if (count(array_intersect($profile->currentAccessToken()->abilities, $addressProfile->users()->pluck('circle_id')->toArray())) < 1) {
+                return response()->json(['message' => 'User has no permission to view this profile'], 403);
+            }
+        }
+        return response()->json($addressProfile);
     }
 
     public function updateMyProfile(ProfileRequest $request): JsonResponse

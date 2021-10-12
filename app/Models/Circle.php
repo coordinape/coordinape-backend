@@ -33,7 +33,7 @@ class Circle extends Model
         'id'
     ];
 
-    protected $hidden = ['discord_webhook'];
+    protected $hidden = ['discord_webhook','telegram_id'];
 
     public function routeNotificationForTelegram()
     {
