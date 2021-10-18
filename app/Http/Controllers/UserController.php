@@ -56,8 +56,8 @@ class UserController extends Controller
         if(!$user)
             return response()->json(['message'=> 'Address not found'],422);
 
-        if($user->isCoordinapeUser == True) #TODO
-            return response()->json(['message'=> 'This user is not modifyable'],423);
+        if($user->isCoordinapeUser)
+            return response()->json(['message'=> 'This user is not modifiable'],423);
 
         $data = $request->only('name','address','starting_tokens','non_giver','fixed_non_receiver', 'role', 'non_receiver');
 

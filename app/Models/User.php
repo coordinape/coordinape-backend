@@ -156,6 +156,6 @@ class User extends Authenticatable
     }
 
     public function isCoordinapeUser() {
-        return $this.address == env('COORDINAPE_USER_ADDRESS');
+        return $this->role == config('enums.user_types.coordinape');
     }
 }
