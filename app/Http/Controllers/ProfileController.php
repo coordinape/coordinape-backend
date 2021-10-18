@@ -21,8 +21,8 @@ class ProfileController extends Controller
     {
         $profile = $request->user();
         $addressProfile = $this->repo->getProfile($address, ['users.circle.protocol', 'users.teammates', 'users.histories.epoch']);
-        if($profile && !$profile->admin_view) {
-            if (count(array_intersect($profile->currentAccessToken()->abilities, $addressProfile->users()->pluck('circle_id')->toArray())) < 1) {
+        if ($profile && !$profile->admin_view) {
+            if (!$addressProfile || count(array_intersect($profile->currentAccessToken()->abilities, $addressProfile->users()->pluck('circle_id')->toArray())) < 1) {
                 return response()->json(['message' => 'User has no permission to view this profile'], 403);
             }
         }
@@ -34,6 +34,25 @@ class ProfileController extends Controller
         return response()->json($this->repo->saveProfile($request));
     }
 
+    public function uploadMyProfileAvatar(ProfileUploadRequest $request): JsonResponse
+    {
+        $profile = $this->repo->uploadProfileAvatar($request);
+        if ($profile)
+            return response()->json($profile);
+
+        return response()->json(['message' => 'File Upload Failed', 422]);
+    }
+
+    public function uploadMyProfileBackground(ProfileUploadRequest $request): JsonResponse
+    {
+        $profile = $this->repo->uploadProfileBackground($request);
+        if ($profile)
+            return response()->json($profile);
+
+        return response()->json(['message' => 'File Upload Failed', 422]);
+    }
+
+    // to be deprecated
     public function uploadProfileAvatar(ProfileUploadRequest $request, $address): JsonResponse
     {
         $profile = $this->repo->uploadProfileAvatar($request, $request->address);
@@ -43,6 +62,7 @@ class ProfileController extends Controller
         return response()->json(['message' => 'File Upload Failed', 422]);
     }
 
+    // to be deprecated
     public function uploadProfileBackground(ProfileUploadRequest $request, $address): JsonResponse
     {
         $profile = $this->repo->uploadProfileBackground($request, $request->address);

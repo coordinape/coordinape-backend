@@ -15,8 +15,7 @@ Route::prefix('{circle_id}')->group(function () {
         Route::put('/users/{address}', [UserController::class, 'adminUpdateUser']);
         Route::post('/users', [UserController::class, 'createUser']);
         Route::delete('/users/{address}', [UserController::class, 'deleteUser']);
-        Route::post('/epoches', [EpochController::class, 'createEpoch']);
-        Route::post('/v2/epoches', [EpochController::class, 'newCreateEpoch']);
+        Route::post('/v2/epoches', [EpochController::class, 'createEpoch']);
         Route::put('/epoches/{epoch}', [EpochController::class, 'updateEpoch']);
         Route::delete('/epoches/{epoch}', [EpochController::class, 'deleteEpoch']);
         Route::post('/upload-logo', [CircleController::class, 'uploadCircleLogo']);
@@ -43,7 +42,6 @@ Route::prefix('{circle_id}')->group(function () {
 Route::middleware(['verify-sign'])->group(function () {
     Route::post('/upload-avatar/{address}', [ProfileController::class, 'uploadProfileAvatar']);
     Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
-    Route::post('/profile/{address}', [ProfileController::class, 'saveProfile']);
     Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
 });
 
