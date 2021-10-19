@@ -23,7 +23,6 @@ class ProfileRequest extends FormRequest
         $data = json_decode($this->get('data'), true);
         $profile = $this->user();
         $this->merge([
-            'data' => $data,
             'profile' => $profile,
             'bio' => !empty($data['bio']) ? $data['bio']:null,
             'skills' => !empty($data['skills']) ? $data['skills']:null,

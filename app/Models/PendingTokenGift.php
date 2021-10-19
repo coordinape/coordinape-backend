@@ -43,6 +43,11 @@ class PendingTokenGift extends Model
         return $query->select(['id', 'recipient_address', 'sender_address', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
     }
 
+    public function scopeFromCircle($query, $circle_id)
+    {
+        return $query->where('circle_id', $circle_id);
+    }
+
     public function scopeSelectWithoutAddressNote($query)
     {
         return $query->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);

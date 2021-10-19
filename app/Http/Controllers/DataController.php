@@ -57,9 +57,28 @@ class DataController extends Controller
 
     }
 
+    public function newGetPendingGifts(Request $request): JsonResponse
+    {
+        $data = $request->all();
+        if (!empty($data['circle_id'])) {
+            $gifts = $this->giftRepo->newGetPendingGifts($request, $data['circle_id']);
+            if ($gifts) {
+                return response()->json($gifts);
+            }
+        }
+        return response()->json(['message' => 'Please provide a circle id that the user is part of'], 403);
+
+    }
+
     public function getGifts(Request $request, $circle_id = null): JsonResponse
     {
         return response()->json($this->giftRepo->getGifts($request, $circle_id));
+    }
+
+    public function getGiftsWithoutNotes(Request $request, $circle_id): JsonResponse
+    {
+        return response()->json($this->giftRepo->getGifts($request, $circle_id, true));
+
     }
 
     public function updateTeammates(TeammatesRequest $request, $circle_id): JsonResponse

@@ -21,7 +21,6 @@ class AdminUserRequest extends FormRequest
     {
         $data = json_decode($this->get('data'), true);
         $this->merge([
-            'data' => $data,
             'name' => !empty($data['name']) ? $data['name']:null,
             'address' => !empty($data['address']) ? strtolower($data['address']):null,
             'non_giver'  => !empty($data['non_giver']) ? $data['non_giver']:0,
@@ -43,7 +42,6 @@ class AdminUserRequest extends FormRequest
 
         $circle_id = $this->circle_id;
         return [
-            'data' => 'required',
             'name' => 'required|string|max:255',
             'address' => ['required', 'string', 'size:42',Rule::unique('users')->ignore($this->user->id)->where(function ($query) use ($circle_id) {
                 return $query->where('circle_id', $circle_id)->whereNull('deleted_at');

@@ -21,7 +21,6 @@ class CircleRequest extends FormRequest
     {
         $data = json_decode($this->get('data'), true);
         $this->merge([
-            'data' => $data,
             'name' => !empty($data['name']) ? $data['name']:null,
             'token_name' => !empty($data['token_name']) ? $data['token_name']:null,
             'team_sel_text' => !empty($data['team_sel_text']) ? $data['team_sel_text']:null,
@@ -53,8 +52,6 @@ class CircleRequest extends FormRequest
     public function rules()
     {
         return [
-
-            'data' => 'required',
             'name' => 'required|string|max:255',
             'token_name' => 'required|string|max:255',
             'vouching' => 'integer|min:0|max:1',

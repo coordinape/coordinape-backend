@@ -27,19 +27,47 @@ class GiftRepository
         $user = $profile->users()->where('circle_id', $circle_id)->first();
         if ($user) {
             $epoch_id = $request->get('epoch_id');
-            return Utils::queryCache($request, function () use ($epoch_id, $circle_id) {
-                $query = $this->tokenModel->fromCircle($circle_id);
+            return Utils::queryCache($request, function () use ($epoch_id, $circle_id, $user) {
+                $query = $this->tokenModel->fromCircle($circle_id)->where(function ($q) use ($user) {
+                    $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
+                });
+                $queryUserGives = $this->tokenModel->fromCircle($circle_id)->where(function ($q) use ($user) {
+                    $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
+                });
+
                 if ($epoch_id) {
                     $query->fromEpochId($epoch_id);
+                    $queryUserGives->fromEpochId($epoch_id);
                 }
-                return $query->select(['id', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created'])->get();
+                $givesWithoutUser = $query->selectWithoutAddressNote()->get();
+                return $givesWithoutUser->merge($queryUserGives->selectWithNoteNoAddress()->get());
             }, 60, $circle_id);
         }
 
         return null;
     }
 
-    public function getGifts($request, $circle_id = null)
+    public function newGetPendingGifts($request, $circle_id)
+    {
+
+        $profile = $request->user();
+        $user = $profile->users()->where('circle_id', $circle_id)->first();
+        if ($user) {
+            $query = $this->pendingTokenModel->fromCircle($circle_id)->where(function ($q) use ($user) {
+                $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
+            });
+            $queryUserGives = $this->pendingTokenModel->fromCircle($circle_id)->where(function ($q) use ($user) {
+                $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
+            });
+
+            $givesWithoutUser = $query->selectWithoutAddressNote()->get();
+            return $givesWithoutUser->merge($queryUserGives->selectWithNoteNoAddress()->get());
+        }
+
+        return null;
+    }
+
+    public function getGifts($request, $circle_id = null, $without_notes = false)
     {
 
         $filters = $request->all();
@@ -76,14 +104,12 @@ class GiftRepository
                 $filters['sender_id'] = $user->id;
             }
         }
-        $profile = $request->user();
         $query = $this->tokenModel->filter($filters);
-        if ($profile && !$profile->admin_view) {
-            return $query->whereIn('circle_id', $profile->currentAccessToken()->abilities)->selectWithoutNote()->limit(35000)->get();
-        }
+        if ($without_notes)
+            $query->selectWithoutNote();
 
         return Utils::queryCache($request, function () use ($filters, $request, $query) {
-            return $query->selectWithoutNote()->limit(35000)->get();
+            return $query->limit(30000)->get();
         }, 60, $circle_id);
     }
 
@@ -108,11 +134,7 @@ class GiftRepository
             $filters['sender_id'] = $user->id;
         }
         $query = $this->pendingTokenModel->filter($filters);
-        $profile = $request->user();
-        if ($profile && !$profile->admin_view) {
-            $query->whereIn('circle_id', $profile->currentAccessToken()->abilities);
-        }
 
-        return $query->select(['id', 'recipient_address', 'sender_address', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'created_at', 'updated_at'])->get();
+        return $query->get();
     }
 }

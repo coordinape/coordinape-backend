@@ -25,17 +25,13 @@ use Illuminate\Support\Facades\Route;
 // login
 Route::post('/v2/manifest', [ProfileController::class, 'manifest'])->middleware(['verify-sign']);
 
-Route::middleware(['verify-sign','hcaptcha-verify'])->group(function () {
+Route::middleware(['verify-sign', 'hcaptcha-verify'])->group(function () {
     Route::post('/v2/circles', [CircleController::class, 'createCircle']);
 });
 
 /************************* TOKEN GATED endpoints *********************************/
 
 Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
-
-    Route::post('/logout', [ProfileController::class, 'logout']);
-    Route::get('/full-circle', [CircleController::class, 'fullCircle']);
-    Route::get('/v2-token-gifts', [DataController::class, 'newGetGifts']);
 
     Route::prefix('{circle_id}')->group(function () {
 
@@ -61,14 +57,16 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
             Route::post('/vouch', [NominationController::class, 'addVouch']);
         });
 
-        Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
-        Route::get('/token-gifts', [DataController::class, 'getGifts']);
         Route::get('/csv', [DataController::class, 'generateCsv']);
         Route::get('/nominees', [NominationController::class, 'getNominees']);
         Route::get('/epoches', [EpochController::class, 'epoches']);
 
     });
 
+    Route::post('/logout', [ProfileController::class, 'logout']);
+    Route::get('/full-circle', [CircleController::class, 'fullCircle']);
+    Route::get('/token-gifts', [DataController::class, 'newGetGifts']);
+    Route::get('/pending-token-gifts', [DataController::class, 'newGetPendingGifts']);
     Route::post('/upload-avatar', [ProfileController::class, 'uploadMyProfileAvatar']);
     Route::post('/upload-background', [ProfileController::class, 'uploadMyProfileBackground']);
     Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
@@ -76,8 +74,6 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/circles', [CircleController::class, 'getCircles']);
     Route::get('/protocols', [DataController::class, 'getProtocols']);
     Route::get('/users', [UserController::class, 'getUsers']);
-    Route::get('/token-gifts', [DataController::class, 'getGifts']);
-    Route::get('/pending-token-gifts', [DataController::class, 'getPendingGifts']);
     Route::get('/active-epochs', [EpochController::class, 'getActiveEpochs']);
 
 });
@@ -87,7 +83,7 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
 /************************* EXTERNAL USED endpoints *********************************/
 
 Route::prefix('{circle_id}')->group(function () {
-    Route::get('/token-gifts', [DataController::class, 'getGifts']);
+    Route::get('/token-gifts', [DataController::class, 'getGiftsWithoutNotes']);
 });
 /************************* EXTERNAL USED endpoints *********************************/
 

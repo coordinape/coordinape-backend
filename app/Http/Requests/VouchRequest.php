@@ -16,7 +16,6 @@ class VouchRequest extends FormRequest
     {
         $data = json_decode($this->get('data'), true);
         $this->merge([
-            'data' => $data,
             'nominee_id' => !empty($data['nominee_id']) ? $data['nominee_id']:null,
         ]);
     }

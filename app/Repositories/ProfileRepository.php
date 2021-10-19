@@ -53,7 +53,7 @@ class ProfileRepository
             $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)) . '_' . time() . '.' . $file->getCLientOriginalExtension();
             $ret = Storage::put($new_file_name, $resized);
             if ($ret) {
-                if ($profile->avatar && Storage::exists($profile->avatar)) {
+                if ($profile->avatar && Storage::exists($profile->avatar) && config('app.env') == 'production') {
                     Storage::delete($profile->avatar);
                 }
 
@@ -76,7 +76,7 @@ class ProfileRepository
             $new_file_name = Str::slug(pathinfo(basename($file->getClientOriginalName()), PATHINFO_FILENAME)) . '_' . time() . '.' . $file->getCLientOriginalExtension();
             $ret = Storage::put($new_file_name, $resized);
             if ($ret) {
-                if ($profile->background && Storage::exists($profile->background)) {
+                if ($profile->background && Storage::exists($profile->background) && config('app.env') == 'production') {
                     Storage::delete($profile->background);
                 }
 

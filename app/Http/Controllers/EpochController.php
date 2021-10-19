@@ -25,12 +25,12 @@ class EpochController extends Controller
         return response()->json($this->repo->epoches($request, $circle_id));
     }
 
-    public function getActiveEpochs(Request $request)
+    public function getActiveEpochs(Request $request): JsonResponse
     {
         return response()->json($this->repo->getActiveEpochs($request));
     }
 
-    public function updateEpoch(newEpochRequest $request, $circle_id, Epoch $epoch)
+    public function updateEpoch(newEpochRequest $request, $circle_id, Epoch $epoch): JsonResponse
     {
         $now = Carbon::now();
         $data = $request->only('start_date', 'grant', 'days', 'repeat');
