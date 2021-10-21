@@ -120,7 +120,7 @@ class Utils
 
     public static function getCircleUserFromRequest($request, $circle_id, $is_admin = false)
     {
-        $profile = $request->user();
+        $profile = $request->user(); // this is from Sanctum -- NOT the same as $request->user
         if ($profile) {
             $query = $profile->users()->where('circle_id', $circle_id);
             if ($is_admin) {
