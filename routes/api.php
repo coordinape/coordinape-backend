@@ -51,20 +51,20 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
 
         Route::middleware(['verify-user-token'])->group(function () {
             Route::put('/users', [UserController::class, 'updateMyUser']);
-            Route::post('/token-gifts/{address}', [DataController::class, 'newUpdateGifts']);
+            Route::post('/token-gifts', [DataController::class, 'newUpdateGifts']);
             Route::post('/teammates', [DataController::class, 'updateTeammates']);
             Route::post('/nominees', [NominationController::class, 'createNominee']);
             Route::post('/vouch', [NominationController::class, 'addVouch']);
+            Route::get('/nominees', [NominationController::class, 'getNominees']);
+            Route::get('/csv', [DataController::class, 'generateCsv']);
         });
 
-        Route::get('/csv', [DataController::class, 'generateCsv']);
-        Route::get('/nominees', [NominationController::class, 'getNominees']);
         Route::get('/epoches', [EpochController::class, 'epoches']);
 
     });
 
     Route::post('/logout', [ProfileController::class, 'logout']);
-    Route::get('/full-circle', [CircleController::class, 'fullCircle']);
+    Route::get('/full-circle', [CircleController::class, 'userWithFullCircleData']);
     Route::get('/token-gifts', [DataController::class, 'newGetGifts']);
     Route::get('/pending-token-gifts', [DataController::class, 'newGetPendingGifts']);
     Route::post('/upload-avatar', [ProfileController::class, 'uploadMyProfileAvatar']);

@@ -34,7 +34,7 @@ class UserRepository
 
         $profile = $request->user();
         if ($profile && !$profile->admin_view) {
-            $users->whereIn('circle_id', $profile->currentAccessToken()->abilities);
+            $users->whereIn('circle_id', $profile->circle_ids());
         }
         if ($circle_id)
             $users->where('circle_id', $circle_id);
@@ -63,12 +63,6 @@ class UserRepository
         $profile = $this->profileModel->where('address', $data['address'])->first();
         if (!$profile) {
             $this->profileModel->create(['address' => $data['address']]);
-        } else if (!$profile->admin_view) {
-            $token = $profile->tokens()->first();
-            if ($token) {
-                $token->abilities = $profile->users->pluck('circle_id')->toArray();
-                $token->save();
-            }
         }
         $user->circle->notify(new AddNewUser($request->admin_user, $user));
         $user->refresh();
@@ -99,15 +93,7 @@ class UserRepository
 
             Teammate::where('team_mate_id', $user->id)->delete();
             Teammate::where('user_id', $user->id)->delete();
-            $profile = $user->profile;
             $user->delete();
-            if (!$profile->admin_view) {
-                $token = $profile->tokens()->first();
-                if ($token) {
-                    $token->abilities = $profile->users->pluck('circle_id')->toArray();
-                    $token->save();
-                }
-            }
 
             return $user;
         }, 2);

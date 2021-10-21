@@ -26,7 +26,7 @@ class CircleRepository
         $profile = $request->user();
         if ($profile && !$profile->admin_view) {
 
-            return $this->model->whereIn('id', $profile->currentAccessToken()->abilities)->with('protocol')->get();
+            return $this->model->filter($request->all())->whereIn('id', $profile->circle_ids())->with('protocol')->get();
         }
 
         return $this->model->filter($request->all())->with('protocol')->get();
@@ -102,7 +102,7 @@ class CircleRepository
         return $circle->discord_webhook ?: '';
     }
 
-    public function fullCircle($request, $circle_id)
+    public function userWithCircleData($request, $circle_id)
     {
 
         $profile = $request->user();

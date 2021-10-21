@@ -19,7 +19,7 @@ class VerifyAdminToken
     public function handle(Request $request, Closure $next)
     {
         $circle_id = $request->route('circle_id');
-        if (!$admin_user = Utils::getCircleUserByToken($request, $circle_id, true)) {
+        if (!$admin_user = Utils::getCircleUserFromRequest($request, $circle_id, true)) {
             abort(403, 'You are not authorized to perform this action');
         }
 

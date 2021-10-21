@@ -29,6 +29,11 @@ class Profile extends Authenticatable
         return $this->hasManyThrough('App\Models\Circle', 'App\Models\User', 'address', 'id', 'address', 'circle_id');
     }
 
+    public function circle_ids() {
+
+        return $this->users()->pluck('circle_id')->toArray();
+    }
+
     public function scopeByAddress($query, $address)
     {
         return $query->where('address', strtolower($address));

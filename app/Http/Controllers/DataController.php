@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helper\Utils;
 use App\Http\Requests\CsvRequest;
 use App\Http\Requests\NewGiftRequest;
 use App\Http\Requests\TeammatesRequest;
@@ -31,7 +30,7 @@ class DataController extends Controller
         return response()->json(Protocol::all());
     }
 
-    public function newUpdateGifts(NewGiftRequest $request, $circle_id, $address): JsonResponse
+    public function newUpdateGifts(NewGiftRequest $request, $circle_id, $address = null): JsonResponse
     {
         $user = $request->user;
         $this->repo->newUpdateGifts($request, $user->address, $circle_id);
@@ -105,9 +104,6 @@ class DataController extends Controller
             $circle_id = $request->circle_id;
         }
 
-        if (!Utils::checkTokenCirclePermission($request, $circle_id)) {
-            return response()->json(['message' => 'User has no permission to view this circle'], 403);
-        }
         $epoch = null;
         if ($request->epoch_id) {
             $epoch = Epoch::with('circle.protocol')->where('circle_id', $circle_id)->where('id', $request->epoch_id)->first();

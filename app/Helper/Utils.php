@@ -118,18 +118,7 @@ class Utils
 
     }
 
-    public static function checkTokenCirclePermission($request, $circle_id)
-    {
-        $profile = $request->user();
-        if ($profile && !$profile->admin_view) {
-            if (!in_array($circle_id, $profile->currentAccessToken()->abilities)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static function getCircleUserByToken($request, $circle_id, $is_admin = false, $address = null)
+    public static function getCircleUserFromRequest($request, $circle_id, $is_admin = false)
     {
         $profile = $request->user();
         if ($profile) {
@@ -137,11 +126,9 @@ class Utils
             if ($is_admin) {
                 $query->isAdmin();
             }
-            if ($address) {
-                $query->byAddress($address);
-            }
-            if ($admin_user = $query->first()) {
-                return $admin_user;
+
+            if ($user = $query->first()) {
+                return $user;
             }
         }
         return false;

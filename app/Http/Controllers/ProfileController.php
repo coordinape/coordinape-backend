@@ -22,7 +22,7 @@ class ProfileController extends Controller
         $profile = $request->user();
         $addressProfile = $this->repo->getProfile($address, ['users.circle.protocol', 'users.teammates', 'users.histories.epoch']);
         if ($profile && !$profile->admin_view) {
-            if (!$addressProfile || count(array_intersect($profile->currentAccessToken()->abilities, $addressProfile->users()->pluck('circle_id')->toArray())) < 1) {
+            if (!$addressProfile || count(array_intersect($profile->circle_ids(), $addressProfile->circle_ids())) < 1) {
                 return response()->json(['message' => 'User has no permission to view this profile'], 403);
             }
         }
@@ -75,16 +75,11 @@ class ProfileController extends Controller
     public function manifest(Request $request): JsonResponse
     {
         $profile = $this->repo->getProfile($request->get('address'), ['users.circle.epoches', 'users.circle.nominees']);
-        if (!$profile && count($profile->users))
+        if (!$profile || count($profile->users) == 0)
             abort('403', 'You do not have an active account in Coordinape');
 
-        if ($profile->admin_view) {
-            $circle_ids = ['*'];
-        } else {
-            $circle_ids = $profile->users->pluck('circle_id')->toArray();
-        }
         $profile->tokens()->delete();
-        $token = $profile->createToken('circle-access-token', $circle_ids)->plainTextToken;
+        $token = $profile->createToken('circle-access-token', ['read'])->plainTextToken;
         return response()->json(compact('token', 'profile'));
     }
 

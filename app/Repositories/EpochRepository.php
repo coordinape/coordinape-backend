@@ -361,7 +361,7 @@ class EpochRepository
         }
         $profile = $request->user();
         if ($profile && !$profile->admin_view) {
-            $query->whereIn('circle_id', $profile->currentAccessToken()->abilities);
+            $query->whereIn('circle_id', $profile->circle_ids());
         }
         return $query->get();
     }

@@ -18,8 +18,7 @@ class VerifyUserToken
     public function handle(Request $request, Closure $next)
     {
         $circle_id = $request->route('circle_id');
-        $address = $request->get('address');
-        if (!$existing_user = Utils::getCircleUserByToken($request, $circle_id, false, $address)) {
+        if (!$existing_user = Utils::getCircleUserFromRequest($request, $circle_id)) {
             abort(403, 'You are not authorized to perform this action');
         }
         if ($circle_id) {
