@@ -126,8 +126,8 @@ Route::prefix('{circle_id}')->group(function () {
 });
 
 Route::middleware(['verify-sign'])->group(function () {
-    Route::post('/upload-avatar/{address}', [ProfileController::class, 'uploadProfileAvatar']);
-    Route::post('/upload-background/{address}', [ProfileController::class, 'uploadProfileBackground']);
+    Route::post('/upload-avatar/{address}', [ProfileController::class, 'uploadMyProfileAvatar']);
+    Route::post('/upload-background/{address}', [ProfileController::class, 'uploadMyProfileBackground']);
     Route::post('/profile', [ProfileController::class, 'updateMyProfile']);
 });
 

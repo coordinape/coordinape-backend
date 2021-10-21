@@ -34,7 +34,7 @@ class ProfileController extends Controller
         return response()->json($this->repo->saveProfile($request));
     }
 
-    public function uploadMyProfileAvatar(ProfileUploadRequest $request): JsonResponse
+    public function uploadMyProfileAvatar(ProfileUploadRequest $request, $address = null): JsonResponse
     {
         $profile = $this->repo->uploadProfileAvatar($request);
         if ($profile)
@@ -43,29 +43,9 @@ class ProfileController extends Controller
         return response()->json(['message' => 'File Upload Failed', 422]);
     }
 
-    public function uploadMyProfileBackground(ProfileUploadRequest $request): JsonResponse
+    public function uploadMyProfileBackground(ProfileUploadRequest $request, $address = null): JsonResponse
     {
         $profile = $this->repo->uploadProfileBackground($request);
-        if ($profile)
-            return response()->json($profile);
-
-        return response()->json(['message' => 'File Upload Failed', 422]);
-    }
-
-    // to be deprecated
-    public function uploadProfileAvatar(ProfileUploadRequest $request, $address): JsonResponse
-    {
-        $profile = $this->repo->uploadProfileAvatar($request, $request->address);
-        if ($profile)
-            return response()->json($profile);
-
-        return response()->json(['message' => 'File Upload Failed', 422]);
-    }
-
-    // to be deprecated
-    public function uploadProfileBackground(ProfileUploadRequest $request, $address): JsonResponse
-    {
-        $profile = $this->repo->uploadProfileBackground($request, $request->address);
         if ($profile)
             return response()->json($profile);
 
