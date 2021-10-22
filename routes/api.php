@@ -36,7 +36,7 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
     Route::prefix('{circle_id}')->group(function () {
 
         /************************* ADMIN TOKEN ENDPOINTS ****************************/
-        Route::prefix('admin')->middleware(['verify-admin-token'])->group(function () {
+        Route::prefix('admin')->middleware(['verify-circle-admin'])->group(function () {
             Route::put('/circles/{circle}', [CircleController::class, 'updateCircle']);
             Route::put('/users/{address}', [UserController::class, 'adminUpdateUser']);
             Route::post('/users', [UserController::class, 'createUser']);
@@ -49,7 +49,7 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
         });
         /************************* ADMIN TOKEN ENDPOINTS ****************************/
 
-        Route::middleware(['verify-user-token'])->group(function () {
+        Route::middleware(['verify-circle-user'])->group(function () {
             Route::put('/users', [UserController::class, 'updateMyUser']);
             Route::post('/token-gifts', [DataController::class, 'newUpdateGifts']);
             Route::post('/teammates', [DataController::class, 'updateTeammates']);

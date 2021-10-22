@@ -6,7 +6,7 @@ use App\Helper\Utils;
 use Closure;
 use Illuminate\Http\Request;
 
-class VerifyUserToken
+class VerifyCircleUser
 {
     /**
      * Handle an incoming request.

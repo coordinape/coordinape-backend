@@ -31,9 +31,9 @@ class ProfileRepository
         return $profile;
     }
 
-    public function uploadProfileAvatar($request, $address = null)
+    public function uploadProfileAvatar($request)
     {
-        $profile = $address ? $this->model->byAddress($address)->first() : $request->user();
+        $profile = $request->user();
         if ($profile) {
             $file = $request->file('file');
             $image = Image::make($file);
@@ -66,9 +66,9 @@ class ProfileRepository
         return null;
     }
 
-    public function uploadProfileBackground($request, $address = null)
+    public function uploadProfileBackground($request)
     {
-        $profile = $address ? $this->model->byAddress($address)->first() : $request->user();
+        $profile = $request->user();
         if ($profile) {
             $file = $request->file('file');
             $resized = Image::make($request->file('file'))

@@ -7,7 +7,7 @@ use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 
-class VerifyAdminToken
+class VerifyCircleAdmin
 {
     /**
      * Handle an incoming request.
