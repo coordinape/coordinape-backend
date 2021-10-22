@@ -20,7 +20,6 @@ class NewEpochRequest extends FormRequest
 
         $data = json_decode($this->get('data'), true);
         $this->merge([
-            'data' => $data,
             'start_date' => !empty($data['start_date']) ? $data['start_date']:null,
             'days' => !empty($data['days']) ? $data['days']:null,
             'repeat' => !empty($data['repeat']) ? $data['repeat']:0,

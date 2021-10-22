@@ -53,9 +53,7 @@ class User extends Authenticatable
      *
      * @var array
      */
-//    protected $casts = [
-//        'email_verified_at' => 'datetime',
-//    ];
+
     public function scopeProtocolFilter($query, $filters) {
 
         $query->leftJoin('circles as c','c.id', 'users.circle_id');

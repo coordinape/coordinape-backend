@@ -32,7 +32,6 @@ class NomineeRequest extends FormRequest
     {
         $circle_id = $this->circle_id;
         return [
-            'data' => 'required',
             'name' => 'required|string|max:255',
             'address' => ['required', 'string', 'size:42',Rule::unique('nominees')->where(function ($query) use ($circle_id) {
                 return $query->where('circle_id', $circle_id)->where('ended',0);
