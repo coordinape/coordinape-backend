@@ -21,8 +21,13 @@ class Utils
             return self::validateContractSignature($address, $hash, $signature);
         }
 
-        return $address == strtolower(self::personalEcRecover( $message,  $signature)) ||
-                $address == strtolower(self::personalEcRecover( $message,  $signature, false));
+        $valid = $address == strtolower(self::personalEcRecover( $message,  $signature)) ||
+            $address == strtolower(self::personalEcRecover( $message,  $signature, false));
+
+        if(!$valid)
+            throw new \Exception("Invalid Signature $signature");
+
+        return $valid;
     }
 
     public static function validateContractSignature(string $address, string $hash, string $signature): bool {
