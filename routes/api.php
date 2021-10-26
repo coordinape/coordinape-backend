@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 /********************************** V2 ENDPOINTs ***************************************************/
 
 // login
-Route::post('/v2/manifest', [ProfileController::class, 'manifest'])->middleware(['verify-sign']);
+Route::post('/v2/manifest', [ProfileController::class, 'manifest'])->middleware(['verify-login-sign']);
 
 Route::middleware(['verify-sign', 'hcaptcha-verify'])->group(function () {
     Route::post('/v2/circles', [CircleController::class, 'createCircle']);

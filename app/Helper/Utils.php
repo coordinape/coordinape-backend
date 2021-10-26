@@ -64,10 +64,14 @@ class Utils
 
     public static function personalEcRecover(string $message, string $signature, $withPrefix = true)
     {
-        $message = $withPrefix ? self::personalSignAddHeader($message) : $message;
-        $message_hash = '0x' . Keccak::hash($message, 256);
-        $address = self::phpEcRecover($message_hash, $signature);
-        return $address;
+        try {
+            $message = $withPrefix ? self::personalSignAddHeader($message) : $message;
+            $message_hash = '0x' . Keccak::hash($message, 256);
+            $address = self::phpEcRecover($message_hash, $signature);
+            return $address;
+        } catch (Throwable $t) {
+            return false;
+        }
     }
 
     public static function personalSignAddHeader($message)
