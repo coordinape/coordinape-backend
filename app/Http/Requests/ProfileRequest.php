@@ -21,7 +21,7 @@ class ProfileRequest extends FormRequest
     protected function prepareForValidation()
     {
         $data = json_decode($this->get('data'), true);
-        $profile = $this->user();
+        $profile = $this->user() ? $this->user() : Profile::byAddress($this->get('address'))->first();
         $this->merge([
             'profile' => $profile,
             'bio' => !empty($data['bio']) ? $data['bio']:null,
