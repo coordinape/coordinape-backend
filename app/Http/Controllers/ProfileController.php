@@ -63,6 +63,14 @@ class ProfileController extends Controller
         return response()->json(compact('token', 'profile'));
     }
 
+    public function login(Request $request): JsonResponse
+    {
+        $profile = $this->repo->getProfile($request->get('address'));
+        $profile->tokens()->delete();
+        $token = $profile->createToken('circle-access-token', ['read'])->plainTextToken;
+        return response()->json(['token' => $token]);
+    }
+
     public function logout(Request $request): JsonResponse
     {
         $request->user()->tokens()->delete();
