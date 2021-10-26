@@ -8,6 +8,7 @@ use App\Http\Middleware\VerifyAdminSignature;
 use App\Http\Middleware\VerifyCircleAdmin;
 use App\Http\Middleware\VerifySignature;
 use App\Http\Middleware\VerifyCircleUser;
+use App\Http\Middleware\VerifySignatureTimestamp;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -64,7 +65,10 @@ class Kernel extends HttpKernel
         ],
         'verify-circle-user' => [
             VerifyCircleUser::class
-        ]
+        ],
+        'verify-signature-timestamp' => [
+            VerifySignatureTimestamp::class
+        ],
     ];
 
     /**
