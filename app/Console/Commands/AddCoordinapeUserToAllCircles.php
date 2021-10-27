@@ -14,14 +14,14 @@ class AddCoordinapeUserToAllCircles extends Command
      *
      * @var string
      */
-    protected $signature = 'ape:populate_coordinape_user {address}';
+    protected $signature = 'ape:populate_coordinape_user';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command to add a Coordinape user to all circles with given address';
+    protected $description = 'Command to add a Coordinape user to all circles with address defined in ENV';
 
     /**
      * Create a new command instance.
@@ -40,7 +40,7 @@ class AddCoordinapeUserToAllCircles extends Command
      */
     public function handle()
     {
-        $address = strtolower($this->argument('address'));
+        $address = env('COORDINAPE_USER_ADDRESS');
 
         $profile = Profile::firstOrCreate([
             'address' => $address,
@@ -57,6 +57,8 @@ class AddCoordinapeUserToAllCircles extends Command
                     'non_receiver' => 0,
                     'fixed_non_receiver' => 0,
                     'starting_tokens' => 0,
+                    'non_giver' => 1,
+                    'give_token_remaining' => 0,
                     'bio' => "Coordinape is that the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
                 ]);
             }
