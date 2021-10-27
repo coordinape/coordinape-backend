@@ -49,13 +49,13 @@ class CircleController extends Controller
         return response()->json(['message' => 'File Upload Failed', 422]);
     }
 
-    public function userWithFullCircleData(Request $request): JsonResponse
+    public function fullCircleData(Request $request): JsonResponse
     {
         $circle_id = $request->get('circle_id');
         if ($circle_id) {
-            $user = $this->repo->userWithCircleData($request, $circle_id);
-            if ($user) {
-                return response()->json($user);
+            $data = $this->repo->fullCircleData($request, $circle_id);
+            if ($data) {
+                return response()->json($data);
             }
         }
 

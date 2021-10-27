@@ -39,8 +39,8 @@ class GiftRepository
                     $query->fromEpochId($epoch_id);
                     $queryUserGives->fromEpochId($epoch_id);
                 }
-                $givesWithoutUser = $query->selectWithoutAddressNote()->get();
-                return $givesWithoutUser->merge($queryUserGives->selectWithNoteNoAddress()->get());
+                $givesWithoutUser = $query->selectWithoutNote()->get();
+                return $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
             }, 60, $circle_id);
         }
 
@@ -60,8 +60,8 @@ class GiftRepository
                 $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
             });
 
-            $givesWithoutUser = $query->selectWithoutAddressNote()->get();
-            return $givesWithoutUser->merge($queryUserGives->selectWithNoteNoAddress()->get());
+            $givesWithoutUser = $query->selectWithoutNote()->get();
+            return $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
         }
 
         return null;

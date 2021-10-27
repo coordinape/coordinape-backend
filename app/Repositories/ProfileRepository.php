@@ -2,7 +2,10 @@
 
 namespace App\Repositories;
 
+use App\Models\Circle;
+use App\Models\Epoch;
 use App\Models\Profile;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -87,5 +90,19 @@ class ProfileRepository
         }
 
         return null;
+    }
+
+    public function getCircleDataWithProfile($profile)
+    {
+        $circle_ids = $profile->circle_ids();
+        $users = User::whereIn('circle_id', $circle_ids)->get();
+        if ($profile->admin_view) {
+            $circles = Circle::all();
+            $epochs = Epoch::isActiveFutureDate()->where('ended', 0)->get();
+        } else {
+            $circles = Circle::whereIn('id', $circle_ids)->get();
+            $epochs = Epoch::isActiveFutureDate()->where('ended', 0)->whereIn('circle_id', $circle_ids)->get();
+        }
+        return compact('users', 'circles', 'epochs');
     }
 }

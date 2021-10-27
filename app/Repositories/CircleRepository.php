@@ -2,10 +2,15 @@
 
 namespace App\Repositories;
 
+use App\Helper\Utils;
 use App\Models\Circle;
 use App\Models\CircleMetadata;
+use App\Models\Epoch;
+use App\Models\Nominee;
+use App\Models\PendingTokenGift;
 use App\Models\Profile;
 use App\Models\Protocol;
+use App\Models\TokenGift;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -102,41 +107,50 @@ class CircleRepository
         return $circle->discord_webhook ?: '';
     }
 
-    public function userWithCircleData($request, $circle_id)
+    public function fullCircleData($request, $circle_id)
     {
-
         $profile = $request->user();
         $user = $profile->users()->where('circle_id', $circle_id)->first();
-        if ($user) {
-            $circle = $user->circle;
-            $users = $circle->users;
-            $nominees = $circle->nominees;
-            $latestEpoch = $circle->epoches()->where('epoches.ended', 1)->whereNotNull('epoches.number')->orderBy('epoches.number', 'desc')->first();
+        if ($profile->admin_view || $user) {
+            $nominees = Nominee::where('circle_id', $circle_id)->get();
+            $users = User::where('circle_id', $circle_id)->get();
+            $latestEpoch = Epoch::where('circle_id', $circle_id)->whereNotNull('number')->orderBy('number', 'desc')->first();
             $latestEpochId = $latestEpoch ? $latestEpoch->id : null;
-            $users->load(['pendingSentGifts' => function ($q) {
-                $q->selectWithoutAddressNote();
-            },
-                'pendingReceivedGifts' => function ($q) {
-                    $q->selectWithoutAddressNote();
-                }, 'receivedGifts' => function ($q) use ($latestEpochId) {
-                    $q->where('epoch_id', $latestEpochId)->selectWithoutAddressNote();
-                }, 'sentGifts' => function ($q) use ($latestEpochId) {
-                    $q->where('epoch_id', $latestEpochId)->selectWithoutAddressNote();
+            $token_gifts = [];
+            $pending_gifts = [];
+            if ($latestEpoch) {
+                if ($latestEpoch->ended == 1) {
+                    $token_gifts = Utils::queryCache($request, function () use ($circle_id, $user, $latestEpochId) {
+                        $query = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                            if ($user) {
+                                $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
+                            }
+                        })->where('epoch_id', $latestEpochId);
+                        $givesWithoutUser = $query->selectWithoutNote()->get();
+                        if ($user) {
+                            $queryUserGives = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                                $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
+                            });
+                            $givesWithoutUser = $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
+                        }
+                        return $givesWithoutUser;
+                    }, 60, $circle_id);
                 }
-            ]);
-
-            $user->load(['pendingSentGifts' => function ($q) {
-                $q->selectWithNoteNoAddress();
-            },
-                'pendingReceivedGifts' => function ($q) {
-                    $q->selectWithNoteNoAddress();
-                }, 'receivedGifts' => function ($q) use ($latestEpochId) {
-                    $q->where('epoch_id', $latestEpochId)->selectWithNoteNoAddress();
-                }, 'sentGifts' => function ($q) use ($latestEpochId) {
-                    $q->where('epoch_id', $latestEpochId)->selectWithNoteNoAddress();
+                $query = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                    if ($user) {
+                        $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
+                    }
+                });
+                $pending_gifts = $query->selectWithoutNote()->get();
+                if ($user) {
+                    $queryUserGives = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                        $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
+                    });
+                    $pending_gifts = $pending_gifts->merge($queryUserGives->selectWithNoteAddress()->get());
                 }
-            ]);
+            }
+            return compact('nominees', 'users', 'token_gifts', 'pending_gifts');
         }
-        return $user;
+        return null;
     }
 }

@@ -38,6 +38,11 @@ class PendingTokenGift extends Model
         return $query;
     }
 
+    public function scopeSelectWithNoteAddress($query)
+    {
+        return $query->select(['id', 'note','recipient_address', 'sender_address', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);
+    }
+
     public function scopeSelectWithoutNote($query)
     {
         return $query->select(['id', 'recipient_address', 'sender_address', 'recipient_id', 'sender_id', 'tokens', 'circle_id', 'epoch_id', 'dts_created']);

@@ -54,13 +54,13 @@ class ProfileController extends Controller
 
     public function manifest(Request $request): JsonResponse
     {
-        $profile = $this->repo->getProfile($request->get('address'), ['users.circle.epoches', 'users.circle.nominees']);
+        $profile = $this->repo->getProfile($request->get('address'), ['users']);
         if (!$profile || count($profile->users) == 0)
             abort('403', 'You do not have an active account in Coordinape');
 
         $profile->tokens()->delete();
         $token = $profile->createToken('circle-access-token', ['read'])->plainTextToken;
-        return response()->json(compact('token', 'profile'));
+        return response()->json(compact('token', 'profile') + $this->repo->getCircleDataWithProfile($profile));
     }
 
     public function login(Request $request): JsonResponse
