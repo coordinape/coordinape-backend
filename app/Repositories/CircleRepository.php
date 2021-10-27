@@ -34,9 +34,26 @@ class CircleRepository {
 
         $address = strtolower($data['address']);
         $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
+
         $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
             'role' => config('enums.user_types.admin'), 'address' => $address]);
         $user->save();
+
+        // TODO: move to function and re-use
+        $coordinape_user = new User([
+                    'address' => env('COORDINAPE_USER_ADDRESS'),
+                    'name' => 'Coordinape',
+                    'role' => config('enums.user_types.coordinape'),
+                    'circle_id' => $circle->id,
+                    'non_receiver' => 0,
+                    'fixed_non_receiver' => 0,
+                    'starting_tokens' => 0,
+                    'non_giver' => 1,
+                    'give_token_remaining' => 0,
+                    'bio' => "Coordinape is that the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
+                ]);
+        $coordinape_user->save();
+
         Profile::firstOrCreate([
             'address' => $address
         ]);
