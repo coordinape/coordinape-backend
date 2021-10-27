@@ -53,7 +53,11 @@ class AddCoordinapeUserToAllCircles extends Command
                     'address' => $address,
                     'name' => 'Coordinape',
                     'role' => config('enums.user_types.coordinape'),
-                    'circle_id' => $circle->id
+                    'circle_id' => $circle->id,
+                    'non_receiver' => 0,
+                    'fixed_non_receiver' => 0,
+                    'starting_tokens' => 0,
+                    'bio' => "Coordinape is that the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
                 ]);
             }
         });
