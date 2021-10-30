@@ -34,7 +34,7 @@ class NewGiftRequest extends FormRequest
     {
         $rules = [
             'gifts.*.recipient_id' => 'required|integer',
-            'gifts.*.tokens' => 'required|integer'
+            'gifts.*.tokens' => 'required|integer|min:0'
         ];
 
         $gifts = $this->gifts;
