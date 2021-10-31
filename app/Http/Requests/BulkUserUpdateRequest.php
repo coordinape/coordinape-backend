@@ -73,12 +73,9 @@ class BulkUserUpdateRequest extends FormRequest
                     if ($users_current_data->has($user_id)) {
                         foreach ($allowed_fields as $allowed_field) {
                             $user[$allowed_field] = !empty($users_value[$allowed_field]) ? $users_value[$allowed_field] : $users_current_data[$user_id]->{$allowed_field};
-                            if ($allowed_field == 'address') {
-                                $lc_address = strtolower($user[$allowed_field]);
-                                $user[$allowed_field] = $lc_address;
-                                $address_array[] = $lc_address;
-                            }
                         }
+                        $user['address'] = strtolower($user['address']);
+                        $address_array[] = $user['address'];
                         if ($user_id == $admin_user_id) {
                             // prevents admin user from removing his own admin role
                             $user['role'] = config('enums.user_types.admin');
