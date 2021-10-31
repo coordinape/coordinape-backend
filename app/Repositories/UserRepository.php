@@ -161,4 +161,53 @@ class UserRepository
             return $user;
         });
     }
+
+    public function bulkCreate($request)
+    {
+        $users = $request->get('users');
+        $address_array = $request->get('address_array');
+        $circle_id = $request->route('circle_id');
+        return DB::transaction(function () use ($users, $address_array, $circle_id) {
+            $this->model->insert($users);
+            $this->profileModel->upsert(array_map(function ($p) {
+                return ['address' => $p];
+            }, $address_array), ['address'], []);
+            return $this->model->whereIn('address', $address_array)->where('circle_id', $circle_id)->get();
+        });
+    }
+
+    public function bulkUpdate($request)
+    {
+        $users = $request->get('users');
+        $address_array = $request->get('address_array');
+        $circle_id = $request->route('circle_id');
+        $id_array = $request->get('id_array');
+        return DB::transaction(function () use ($users, $address_array, $circle_id, $id_array) {
+            // batch all updates into 1 update statement for speed optimization
+            // (will never insert because of exist validation done in request)
+            $this->model->upsert($users, ['id'], ['address', 'name', 'non_giver', 'fixed_non_receiver', 'starting_tokens', 'role']);
+            $this->profileModel->upsert(array_map(function ($p) {
+                return ['address' => $p];
+            }, $address_array), ['address'], []);
+            return $this->model->whereIn('id', $id_array)->where('circle_id', $circle_id)->get();
+        });
+    }
+
+    public function bulkDelete($request)
+    {
+        return (bool)$this->model->whereIn('id', $request->get('users'))->delete();
+    }
+
+    public function bulkRestore($request)
+    {
+        $id_array = $request->get('users');
+        $address_array = $request->get('addresses');
+        return DB::transaction(function () use ($id_array, $address_array) {
+            $this->model->whereIn('id', $id_array)->withTrashed()->restore();
+            $this->profileModel->upsert(array_map(function ($p) {
+                return ['address' => $p];
+            }, $address_array), ['address'], []);
+            return $this->model->whereIn('id', $id_array)->get();
+        });
+    }
 }
