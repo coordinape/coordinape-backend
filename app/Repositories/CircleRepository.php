@@ -94,7 +94,7 @@ class CircleRepository {
 
     public function addCoordinapeUserToCircle($circle_id) {
         $coordinape_user = new User([
-                    'address' => env('COORDINAPE_USER_ADDRESS'),
+                    'address' => config('ape.coordinape_user_address'),
                     'name' => 'Coordinape',
                     'role' => config('enums.user_types.coordinape'),
                     'circle_id' => $circle_id,
