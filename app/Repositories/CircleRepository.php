@@ -39,20 +39,7 @@ class CircleRepository {
             'role' => config('enums.user_types.admin'), 'address' => $address]);
         $user->save();
 
-        // TODO: move to function and re-use
-        $coordinape_user = new User([
-                    'address' => env('COORDINAPE_USER_ADDRESS'),
-                    'name' => 'Coordinape',
-                    'role' => config('enums.user_types.coordinape'),
-                    'circle_id' => $circle->id,
-                    'non_receiver' => 0,
-                    'fixed_non_receiver' => 0,
-                    'starting_tokens' => 0,
-                    'non_giver' => 1,
-                    'give_token_remaining' => 0,
-                    'bio' => "Coordinape is that the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
-                ]);
-        $coordinape_user->save();
+        self::addCoordinapeUserToCircle($circle->id);
 
         Profile::firstOrCreate([
             'address' => $address
@@ -99,5 +86,21 @@ class CircleRepository {
     public function getWebhook($circle_id) {
         $circle = $this->model->find($circle_id);
        return $circle->discord_webhook ?:'';
+    }
+
+    public function addCoordinapeUserToCircle($circle_id) {
+        $coordinape_user = new User([
+                    'address' => env('COORDINAPE_USER_ADDRESS'),
+                    'name' => 'Coordinape',
+                    'role' => config('enums.user_types.coordinape'),
+                    'circle_id' => $circle_id,
+                    'non_receiver' => 0,
+                    'fixed_non_receiver' => 0,
+                    'starting_tokens' => 0,
+                    'non_giver' => 1,
+                    'give_token_remaining' => 0,
+                    'bio' => "Coordinape is that the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
+                ]);
+        $coordinape_user->save();
     }
 }
