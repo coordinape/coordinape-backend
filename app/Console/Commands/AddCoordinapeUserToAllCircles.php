@@ -6,6 +6,7 @@ use App\Models\Profile;
 use App\Models\User;
 use App\Models\Circle;
 use Illuminate\Console\Command;
+use App\Repositories\CircleRepository;
 
 class AddCoordinapeUserToAllCircles extends Command
 {
@@ -28,8 +29,9 @@ class AddCoordinapeUserToAllCircles extends Command
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(CircleRepository $repo)
     {
+        $this->repo = $repo;
         parent::__construct();
     }
 
@@ -46,21 +48,11 @@ class AddCoordinapeUserToAllCircles extends Command
             'address' => $address,
         ]);
 
+
         # Iterate across all circles (TODO: can we do this in one transaction?)
-        Circle::chunk(100, function ($circles) use ($address, $profile) {
+        Circle::chunk(100, function ($circles) {
             foreach ($circles as $circle) {
-                User::firstOrCreate([
-                    'address' => $address,
-                    'name' => 'Coordinape',
-                    'role' => config('enums.user_types.coordinape'),
-                    'circle_id' => $circle->id,
-                    'non_receiver' => 0,
-                    'fixed_non_receiver' => 0,
-                    'starting_tokens' => 0,
-                    'non_giver' => 1,
-                    'give_token_remaining' => 0,
-                    'bio' => "Coordinape is that the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
-                ]);
+                $this->repo->addCoordinapeUserToCircle($circle->id);
             }
         });
     }
