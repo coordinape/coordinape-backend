@@ -7,6 +7,7 @@ use App\Models\CircleMetadata;
 use App\Models\Profile;
 use App\Models\Protocol;
 use App\Models\User;
+use DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -24,30 +25,33 @@ class CircleRepository {
 
     public function createCircle($request) {
         $data = $request->only('address', 'user_name', 'circle_name', 'protocol_id', 'protocol_name', 'uxresearch_json');
-        if(empty($data['protocol_id'])) {
-            $protocol = new Protocol(['name' => $data['protocol_name']]);
-            $protocol->save();
-            $protocol_id = $protocol->id;
-        } else {
-            $protocol_id = $data['protocol_id'];
-        }
 
-        $address = strtolower($data['address']);
-        $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
+        DB::transaction(function() use ($data) { 
+            if(empty($data['protocol_id'])) {
+                $protocol = new Protocol(['name' => $data['protocol_name']]);
+                $protocol->save();
+                $protocol_id = $protocol->id;
+            } else {
+                $protocol_id = $data['protocol_id'];
+            }
 
-        $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
-            'role' => config('enums.user_types.admin'), 'address' => $address]);
-        $user->save();
+            $address = strtolower($data['address']);
+            $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
 
-        self::addCoordinapeUserToCircle($circle->id);
+            $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
+                'role' => config('enums.user_types.admin'), 'address' => $address]);
+            $user->save();
 
-        Profile::firstOrCreate([
-            'address' => $address
-        ]);
+            self::addCoordinapeUserToCircle($circle->id);
 
-        $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
-        $research->save();
-        return $circle;
+            Profile::firstOrCreate([
+                'address' => $address
+            ]);
+
+            $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
+            $research->save();
+            return $circle;
+        });
     }
 
     public function updateCircle($circle, $request) {
