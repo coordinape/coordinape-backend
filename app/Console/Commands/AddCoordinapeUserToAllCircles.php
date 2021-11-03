@@ -42,7 +42,7 @@ class AddCoordinapeUserToAllCircles extends Command
      */
     public function handle()
     {
-        $address = env('COORDINAPE_USER_ADDRESS');
+        $address = config('ape.coordinape_user_address');
 
         $profile = Profile::firstOrCreate([
             'address' => $address,
