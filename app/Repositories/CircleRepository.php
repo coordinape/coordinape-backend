@@ -92,6 +92,7 @@ class CircleRepository {
     }
 
     public function addCoordinapeUserToCircle($circle_id) {
+        $profile = Profile::firstOrCreate([ 'address' => config('ape.coordinape_user_address') ]);
         $coordinape_user = new User([
                     'address' => config('ape.coordinape_user_address'),
                     'name' => 'Coordinape',
