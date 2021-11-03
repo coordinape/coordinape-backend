@@ -37,19 +37,18 @@ class CircleRepository {
 
             $address = strtolower($data['address']);
             $circle = $this->model->create(['name' => $data['circle_name'], 'protocol_id' => $protocol_id]);
-
             $user = new User(['name' => $data['user_name'], 'circle_id' => $circle->id,
                 'role' => config('enums.user_types.admin'), 'address' => $address]);
             $user->save();
-
             self::addCoordinapeUserToCircle($circle->id);
-
             Profile::firstOrCreate([
                 'address' => $address
             ]);
 
-            $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => !empty($data['uxresearch_json']) ? $data['uxresearch_json'] : null]);
-            $research->save();
+            if (!empty($data['uxresearch_json'])) {
+                $research = new CircleMetadata(['circle_id' => $circle->id, 'json' => $data['uxresearch_json']]);
+                $research->save();
+            }
             return $circle;
         });
     }

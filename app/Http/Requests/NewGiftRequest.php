@@ -37,7 +37,7 @@ class NewGiftRequest extends FormRequest
             'signature' => 'required',
             'address' => 'required',
             'gifts.*.recipient_id' => 'required|integer',
-            'gifts.*.tokens' => 'required|integer'
+            'gifts.*.tokens' => 'required|integer|min:0'
         ];
 
         $gifts = $this->gifts;

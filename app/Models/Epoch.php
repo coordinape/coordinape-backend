@@ -31,7 +31,7 @@ class Epoch extends Model
 
     public function scopeCheckOverlapDatetime($query, $data) {
         return $query->where('circle_id',$data['circle_id'])->where('start_date', '<=', $data['end_date'])
-            ->where('end_date', '>=', $data['start_date']);
+            ->where('end_date', '>', $data['start_date']);
     }
 
 }
