@@ -155,7 +155,7 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Models\Nominee','vouches','voucher_id','nominee_id');
     }
 
-    public function isCoordinapeUser() {
+    public function getIsCoordinapeUserAttribute() {
         return $this->role == config('enums.user_types.coordinape');
     }
 }
