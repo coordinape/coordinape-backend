@@ -136,3 +136,11 @@ This error likely is a result of the MySQL database not being properly setup and
 Try doing a full fresh migrate and seed with:
 
 > docker exec -it app php artisan migrate:fresh --seed
+
+
+## Laravel Error Logs
+
+Laravel logs errors to `/var/www/storage/logs/laravel.log` on the docker host.
+View detailed error logs by running this docker command:
+
+> docker exec -it app tail -f /var/www/storage/logs/laravel.log

@@ -152,4 +152,8 @@ class User extends Authenticatable
     public function nominations() {
         return $this->belongsToMany('App\Models\Nominee','vouches','voucher_id','nominee_id');
     }
+
+    public function getIsCoordinapeUserAttribute() {
+        return $this->role == config('enums.user_types.coordinape');
+    }
 }
