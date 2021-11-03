@@ -184,7 +184,7 @@ class CircleRepository
             'starting_tokens' => 0,
             'non_giver' => 1,
             'give_token_remaining' => 0,
-            'bio' => "Coordinape is that the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
+            'bio' => "Coordinape is the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
         ]);
         $coordinape_user->save();
     }
