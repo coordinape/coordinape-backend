@@ -54,6 +54,11 @@ class UserController extends Controller
         $user = $request->user;
         if (!$user)
             return response()->json(['message' => 'Address not found'], 422);
+
+
+        if ($user->is_coordinape_user)
+            return response()->json(['message' => 'This user is not modifiable'], 422);
+
         $data = $request->only('name', 'address', 'starting_tokens', 'non_giver', 'fixed_non_receiver', 'role', 'non_receiver');
 
         if ($data['fixed_non_receiver'] == 1) {
@@ -107,5 +112,4 @@ class UserController extends Controller
     {
         return response()->json([$this->repo->bulkRestore($request)]);
     }
-
 }
