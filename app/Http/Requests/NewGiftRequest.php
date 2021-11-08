@@ -33,9 +33,6 @@ class NewGiftRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'data' => 'required',
-            'signature' => 'required',
-            'address' => 'required',
             'gifts.*.recipient_id' => 'required|integer',
             'gifts.*.tokens' => 'required|integer|min:0'
         ];

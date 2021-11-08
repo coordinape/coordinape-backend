@@ -22,14 +22,6 @@ class UserController extends Controller
         $this->epochRepo = $epochRepo;
     }
 
-    public function getUser($address): JsonResponse
-    {
-        $user = $this->repo->getUser($address);
-        if (!$user)
-            return response()->json(['message' => 'Address not found'], 422);
-        return response()->json($user);
-    }
-
     public function getUsers(Request $request, $circle_id = null): JsonResponse
     {
         return response()->json($this->repo->getUsers($request, $circle_id));

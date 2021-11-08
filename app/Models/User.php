@@ -53,9 +53,7 @@ class User extends Authenticatable
      *
      * @var array
      */
-//    protected $casts = [
-//        'email_verified_at' => 'datetime',
-//    ];
+
     public function scopeProtocolFilter($query, $filters) {
 
         $query->leftJoin('circles as c','c.id', 'users.circle_id');
@@ -96,11 +94,11 @@ class User extends Authenticatable
     }
 
     public function scopeYetToSend($query) {
-        return $query->where('give_token_remaining',DB::raw("`starting_tokens`"));
+        return $query->whereColumn('give_token_remaining','starting_tokens');
     }
 
     public function scopeHasSent($query) {
-        return $query->where('give_token_remaining','<',DB::raw("`starting_tokens`"));
+        return $query->whereColumn('give_token_remaining','<','starting_tokens');
     }
 
     public function scopeIsAdmin($query) {
@@ -108,7 +106,7 @@ class User extends Authenticatable
     }
 
     public function scopeByAddress($query, $address) {
-        return $query->whereRaw( 'LOWER(`address`) LIKE ?', [ $address ] );
+        return $query->where( 'address',  strtolower($address));
     }
 
     public function scopeOptOuts($query) {

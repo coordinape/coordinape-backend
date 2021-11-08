@@ -38,7 +38,6 @@ class UserRequest extends FormRequest
     public function rules()
     {
         return [
-            'data' => 'required',
             'name' => 'required|string|max:255',
             'circle_id' => 'required|integer|exists:circles,id',
             'non_receiver' => 'integer|min:0|max:1|required'

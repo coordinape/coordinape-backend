@@ -5,7 +5,10 @@ namespace App\Http;
 use App\Http\Middleware\AddAjaxHeader;
 use App\Http\Middleware\HCaptchaVerify;
 use App\Http\Middleware\VerifyAdminSignature;
+use App\Http\Middleware\VerifyLoginSignature;
 use App\Http\Middleware\VerifySignature;
+use App\Http\Middleware\VerifyCircleAdmin;
+use App\Http\Middleware\VerifyCircleUser;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -51,11 +54,20 @@ class Kernel extends HttpKernel
         'verify-sign' => [
             VerifySignature::class
         ],
+        'verify-login-sign' => [
+            VerifyLoginSignature::class
+        ],
         'verify-admin-sign' => [
             VerifyAdminSignature::class
         ],
         'hcaptcha-verify' => [
             HCaptchaVerify::class
+        ],
+        'verify-circle-admin' => [
+            VerifyCircleAdmin::class
+        ],
+        'verify-circle-user' => [
+            VerifyCircleUser::class
         ]
     ];
 

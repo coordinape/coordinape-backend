@@ -15,17 +15,20 @@ class Utils
 {
 
     const VALID = '0x1626ba7e';
-    public static function validateSignature(string $address, string $message, string $signature, string $hash = null) {
+
+    public static function validateSignature(string $address, string $message, string $signature, string $hash = null)
+    {
         $address = strtolower($address);
-        if($hash) {
+        if ($hash) {
             return self::validateContractSignature($address, $hash, $signature);
         }
 
-        return $address == strtolower(self::personalEcRecover( $message,  $signature)) ||
-                $address == strtolower(self::personalEcRecover( $message,  $signature, false));
+        return $address == strtolower(self::personalEcRecover($message, $signature)) ||
+            $address == strtolower(self::personalEcRecover($message, $signature, false));
     }
 
-    public static function validateContractSignature(string $address, string $hash, string $signature): bool {
+    public static function validateContractSignature(string $address, string $hash, string $signature): bool
+    {
         $contractABI = '[{
             "inputs": [{
                 "internalType": "bytes32",
@@ -47,12 +50,11 @@ class Utils
             "type": "function"
         }]';
 
-        $web3 = new Web3(new HttpProvider(new HttpRequestManager(env('INFURA_API'),5)));
+        $web3 = new Web3(new HttpProvider(new HttpRequestManager(env('INFURA_API'), 5)));
         $contract = new Contract($web3->provider, $contractABI);
         $valid = false;
-        $contract->at($address)->call('isValidSignature',$hash,$signature, null , function($err,$ret) use (&$valid) {
-            if($ret && count($ret))
-            {
+        $contract->at($address)->call('isValidSignature', $hash, $signature, null, function ($err, $ret) use (&$valid) {
+            if ($ret && count($ret)) {
                 $valid = $ret[0] == self::VALID;
             }
         });
@@ -62,23 +64,14 @@ class Utils
 
     public static function personalEcRecover(string $message, string $signature, $withPrefix = true)
     {
-        $message = $withPrefix ? self::personalSignAddHeader($message) : $message;
-        $message_hash =  '0x' . Keccak::hash($message, 256);
-        $address = self::phpEcRecover($message_hash, $signature);
-        return $address;
-    }
-
-    public static function phpEcRecover(string $message_hash, string $signature)
-    {
-        $ec = new EC('secp256k1');
-        $sign   = ["r" => substr($signature, 2, 64), "s" => substr($signature, 66, 64)];
-        $val = ord(hex2bin(substr($signature, 130, 2)));
-        $recid  = ($val - 27) < 0 ? $val:($val - 27);
-
-        $pubKey = $ec->recoverPubKey($message_hash, $sign, $recid);
-
-        $recoveredAddress = "0x" . substr(Keccak::hash(substr(hex2bin($pubKey->encode("hex")), 1), 256), 24);
-        return $recoveredAddress;
+        try {
+            $message = $withPrefix ? self::personalSignAddHeader($message) : $message;
+            $message_hash = '0x' . Keccak::hash($message, 256);
+            $address = self::phpEcRecover($message_hash, $signature);
+            return $address;
+        } catch (Throwable $t) {
+            return false;
+        }
     }
 
     public static function personalSignAddHeader($message)
@@ -87,17 +80,29 @@ class Utils
         return "\x19Ethereum Signed Message:\n" . strlen($message) . $message;
     }
 
-    public static function queryCache($request,$callback,$minutes=1,$tags='default')
+    public static function phpEcRecover(string $message_hash, string $signature)
+    {
+        $ec = new EC('secp256k1');
+        $sign = ["r" => substr($signature, 2, 64), "s" => substr($signature, 66, 64)];
+        $val = ord(hex2bin(substr($signature, 130, 2)));
+        $recid = ($val - 27) < 0 ? $val : ($val - 27);
+
+        $pubKey = $ec->recoverPubKey($message_hash, $sign, $recid);
+
+        $recoveredAddress = "0x" . substr(Keccak::hash(substr(hex2bin($pubKey->encode("hex")), 1), 256), 24);
+        return $recoveredAddress;
+    }
+
+    public static function queryCache($request, $callback, $minutes = 1, $tags = 'default')
     {
 
         $url = $request->url();
         $queryParams = $request->query();
-
         ksort($queryParams);
         $queryString = http_build_query($queryParams);
 
         $fullUrl = "{$url}?{$queryString}";
-        if(config('cache.default') == 'redis')
+        if (config('cache.default') == 'redis')
             return Cache::tags($tags)->remember($fullUrl, $minutes, $callback);
 
         return Cache::remember($fullUrl, $minutes, $callback);
@@ -106,13 +111,30 @@ class Utils
 
     public static function purgeCache($tag)
     {
-        if(config('cache.default') == 'redis')
-            Cache::tags([$tag,'default'])->flush();
+        if (config('cache.default') == 'redis')
+            Cache::tags([$tag, 'default'])->flush();
     }
 
-    public static function cleanStr($str): string {
+    public static function cleanStr($str): string
+    {
 
-        return str_replace(array(':', '-', '/', '*','_','`'), ' ', $str);
+        return str_replace(array(':', '-', '/', '*', '_', '`'), ' ', $str);
 
+    }
+
+    public static function getCircleUserFromRequest($request, $circle_id, $is_admin = false)
+    {
+        $profile = $request->user(); // this is from Sanctum -- NOT the same as $request->user
+        if ($profile) {
+            $query = $profile->users()->where('circle_id', $circle_id);
+            if ($is_admin) {
+                $query->isAdmin();
+            }
+
+            if ($user = $query->first()) {
+                return $user;
+            }
+        }
+        return false;
     }
 }

@@ -2,10 +2,15 @@
 
 namespace App\Repositories;
 
+use App\Helper\Utils;
 use App\Models\Circle;
 use App\Models\CircleMetadata;
+use App\Models\Epoch;
+use App\Models\Nominee;
+use App\Models\PendingTokenGift;
 use App\Models\Profile;
 use App\Models\Protocol;
+use App\Models\TokenGift;
 use App\Models\User;
 use DB;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +28,12 @@ class CircleRepository
 
     public function getCircles($request)
     {
+        $profile = $request->user();
+        if ($profile && !$profile->admin_view) {
+
+            return $this->model->filter($request->all())->whereIn('id', $profile->circle_ids())->with('protocol')->get();
+        }
+
         return $this->model->filter($request->all())->with('protocol')->get();
     }
 
@@ -111,6 +122,53 @@ class CircleRepository
     {
         $circle = $this->model->find($circle_id);
         return $circle->discord_webhook ?: '';
+    }
+
+    public function fullCircleData($request, $circle_id)
+    {
+        $profile = $request->user();
+        $user = $profile->users()->where('circle_id', $circle_id)->first();
+        if ($profile->admin_view || $user) {
+            $nominees = Nominee::where('circle_id', $circle_id)->get();
+            $users = User::where('circle_id', $circle_id)->get();
+            $latestEpoch = Epoch::where('circle_id', $circle_id)->whereNotNull('number')->orderBy('number', 'desc')->first();
+            $latestEpochId = $latestEpoch ? $latestEpoch->id : null;
+            $token_gifts = [];
+            $pending_gifts = [];
+            if ($latestEpoch) {
+                if ($latestEpoch->ended == 1) {
+                    $token_gifts = Utils::queryCache($request, function () use ($circle_id, $user, $latestEpochId) {
+                        $query = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                            if ($user) {
+                                $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
+                            }
+                        })->where('epoch_id', $latestEpochId);
+                        $givesWithoutUser = $query->selectWithoutNote()->get();
+                        if ($user) {
+                            $queryUserGives = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                                $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
+                            });
+                            $givesWithoutUser = $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
+                        }
+                        return $givesWithoutUser;
+                    }, 60, $circle_id);
+                }
+                $query = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                    if ($user) {
+                        $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
+                    }
+                });
+                $pending_gifts = $query->selectWithoutNote()->get();
+                if ($user) {
+                    $queryUserGives = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                        $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
+                    });
+                    $pending_gifts = $pending_gifts->merge($queryUserGives->selectWithNoteAddress()->get());
+                }
+            }
+            return compact('nominees', 'users', 'token_gifts', 'pending_gifts');
+        }
+        return null;
     }
 
     public function addCoordinapeUserToCircle($circle_id)
