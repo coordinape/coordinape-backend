@@ -24,6 +24,11 @@ class ProfileRepository
         return $this->model->with($relationships)->byAddress($address)->first();
     }
 
+    public function createInitialProfile($address)
+    {
+        return $this->model->create(['address' => strtolower($address)]);
+    }
+
     public function saveProfile($request)
     {
         $data = $request->only('skills', 'bio', 'telegram_username',
