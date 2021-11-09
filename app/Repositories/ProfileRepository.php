@@ -36,7 +36,7 @@ class ProfileRepository
 
     public function uploadProfileAvatar($request)
     {
-        $profile = $request->user();
+        $profile = $request->user() ?: $this->model->byAddress($request->get('address'))->first();
         if ($profile) {
             $file = $request->file('file');
             $image = Image::make($file);
@@ -71,7 +71,7 @@ class ProfileRepository
 
     public function uploadProfileBackground($request)
     {
-        $profile = $request->user();
+        $profile = $request->user() ?: $this->model->byAddress($request->get('address'))->first();
         if ($profile) {
             $file = $request->file('file');
             $resized = Image::make($request->file('file'))
