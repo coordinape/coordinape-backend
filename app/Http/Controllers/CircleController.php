@@ -53,7 +53,7 @@ class CircleController extends Controller
     {
         $circle_id = $request->get('circle_id');
         if ($circle_id) {
-            $data = $this->repo->fullCircleData($request, $circle_id);
+            $data = $this->repo->fullCircleData($request->user(), $request, $circle_id);
             if ($data) {
                 return response()->json($data);
             }
