@@ -21,6 +21,7 @@ class CircleRepository
 {
 
     protected $model;
+
     public function __construct(Circle $circle)
     {
         $this->model = $circle;
@@ -68,6 +69,24 @@ class CircleRepository
             }
             return $circle;
         });
+    }
+
+    public function addCoordinapeUserToCircle($circle_id)
+    {
+        $profile = Profile::firstOrCreate(['address' => config('ape.coordinape_user_address')]);
+        $coordinape_user = new User([
+            'address' => config('ape.coordinape_user_address'),
+            'name' => 'Coordinape',
+            'role' => config('enums.user_types.coordinape'),
+            'circle_id' => $circle_id,
+            'non_receiver' => 0,
+            'fixed_non_receiver' => 0,
+            'starting_tokens' => 0,
+            'non_giver' => 1,
+            'give_token_remaining' => 0,
+            'bio' => "Coordinape is the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
+        ]);
+        $coordinape_user->save();
     }
 
     public function updateCircle($circle, $request)
@@ -124,13 +143,13 @@ class CircleRepository
         return $circle->discord_webhook ?: '';
     }
 
-    public function fullCircleData($request, $circle_id)
+    public function fullCircleData($profile, $request, $circle_id)
     {
-        $profile = $request->user();
         $user = $profile->users()->where('circle_id', $circle_id)->first();
         if ($profile->admin_view || $user) {
             $nominees = Nominee::where('circle_id', $circle_id)->get();
             $users = User::where('circle_id', $circle_id)->get();
+            $epochs = Epoch::where('circle_id', $circle_id)->get();
             $latestEpoch = Epoch::where('circle_id', $circle_id)->whereNotNull('number')->orderBy('number', 'desc')->first();
             $latestEpochId = $latestEpoch ? $latestEpoch->id : null;
             $token_gifts = [];
@@ -166,26 +185,8 @@ class CircleRepository
                     $pending_gifts = $pending_gifts->merge($queryUserGives->selectWithNoteAddress()->get());
                 }
             }
-            return compact('nominees', 'users', 'token_gifts', 'pending_gifts');
+            return compact('nominees', 'users', 'token_gifts', 'pending_gifts', 'epochs');
         }
         return null;
-    }
-
-    public function addCoordinapeUserToCircle($circle_id)
-    {
-        $profile = Profile::firstOrCreate(['address' => config('ape.coordinape_user_address')]);
-        $coordinape_user = new User([
-            'address' => config('ape.coordinape_user_address'),
-            'name' => 'Coordinape',
-            'role' => config('enums.user_types.coordinape'),
-            'circle_id' => $circle_id,
-            'non_receiver' => 0,
-            'fixed_non_receiver' => 0,
-            'starting_tokens' => 0,
-            'non_giver' => 1,
-            'give_token_remaining' => 0,
-            'bio' => "Coordinape is the platform you’re using right now! We currently offer our service for free and invite people to allocate to us from within your circles. All funds received go towards funding the team and our operations."
-        ]);
-        $coordinape_user->save();
     }
 }
