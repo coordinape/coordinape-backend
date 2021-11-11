@@ -4,17 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileRequest;
 use App\Http\Requests\ProfileUploadRequest;
+use App\Repositories\CircleRepository;
 use App\Repositories\ProfileRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProfileController extends Controller
 {
-    protected $repo;
+    protected $repo, $circleRepo;
 
-    public function __construct(ProfileRepository $repo)
+    public function __construct(ProfileRepository $repo, CircleRepository $circleRepo)
     {
         $this->repo = $repo;
+        $this->circleRepo = $circleRepo;
     }
 
     public function getProfile(Request $request, $address): JsonResponse
@@ -54,14 +56,21 @@ class ProfileController extends Controller
 
     public function manifest(Request $request): JsonResponse
     {
-        $profile = $this->repo->getProfile($request->get('address'), ['users']);
+        $profile = auth('sanctum')->user() ?: $this->repo->getProfile($request->get('address'));
+        $circle = null;
         if (!$profile) {
             $profile = $this->repo->createInitialProfile($request->get('address'));
         } else {
-            $profile->tokens()->delete();
+            $circle_id = $request->get('circle_id');
+            if (!$circle_id) {
+                $circle_ids = $profile->circle_ids();
+                $circle_id = count($circle_ids) ? $circle_ids[0] : null;
+            }
+            if ($circle_id)
+                $circle = $this->circleRepo->fullCircleData($profile, $request, $circle_id);
         }
-        $token = $profile->createToken('circle-access-token', ['read'])->plainTextToken;
-        return response()->json(compact('token', 'profile') + $this->repo->getCircleDataWithProfile($profile));
+
+        return response()->json(compact('profile', 'circle') + $this->repo->getCircleDataWithProfile($profile));
     }
 
     public function login(Request $request): JsonResponse
