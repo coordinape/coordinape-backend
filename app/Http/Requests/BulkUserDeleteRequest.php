@@ -29,8 +29,8 @@ class BulkUserDeleteRequest extends FormRequest
             "users" => ['required', 'array', 'min:1'],
             'users.*' => ['required', 'integer', 'distinct',
                 //validate id exists as a user in the circle
-                Rule::exists('users', 'id')->where(function ($query) use ($circle_id) {
-                    return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
+                Rule::exists('users', 'id')->withoutTrashed()->where(function ($query) use ($circle_id) {
+                    return $query->where('circle_id', $circle_id);
                 })],
         ];
     }

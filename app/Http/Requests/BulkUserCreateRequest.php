@@ -30,8 +30,8 @@ class BulkUserCreateRequest extends FormRequest
             'users' => ['required', 'array', 'min:1'],
             'users.*.address' => ['required', 'string', 'size:42', 'distinct',
                 // validate id is unique within circle
-                Rule::unique('users')->where(function ($query) use ($circle_id) {
-                    return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
+                Rule::unique('users')->withoutTrashed()->where(function ($query) use ($circle_id) {
+                    return $query->where('circle_id', $circle_id);
                 })],
             'users.*.name' => ['required', 'string', 'max:255'],
             'users.*.non_giver' => 'integer|min:0|max:1|nullable',

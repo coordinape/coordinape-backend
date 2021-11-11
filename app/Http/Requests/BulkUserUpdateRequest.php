@@ -31,15 +31,15 @@ class BulkUserUpdateRequest extends FormRequest
             'users' => ['required', 'array', 'min:1'],
             'users.*.id' => ['required', 'integer',
                 // validate id exists as a user in circle
-                Rule::exists('users')->where(function ($query) use ($circle_id) {
-                    return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
+                Rule::exists('users')->withoutTrashed()->where(function ($query) use ($circle_id) {
+                    return $query->where('circle_id', $circle_id);
                 })],
-            'users.*.address' => ['nullable', 'string', 'size:42', 'distinct',
+            'users.*.address' => ['required', 'string', 'size:42', 'distinct',
                 // validate address is unique within circle
-                Rule::unique('users')->where(function ($query) use ($circle_id, $user_id) {
-                    return $query->where('circle_id', $circle_id)->whereNotIn('id', $user_id)->whereNull('deleted_at');
+                Rule::unique('users')->withoutTrashed()->where(function ($query) use ($circle_id, $user_id) {
+                    return $query->where('circle_id', $circle_id)->whereNotIn('id', $user_id);
                 })],
-            'users.*.name' => ['nullable', 'string', 'max:255'],
+            'users.*.name' => ['required', 'string', 'max:255'],
             'users.*.non_giver' => 'integer|min:0|max:1|nullable',
             'users.*.fixed_non_receiver' => 'integer|min:0|max:1',
             'users.*.starting_tokens' => 'integer|min:0|max:1000000',

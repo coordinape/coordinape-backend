@@ -35,8 +35,8 @@ class BulkUserRestoreRequest extends FormRequest
                 })],
             'addresses.*' => ['distinct', 'string', 'size:42',
                 //validate restored user doesn't conflict with existing user addresses
-                Rule::unique('users', 'address')->where(function ($query) use ($circle_id) {
-                    return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
+                Rule::unique('users', 'address')->withoutTrashed()->where(function ($query) use ($circle_id) {
+                    return $query->where('circle_id', $circle_id);
                 })],
         ];
     }

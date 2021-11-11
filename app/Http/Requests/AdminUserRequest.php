@@ -43,8 +43,8 @@ class AdminUserRequest extends FormRequest
         $circle_id = $this->circle_id;
         return [
             'name' => 'required|string|max:255',
-            'address' => ['required', 'string', 'size:42',Rule::unique('users')->ignore($this->user->id)->where(function ($query) use ($circle_id) {
-                return $query->where('circle_id', $circle_id)->whereNull('deleted_at');
+            'address' => ['required', 'string', 'size:42',Rule::unique('users')->withoutTrashed()->ignore($this->user->id)->where(function ($query) use ($circle_id) {
+                return $query->where('circle_id', $circle_id);
             })],
             'starting_tokens' => 'integer|max:1000000',
             'non_giver' => 'integer|min:0|max:1|required',
