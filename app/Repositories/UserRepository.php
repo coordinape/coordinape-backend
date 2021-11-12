@@ -76,27 +76,35 @@ class UserRepository
         $existingGifts = $user->pendingSentGifts()->with('recipient')->get();
 
         return DB::transaction(function () use ($user, $pendingGifts, $existingGifts) {
-            foreach ($existingGifts as $existingGift) {
-                $rUser = $existingGift->recipient;
-                $existingGift->delete();
-                $rUser->give_token_received = $rUser->pendingReceivedGifts()->get()->SUM('tokens');
-                $rUser->save();
-            }
-            foreach ($pendingGifts as $gift) {
-                $sender = $gift->sender;
-                $gift_token = $gift->tokens;
-                $gift->delete();
-                $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
-                $sender->give_token_remaining = $sender->starting_tokens - $token_used;
-                $sender->save();
-            }
-
-            Teammate::where('team_mate_id', $user->id)->delete();
-            Teammate::where('user_id', $user->id)->delete();
+            $user = $this->handleUserReset($user, $pendingGifts, $existingGifts);
             $user->delete();
-
             return $user;
         }, 2);
+    }
+
+    private function handleUserReset($user, $pendingReceivedGifts, $pendingSentGifts)
+    {
+        foreach ($pendingSentGifts as $existingGift) {
+            $rUser = $existingGift->recipient;
+            $existingGift->delete();
+            $rUser->give_token_received = $rUser->pendingReceivedGifts()->get()->SUM('tokens');
+            $rUser->save();
+        }
+        foreach ($pendingReceivedGifts as $gift) {
+            $sender = $gift->sender;
+            $gift_token = $gift->tokens;
+            $gift->delete();
+            $token_used = $sender->pendingSentGifts->SUM('tokens') - $gift_token;
+            $sender->give_token_remaining = $sender->starting_tokens - $token_used;
+            $sender->save();
+        }
+
+        Teammate::where('team_mate_id', $user->id)->delete();
+        Teammate::where('user_id', $user->id)->delete();
+        $user->give_token_remaining = $user->starting_tokens;
+        $user->give_token_received = 0;
+        $user->save();
+        return $user;
     }
 
     public function updateUserData($user, $updateData = [])
@@ -159,6 +167,71 @@ class UserRepository
                 $this->profileModel->create(['address' => $user->address]);
             }
             return $user;
+        });
+    }
+
+    public function bulkCreate($request)
+    {
+        $users = $request->get('users');
+        $address_array = $request->get('address_array');
+        $circle_id = $request->route('circle_id');
+        return DB::transaction(function () use ($users, $address_array, $circle_id) {
+            $this->model->insert($users);
+            $this->profileModel->upsert(array_map(function ($p) {
+                return ['address' => $p];
+            }, $address_array), ['address'], []);
+            return $this->model->whereIn('address', $address_array)->where('circle_id', $circle_id)->get();
+        });
+    }
+
+    public function bulkUpdate($request)
+    {
+        $users = $request->get('users');
+        $address_array = $request->get('address_array');
+        $circle_id = $request->route('circle_id');
+        $id_array = $request->get('id_array');
+        return DB::transaction(function () use ($users, $address_array, $circle_id, $id_array) {
+            // batch all updates into 1 update statement for speed optimization
+            // (will never insert because of exist validation done in request)
+            $this->model->upsert($users, ['id'], ['address', 'name', 'non_giver', 'fixed_non_receiver', 'starting_tokens', 'role']);
+            $this->profileModel->upsert(array_map(function ($p) {
+                return ['address' => $p];
+            }, $address_array), ['address'], []);
+            return $this->model->whereIn('id', $id_array)->where('circle_id', $circle_id)->get();
+        });
+    }
+
+    public function bulkDelete($request)
+    {
+        $id_array = $request->get('users');
+        return DB::transaction(function () use ($id_array) {
+            $users = $this->model->with(['pendingReceivedGifts.sender.pendingSentGifts', 'pendingSentGifts.recipient'])->whereIn('id', $id_array)->get();
+            foreach ($users as $user) {
+                // cleanup tokens sent/received
+                $this->handleUserReset($user, $user->pendingReceivedGifts, $user->pendingSentGifts);
+            }
+            return (bool)$this->model->whereIn('id', $id_array)->delete();
+        });
+    }
+
+    public function bulkRestore($request)
+    {
+        $id_array = $request->get('users');
+        $address_array = $request->get('addresses');
+        return DB::transaction(function () use ($id_array, $address_array) {
+            $this->model->whereIn('id', $id_array)->withTrashed()->restore();
+            $users = $this->model->whereIn('id', $id_array)->get();
+            foreach ($users as $user) {
+                if ($user->give_token_remaining != $user->starting_tokens || $user->give_token_received > 0) {
+                    $user->give_token_remaining = $user->starting_tokens;
+                    $user->give_token_received = 0;
+                    $user->save();
+                }
+            }
+            $this->profileModel->upsert(array_map(function ($p) {
+                return ['address' => $p];
+            }, $address_array), ['address'], []);
+            return $users;
         });
     }
 }
