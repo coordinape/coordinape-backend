@@ -51,12 +51,12 @@ class EpochRepository
 
                 $this->model->where('circle_id',$circle_id)->delete();
                 $users = User::where('circle_id',$circle_id)->get();
+                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
                 foreach($users as $user) {
                     $user->histories()->create(['bio' => $user->bio,'epoch_id' => $epoch->id, 'circle_id' => $circle_id]);
                     $user->give_token_remaining = $user->starting_tokens;
                     $user->save();
                 }
-                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
                 User::where('circle_id',$circle_id)->update(['bio'=> null,'give_token_received'=>0, 'epoch_first_visit' => 1]);
                 $epoch->ended = 1;
                 $epoch->number = $epoch_number;
