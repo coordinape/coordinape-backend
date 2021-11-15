@@ -148,7 +148,7 @@ class CircleRepository
         $user = $profile->users()->where('circle_id', $circle_id)->first();
         if ($profile->admin_view || $user) {
             $nominees = Nominee::where('circle_id', $circle_id)->get();
-            $users = User::where('circle_id', $circle_id)->get();
+            $users = User::where('circle_id', $circle_id)->withTrashed()->get();
             $epochs = Epoch::where('circle_id', $circle_id)->get();
             $token_gifts = Utils::queryCache($request, function () use ($circle_id, $user) {
                 $query = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
