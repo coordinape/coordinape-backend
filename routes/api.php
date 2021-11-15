@@ -47,6 +47,11 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
             Route::delete('/epoches/{epoch}', [EpochController::class, 'deleteEpoch']);
             Route::post('/upload-logo', [CircleController::class, 'uploadCircleLogo']);
             Route::get('/webhook', [CircleController::class, 'getWebhook']);
+            Route::post('/bulk-update', [UserController::class, 'bulkUpdate']);
+            Route::post('/bulk-create', [UserController::class, 'bulkCreate']);
+            Route::post('/bulk-delete', [UserController::class, 'bulkDelete']);
+            Route::post('/bulk-restore', [UserController::class, 'bulkRestore']);
+
         });
         /************************* ADMIN TOKEN ENDPOINTS ****************************/
 

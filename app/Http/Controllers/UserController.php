@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AdminCreateUserRequest;
 use App\Http\Requests\AdminUserRequest;
+use App\Http\Requests\BulkUserCreateRequest;
+use App\Http\Requests\BulkUserDeleteRequest;
+use App\Http\Requests\BulkUserRestoreRequest;
+use App\Http\Requests\BulkUserUpdateRequest;
 use App\Http\Requests\UserRequest;
-use App\Models\Profile;
+use App\Repositories\EpochRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Repositories\UserRepository;
 use Illuminate\Validation\ValidationException;
-use App\Repositories\EpochRepository;
 
 class UserController extends Controller
 {
@@ -52,6 +55,7 @@ class UserController extends Controller
         if (!$user)
             return response()->json(['message' => 'Address not found'], 422);
 
+
         if ($user->is_coordinape_user)
             return response()->json(['message' => 'This user is not modifiable'], 422);
 
@@ -67,7 +71,7 @@ class UserController extends Controller
                 $data['give_token_remaining'] = $data['starting_tokens'];
             }
         }
-        $data['address'] =  strtolower($data['address']);
+        $data['address'] = strtolower($data['address']);
         $user = $this->repo->updateUserData($user, $data);
         return response()->json($user);
     }
@@ -87,5 +91,25 @@ class UserController extends Controller
         } else {
             return response()->json($data);
         }
+    }
+
+    public function bulkCreate(BulkUserCreateRequest $request): JsonResponse
+    {
+        return response()->json($this->repo->bulkCreate($request));
+    }
+
+    public function bulkUpdate(BulkUserUpdateRequest $request): JsonResponse
+    {
+        return response()->json($this->repo->bulkUpdate($request));
+    }
+
+    public function bulkDelete(BulkUserDeleteRequest $request): JsonResponse
+    {
+        return response()->json(['success' => $this->repo->bulkDelete($request)]);
+    }
+
+    public function bulkRestore(BulkUserRestoreRequest $request): JsonResponse
+    {
+        return response()->json([$this->repo->bulkRestore($request)]);
     }
 }
