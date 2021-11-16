@@ -150,6 +150,7 @@ class CircleRepository
             $nominees = Nominee::where('circle_id', $circle_id)->get();
             $users = User::where('circle_id', $circle_id)->withTrashed()->get();
             $epochs = Epoch::where('circle_id', $circle_id)->get();
+            $circle = $this->model->with(['protocol'])->find($circle_id);
             $token_gifts = Utils::queryCache($request, function () use ($circle_id, $user) {
                 $query = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
                     if ($user) {
@@ -179,7 +180,7 @@ class CircleRepository
                 $pending_gifts = $pending_gifts->merge($queryUserGives->selectWithNoteAddress()->get());
             }
 
-            return compact('nominees', 'users', 'token_gifts', 'pending_gifts', 'epochs');
+            return compact('nominees', 'users', 'token_gifts', 'pending_gifts', 'epochs', 'circle');
         }
         return null;
     }
