@@ -100,14 +100,14 @@ class ProfileRepository
     public function getCircleDataWithProfile($profile)
     {
         $circle_ids = $profile->circle_ids();
-        $users = User::byAddress($profile->address)->get();
+        $myUsers = User::with(['teammates'])->byAddress($profile->address)->get();
         if ($profile->admin_view) {
-            $circles = Circle::all();
+            $circles = Circle::with(['protocol'])->get();
             $active_epochs = Epoch::isActiveFutureDate()->where('ended', 0)->get();
         } else {
-            $circles = Circle::whereIn('id', $circle_ids)->get();
+            $circles = Circle::whereIn('id', $circle_ids)->with(['protocol'])->get();
             $active_epochs = Epoch::isActiveFutureDate()->where('ended', 0)->whereIn('circle_id', $circle_ids)->get();
         }
-        return compact('users', 'circles', 'active_epochs');
+        return compact('myUsers', 'circles', 'active_epochs');
     }
 }

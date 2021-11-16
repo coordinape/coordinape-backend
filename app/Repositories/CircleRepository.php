@@ -148,44 +148,39 @@ class CircleRepository
         $user = $profile->users()->where('circle_id', $circle_id)->first();
         if ($profile->admin_view || $user) {
             $nominees = Nominee::where('circle_id', $circle_id)->get();
-            $users = User::where('circle_id', $circle_id)->get();
+            $users = User::where('circle_id', $circle_id)->withTrashed()->get();
             $epochs = Epoch::where('circle_id', $circle_id)->get();
-            $latestEpoch = Epoch::where('circle_id', $circle_id)->whereNotNull('number')->orderBy('number', 'desc')->first();
-            $latestEpochId = $latestEpoch ? $latestEpoch->id : null;
-            $token_gifts = [];
-            $pending_gifts = [];
-            if ($latestEpoch) {
-                if ($latestEpoch->ended == 1) {
-                    $token_gifts = Utils::queryCache($request, function () use ($circle_id, $user, $latestEpochId) {
-                        $query = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
-                            if ($user) {
-                                $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
-                            }
-                        })->where('epoch_id', $latestEpochId);
-                        $givesWithoutUser = $query->selectWithoutNote()->get();
-                        if ($user) {
-                            $queryUserGives = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
-                                $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
-                            });
-                            $givesWithoutUser = $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
-                        }
-                        return $givesWithoutUser;
-                    }, 60, $circle_id);
-                }
-                $query = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+            $circle = $this->model->with(['protocol'])->find($circle_id);
+            $token_gifts = Utils::queryCache($request, function () use ($circle_id, $user) {
+                $query = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
                     if ($user) {
                         $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
                     }
                 });
-                $pending_gifts = $query->selectWithoutNote()->get();
+                $givesWithoutUser = $query->selectWithoutNote()->get();
                 if ($user) {
-                    $queryUserGives = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                    $queryUserGives = TokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
                         $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
                     });
-                    $pending_gifts = $pending_gifts->merge($queryUserGives->selectWithNoteAddress()->get());
+                    $givesWithoutUser = $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
                 }
+                return $givesWithoutUser;
+            }, 60, $circle_id);
+
+            $query = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                if ($user) {
+                    $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
+                }
+            });
+            $pending_gifts = $query->selectWithoutNote()->get();
+            if ($user) {
+                $queryUserGives = PendingTokenGift::fromCircle($circle_id)->where(function ($q) use ($user) {
+                    $q->where('sender_id', $user->id)->orWhere('recipient_id', $user->id);
+                });
+                $pending_gifts = $pending_gifts->merge($queryUserGives->selectWithNoteAddress()->get());
             }
-            return compact('nominees', 'users', 'token_gifts', 'pending_gifts', 'epochs');
+
+            return compact('nominees', 'users', 'token_gifts', 'pending_gifts', 'epochs', 'circle');
         }
         return null;
     }
