@@ -27,6 +27,8 @@ class CircleRequest extends FormRequest
             'alloc_text' => !empty($data['alloc_text']) ? $data['alloc_text']:null,
             'vouching'  => !empty($data['vouching']) ? $data['vouching']:0,
             'min_vouches'  => !empty($data['min_vouches']) ? $data['min_vouches']:3,
+            'min_vouches_percent'  => !empty($data['min_vouches_percent']) ? $data['min_vouches_percent']:50,
+            'calculate_vouching_percent'  => !empty($data['calculate_vouching_percent']) ? $data['calculate_vouching_percent']:0,
             'nomination_days_limit' => !empty($data['nomination_days_limit']) ? $data['nomination_days_limit']:14,
             'vouching_text'  => !empty($data['vouching_text']) ? $data['vouching_text']:'',
             'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:0,
@@ -63,6 +65,8 @@ class CircleRequest extends FormRequest
             'default_opt_in' => 'integer|min:0|max:1',
             'discord_webhook' => 'url',
             'only_giver_vouch' => 'integer|min:0|max:1',
+            'min_vouches_percent' => 'decimal|min:1|max:100',
+            'calculate_vouching_percent' => 'integer|min:0|max:1',
         ];
     }
 }

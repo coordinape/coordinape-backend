@@ -18,6 +18,8 @@ class Circle extends Model
         'alloc_text',
         'vouching',
         'min_vouches',
+        'min_vouches_percent',
+        'calculate_vouching_percent',
         'nomination_days_limit',
         'vouching_text',
         'logo',
