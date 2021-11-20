@@ -26,9 +26,9 @@ SET NAMES utf8mb4;
 LOCK TABLES `circles` WRITE;
 /*!40000 ALTER TABLE `circles` DISABLE KEYS */;
 
-INSERT INTO `circles` (`id`, `name`, `created_at`, `updated_at`, `protocol_id`, `token_name`, `team_sel_text`, `alloc_text`, `telegram_id`, `logo`, `vouching`, `min_vouches`, `nomination_days_limit`, `vouching_text`, `discord_webhook`, `default_opt_in`, `team_selection`, `only_giver_vouch`)
+INSERT INTO `circles` (`id`, `name`, `created_at`, `updated_at`, `protocol_id`, `token_name`, `team_sel_text`, `alloc_text`, `telegram_id`, `logo`, `vouching`, `min_vouches`, `min_vouches_percent`, `calculate_vouching_percent`,  `nomination_days_limit`, `vouching_text`, `discord_webhook`, `default_opt_in`, `team_selection`, `only_giver_vouch`)
 VALUES
-	(1,'testcircle','2021-09-17 21:16:31','2021-09-17 21:16:31',1,'GIVE',NULL,NULL,NULL,NULL,0,2,14,NULL,NULL,0,1,1);
+	(1,'testcircle','2021-09-17 21:16:31','2021-09-17 21:16:31',1,'GIVE',NULL,NULL,NULL,NULL,0,2,0,0,14,NULL,NULL,0,1,1);
 
 /*!40000 ALTER TABLE `circles` ENABLE KEYS */;
 UNLOCK TABLES;
