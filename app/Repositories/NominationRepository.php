@@ -40,8 +40,19 @@ class NominationRepository {
                 $voucher_name = Utils::cleanStr($user->name);
                 $circle->notify(new SendSocialMessage("$nominee_name has been vouched for by $voucher_name!", false));
 
-                // nomination apparently is 1 vouch
-                if ( ($nominee->vouches_required - 1) <= count($nominee->nominations)) {
+                $has_enough_vouches = 0;
+                if ($circle->calculate_vouching_percent == 1) {
+                    $circleUsersCount = $circle->users()->count();
+                    $nominations_required = $circleUsersCount * $circle->min_vouches_percent / 100;
+
+                    // nomination apparently is 1 vouch
+                    $has_enough_vouches = count($nominee->nominations + 1) >= $nominations_required;
+                } else {
+                    // nomination apparently is 1 vouch
+                    $has_enough_vouches = count($nominee->nominations + 1) >= ($nominee->vouches_required);
+                }
+
+                if (has_enough_vouches) {
                     $address = strtolower($nominee->address);
                     $added_user = $this->userModel->where('address', $address)->where('circle_id',$circle_id)->first();
                     if (!$added_user) {
