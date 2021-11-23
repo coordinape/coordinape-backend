@@ -42,7 +42,7 @@ class EpochRepository
             $epoch_number = $epoch_number + 1;
             $circle = $epoch->circle;
             $unalloc_users = $circle->users()->where('non_giver', 0)->yetToSend()->get();
-            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number) {
+            DB::transaction(function () use ($pending_gifts, $epoch, $circle_id, $epoch_number, $circle) {
                 foreach ($pending_gifts as $gift) {
                     $tokenGift = new TokenGift($gift->replicate()->toArray());
                     $tokenGift->epoch_id = $epoch->id;
@@ -51,7 +51,9 @@ class EpochRepository
 
                 $this->model->where('circle_id',$circle_id)->delete();
                 $users = User::where('circle_id',$circle_id)->get();
-                User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
+                if($circle->auto_opt_out) {
+                    User::where('circle_id',$circle_id)->where('non_giver',0)->yetToSend()->update(['non_receiver'=>1]);
+                }
                 foreach($users as $user) {
                     $user->histories()->create(['bio' => $user->bio,'epoch_id' => $epoch->id, 'circle_id' => $circle_id]);
                     $user->give_token_remaining = $user->starting_tokens;

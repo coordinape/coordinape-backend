@@ -34,6 +34,7 @@ class CircleRequest extends FormRequest
             'team_selection'  => !empty($data['team_selection']) ? $data['team_selection']:0,
             'default_opt_in'  => !empty($data['default_opt_in']) ? $data['default_opt_in']:0,
             'only_giver_vouch'  => !empty($data['only_giver_vouch']) ? $data['only_giver_vouch']:0,
+            'auto_opt_out' => !empty($data['auto_opt_out']) ? $data['auto_opt_out']:0,
         ]);
 
         if(array_key_exists('discord_webhook', $data) &&
@@ -67,6 +68,7 @@ class CircleRequest extends FormRequest
             'only_giver_vouch' => 'integer|min:0|max:1',
             'min_vouches_percent' => 'numeric|min:1|max:100',
             'calculate_vouching_percent' => 'integer|min:0|max:1',
+            'auto_opt_out' => 'integer|min:0|max:1'
         ];
     }
 }

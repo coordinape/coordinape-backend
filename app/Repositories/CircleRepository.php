@@ -105,7 +105,8 @@ class CircleRepository
             'team_selection',
             'default_opt_in',
             'discord_webhook',
-            'only_giver_vouch'
+            'only_giver_vouch',
+            'auto_opt_out'
         ));
 
         if (!$circle->vouching) {

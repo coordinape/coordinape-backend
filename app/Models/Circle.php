@@ -27,8 +27,8 @@ class Circle extends Model
         'team_selection',
         'discord_webhook',
         'only_giver_vouch',
-        'is_verified'
-
+        'is_verified',
+        'auto_opt_out'
     ];
     protected $searchable = [
         'protocol_id',
