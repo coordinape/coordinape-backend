@@ -65,7 +65,7 @@ class CircleRequest extends FormRequest
             'default_opt_in' => 'integer|min:0|max:1',
             'discord_webhook' => 'url',
             'only_giver_vouch' => 'integer|min:0|max:1',
-            'min_vouches_percent' => 'decimal|min:1|max:100',
+            'min_vouches_percent' => 'numeric|min:1|max:100',
             'calculate_vouching_percent' => 'integer|min:0|max:1',
         ];
     }
