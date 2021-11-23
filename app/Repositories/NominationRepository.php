@@ -24,6 +24,22 @@ class NominationRepository {
         return $this->model->with('nominations','nominator')->where('circle_id', $circle_id)->filter($request->all())->get();
     }
 
+    private function hasEnoughVouches($nominee, $circle) {
+        $has_enough_vouches = 0;
+        if ($circle->calculate_vouching_percent == 1) {
+            $circleUsersCount = $circle->users()->count();
+            $nominations_required = $circleUsersCount * $circle->min_vouches_percent / 100;
+
+            // nomination apparently is 1 vouch
+            $has_enough_vouches = count($nominee->nominations + 1) >= $nominations_required;
+        } else {
+            // nomination apparently is 1 vouch
+            $has_enough_vouches = count($nominee->nominations + 1) >= ($nominee->vouches_required);
+        }
+
+        return $has_enough_vouches;
+    }
+
     public function addVouch($request, $circle_id) {
         $user = $request->user;
         $nominee_id = $request->nominee_id;
@@ -40,19 +56,7 @@ class NominationRepository {
                 $voucher_name = Utils::cleanStr($user->name);
                 $circle->notify(new SendSocialMessage("$nominee_name has been vouched for by $voucher_name!", false));
 
-                $has_enough_vouches = 0;
-                if ($circle->calculate_vouching_percent == 1) {
-                    $circleUsersCount = $circle->users()->count();
-                    $nominations_required = $circleUsersCount * $circle->min_vouches_percent / 100;
-
-                    // nomination apparently is 1 vouch
-                    $has_enough_vouches = count($nominee->nominations + 1) >= $nominations_required;
-                } else {
-                    // nomination apparently is 1 vouch
-                    $has_enough_vouches = count($nominee->nominations + 1) >= ($nominee->vouches_required);
-                }
-
-                if (has_enough_vouches) {
+                if ($this->hasEnoughVouches()) {
                     $address = strtolower($nominee->address);
                     $added_user = $this->userModel->where('address', $address)->where('circle_id',$circle_id)->first();
                     if (!$added_user) {
@@ -88,8 +92,7 @@ class NominationRepository {
         $circle->notify(new SendSocialMessage(
             "$nominee_name has been nominated by $voucher_name! You can vouch for them at https://app.coordinape.com/vouching", false));
 
-        // nomination = 1 vouch hence user gets immediately created ??
-        if($circle->min_vouches == 1) {
+        if ($this->hasEnoughVouches()) {
             $address = $nominee->address;
             $createdUser = $this->userModel->create(["address" => $address, "name" => $nominee->name, "circle_id" => $circle->id]);
             if (!$this->profileModel->where('address', $address)->exists()) {
