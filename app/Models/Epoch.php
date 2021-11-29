@@ -20,13 +20,12 @@ class Epoch extends Model
     }
 
     public function scopeIsActiveDate($query) {
-        $today = Carbon::today()->toDateString();
-        return $query->whereDate('start_date', '<=', $today)->whereDate('end_date','>=', $today);
+        $now = Carbon::now();
+        return $query->where('start_date', '<=', $now)->where('end_date','>=', $now);
     }
 
     public function scopeIsActiveFutureDate($query) {
-        $today = Carbon::today()->toDateString();
-        return $query->whereDate('end_date','>=', $today);
+        return $query->where('end_date','>=', Carbon::now());
     }
 
     public function scopeCheckOverlapDatetime($query, $data) {
