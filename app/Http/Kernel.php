@@ -69,9 +69,6 @@ class Kernel extends HttpKernel
         ],
         'verify-circle-user' => [
             VerifyCircleUser::class
-        ],
-        'verify-token-or-sign' => [
-            VerifyTokenOrSign::class
         ]
     ];
 
