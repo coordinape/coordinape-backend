@@ -19,10 +19,6 @@ class VerifyLoginSignature
      */
     public function handle(Request $request, Closure $next)
     {
-        // if there's already a valid token, continue
-        if(auth('sanctum')->check()) 
-            return $next($request);
-
         $signature = $request->get('signature');
         $address = $request->get('address');
         $hash = $request->get('hash');

@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Route;
 
 // login
 Route::post('/v2/login', [ProfileController::class, 'login'])->middleware(['verify-login-sign']);
-Route::post('/v2/manifest', [ProfileController::class, 'manifest'])->middleware(['verify-login-sign']);
 
 Route::middleware(['verify-sign', 'hcaptcha-verify'])->group(function () {
     Route::post('/v2/circles', [CircleController::class, 'createCircle']);
@@ -69,6 +68,7 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
 
     });
 
+    Route::post('/manifest', [ProfileController::class, 'manifest']);
     Route::post('/logout', [ProfileController::class, 'logout']);
     Route::get('/full-circle', [CircleController::class, 'fullCircleData']);
     Route::get('/token-gifts', [DataController::class, 'newGetGifts']);
