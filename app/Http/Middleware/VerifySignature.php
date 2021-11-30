@@ -34,7 +34,7 @@ class VerifySignature
                 abort(403, 'You are not authorized to perform this action');
         }
 
-        if(!Utils::validateSignature($address, $data, $signature, $hash))
+        if(!$address || !Utils::validateSignature($address, $data, $signature, $hash))
             abort(403, 'You are not authorized to perform this action');
 
         return $next($request);

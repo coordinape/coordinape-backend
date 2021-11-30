@@ -23,7 +23,7 @@ class VerifyLoginSignature
         $hash = $request->get('hash');
         $data = "Login to Coordinape";
 
-        if(!Utils::validateSignature($address, $data, $signature, $hash))
+        if(!$address || !Utils::validateSignature($address, $data, $signature, $hash))
             abort(403, 'Login signature is not valid');
 
         return $next($request);
