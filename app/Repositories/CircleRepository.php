@@ -42,7 +42,7 @@ class CircleRepository
     {
         $data = $request->only('address', 'user_name', 'circle_name', 'protocol_id', 'protocol_name', 'uxresearch_json');
 
-        DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data) {
             if (empty($data['protocol_id'])) {
                 $protocol = new Protocol(['name' => $data['protocol_name']]);
                 $protocol->save();
