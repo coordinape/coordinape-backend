@@ -65,7 +65,7 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::post('/circles', [CircleController::class, 'createCircle']);
-    Route::post('/manifest', [ProfileController::class, 'manifest']);
+    Route::get('/manifest', [ProfileController::class, 'manifest']);
     Route::post('/logout', [ProfileController::class, 'logout']);
     Route::get('/full-circle', [CircleController::class, 'fullCircleData']);
     Route::get('/token-gifts', [DataController::class, 'newGetGifts']);
