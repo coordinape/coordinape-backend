@@ -87,6 +87,8 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
 
 Route::prefix('{circle_id}')->group(function () {
     Route::get('/token-gifts', [DataController::class, 'getGiftsWithoutNotes']);
+    //temp fix
+    Route::get('/csv', [DataController::class, 'generateCsv']);
 });
 /************************* EXTERNAL USED endpoints *********************************/
 
