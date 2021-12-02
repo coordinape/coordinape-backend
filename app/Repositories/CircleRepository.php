@@ -42,7 +42,7 @@ class CircleRepository
     {
         $data = $request->only('address', 'user_name', 'circle_name', 'protocol_id', 'protocol_name', 'uxresearch_json');
 
-        DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data) {
             if (empty($data['protocol_id'])) {
                 $protocol = new Protocol(['name' => $data['protocol_name']]);
                 $protocol->save();
@@ -149,7 +149,7 @@ class CircleRepository
         $user = $profile->users()->where('circle_id', $circle_id)->first();
         if ($profile->admin_view || $user) {
             $nominees = Nominee::where('circle_id', $circle_id)->get();
-            $users = User::where('circle_id', $circle_id)->withTrashed()->get();
+            $users = User::with('profile')->where('circle_id', $circle_id)->withTrashed()->get();
             $epochs = Epoch::where('circle_id', $circle_id)->get();
             $circle = $this->model->with(['protocol'])->find($circle_id);
             $token_gifts = Utils::queryCache($request, function () use ($circle_id, $user) {
