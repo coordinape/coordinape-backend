@@ -49,6 +49,8 @@ class PostgresMigrate extends Command
             $table->boolean('team_selection')->default(true)->change();
             $table->boolean('only_giver_vouch')->default(true)->change();
             $table->boolean('is_verified')->default(false)->change();
+            $table->boolean('auto_opt_out')->default(false)->change();
+
         });
 
         Schema::table('nominees', function (Blueprint $table) {
