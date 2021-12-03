@@ -48,11 +48,10 @@ class UserRepository
     {
         $data = $request->only('address', 'name', 'starting_tokens', 'non_giver', 'circle_id',
             'give_token_remaining', 'fixed_non_receiver', 'role', 'non_receiver');
-        if ($data['fixed_non_receiver'] == 1) {
-            $data['non_receiver'] = 1;
+        if ($data['fixed_non_receiver']) {
+            $data['non_receiver'] = true;
         }
-        $circle = Circle::find($circle_id);
-        $data['non_receiver'] = $data['fixed_non_receiver'] == 1 || $data['non_receiver'] == 1;
+
         $data['address'] = strtolower($data['address']);
         $data['circle_id'] = $circle_id;
         $user = $this->model->create($data);
