@@ -59,10 +59,10 @@ class EpochAlmostEnd extends Notification implements ShouldQueue
         }
 
         if($unalloc_str) {
-            $unalloc_str = "Users that has yet to fully allocated their GIVE tokens:\n" . $unalloc_str;
+            $unalloc_str = "Users that have yet to fully allocate their GIVE tokens:\n" . $unalloc_str;
         }
         else {
-            $unalloc_str = "All users has fully allocated all their GIVE tokens !";
+            $unalloc_str = "All users have fully allocated their GIVE tokens !";
         }
 
         return "$name epoch ends in less than 24 hours!\n$unalloc_str";
