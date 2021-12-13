@@ -71,15 +71,8 @@ class EpochEnd extends Notification implements ShouldQueue
 
     public function toTelegram($notifiable=null)
     {
-        $app_domain = 'coordinape.me';
-        $url = $app_domain== 'localhost:8000' ?
-            'http://'.$app_domain."/api/$notifiable->id/csv" : 'https://'.$app_domain."/api/$notifiable->id/csv";
-        $url .=  "?epoch=". $this->epoch_num;
-
         return TelegramMessage::create()
-            // Markdown supported.
-            ->content($this->getContent())
-            ->button('Click to Download CSV', $url);
+            ->content($this->getContent());
     }
 
     public function toDiscord($notifiable=null)
