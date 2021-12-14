@@ -36,8 +36,8 @@ class NewEpochRequest extends FormRequest
     {
         return [
             'start_date' => 'required|date_format:Y-m-d\TH:i:s.v\Z',
-            'repeat' => 'required|min:0|max:2',
-            'days' => ['required','min:1','max:100',
+            'repeat' => 'required|integer|min:0|max:2',
+            'days' => ['required','integer','min:1','max:100',
                 function ($attribute, $value, $fail) {
                     if($value > 7 && $this->repeat == 1)
                         return $fail('You cannot have more than 7 days length for a weekly repeating epoch.');
