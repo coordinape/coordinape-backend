@@ -28,7 +28,6 @@ Route::post('/v2/login', [ProfileController::class, 'login'])->middleware(['veri
 /************************* TOKEN GATED endpoints *********************************/
 
 Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
-
     Route::prefix('{circle_id}')->group(function () {
 
         /************************* ADMIN TOKEN ENDPOINTS ****************************/
@@ -61,7 +60,6 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
         });
 
         Route::get('/epoches', [EpochController::class, 'epoches']);
-
     });
 
     Route::post('/circles', [CircleController::class, 'createCircle']);
@@ -78,7 +76,6 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/protocols', [DataController::class, 'getProtocols']);
     Route::get('/users', [UserController::class, 'getUsers']);
     Route::get('/active-epochs', [EpochController::class, 'getActiveEpochs']);
-
 });
 
 /************************* TOKEN GATED endpoints *********************************/
@@ -87,16 +84,12 @@ Route::prefix('v2')->middleware(['auth:sanctum'])->group(function () {
 
 Route::prefix('{circle_id}')->group(function () {
     Route::get('/token-gifts', [DataController::class, 'getGiftsWithoutNotes']);
-    //temp fix
-    Route::get('/csv', [DataController::class, 'generateCsv']);
 });
 /************************* EXTERNAL USED endpoints *********************************/
-
 
 Route::post("/" . config('telegram.token') . "/bot-update", [BotController::class, 'webHook']);
 
 /********************************** V2 ENDPOINTs ***************************************************/
-
 
 Route::fallback(function () {
     return response()->json(['message' => 'Endpoint Not Found'], 404);
