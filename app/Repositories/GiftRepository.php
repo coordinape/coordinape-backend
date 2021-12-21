@@ -42,6 +42,8 @@ class GiftRepository
                 $givesWithoutUser = $query->selectWithoutNote()->get();
                 return $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
             }, 60, $circle_id);
+        } else if($profile->admin_view) {
+            return $this->tokenModel->fromCircle($circle_id)->selectWithoutNote()->get();
         }
 
         return null;
@@ -62,6 +64,8 @@ class GiftRepository
 
             $givesWithoutUser = $query->selectWithoutNote()->get();
             return $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
+        } else if($profile->admin_view) {
+            return $this->pendingTokenModel->fromCircle($circle_id)->selectWithoutNote()->get();
         }
 
         return null;
