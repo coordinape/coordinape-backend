@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
     tty: true
     ports:
-      - "9001:80"
+      - "9000:80"
       - "443:443"
     volumes:
       - ./:/var/www
