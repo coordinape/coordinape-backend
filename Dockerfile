@@ -8,11 +8,12 @@ RUN apt-get update && apt-get install -y \
   unzip \
   zip \
   git \
-  curl
+  curl \
+  libpq-dev
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pcntl gmp pdo_mysql
+RUN docker-php-ext-install pcntl gmp pdo pdo_pgsql pgsql
 
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -g www -ms /bin/bash www

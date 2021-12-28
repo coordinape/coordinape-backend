@@ -1,5 +1,15 @@
 version: "3"
 services:
+  postgres:
+    image: postgres:13
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: postgrespassword
+
   app:
     build:
       context: .
@@ -9,22 +19,27 @@ services:
     tty: true
     environment:
       SERVICE_NAME: app
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_DATABASE: postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgrespassword
     volumes:
       - ./:/var/www
       - ./services/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - default
     depends_on:
-      mysql:
-        condition: service_healthy
+      - postgres
 
   nginx:
     container_name: nginx
-    image: nginx:alpine
+    image: nginx
     restart: unless-stopped
     tty: true
     ports:
-      - "80:80"
+      - "9001:80"
       - "443:443"
     volumes:
       - ./:/var/www
@@ -34,27 +49,8 @@ services:
     depends_on:
       - app
 
-  mysql:
-    container_name: mysql
-    image: mysql:8.0
-    restart: unless-stopped
-    tty: true
-    ports:
-      - "3306:3306"
-    environment:
-        MYSQL_ROOT_USER: root
-        MYSQL_ROOT_PASSWORD: secret
-        MYSQL_DATABASE: laravel
-    volumes:
-      - database:/var/lib/mysql/
-    networks:
-      - default
-    healthcheck:
-      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
-
 networks:
   default:
     driver: bridge
 volumes:
-  database:
-    driver: local
+  db_data: null
