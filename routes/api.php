@@ -22,6 +22,10 @@ use Illuminate\Support\Facades\Route;
 
 /********************************** V2 ENDPOINTs ***************************************************/
 
+// Health
+// Check if laravel is accepting requests
+Route::get('/health', fn() => true);
+
 // login
 Route::post('/v2/login', [ProfileController::class, 'login'])->middleware(['verify-login-sign']);
 
