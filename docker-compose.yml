@@ -26,7 +26,7 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgrespassword
     volumes:
-      - ./:/var/www
+      - www-volume:/var/www
       - ./services/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - default
@@ -42,7 +42,7 @@ services:
       - "9000:80"
       - "443:443"
     volumes:
-      - ./:/var/www
+      - www-volume:/var/www
       - ./services/nginx/conf.d/:/etc/nginx/conf.d/
     networks:
       - default
@@ -54,3 +54,4 @@ networks:
     driver: bridge
 volumes:
   db_data: null
+  www-volume: null

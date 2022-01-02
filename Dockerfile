@@ -15,15 +15,12 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install pcntl gmp pdo pdo_pgsql pgsql
 
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -g www -ms /bin/bash www
-
-COPY --chown=www:www . /var/www
-RUN chown www:www /var/www
+COPY . /var/www
+RUN chown -R www-data:www-data /var/www
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-USER www
+USER www-data
 
 RUN composer install
 
