@@ -35,7 +35,12 @@ services:
 
   nginx:
     container_name: nginx
-    image: nginx
+    build:
+      dockerfile: Dockerfile-nginx
+      args:
+        # override the defaults in the dockerfile here
+        nginx_uid: 1000
+        nginx_gid: 1000
     restart: unless-stopped
     tty: true
     ports:
