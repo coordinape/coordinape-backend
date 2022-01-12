@@ -27,7 +27,9 @@ class GiftRepository
         $user = $profile->users()->where('circle_id', $circle_id)->first();
         if ($user) {
             $epoch_id = $request->get('epoch_id');
-            return Utils::queryCache($request, function () use ($epoch_id, $circle_id, $user) {
+            $has_note_attr = $request->get('has_note_attr');
+
+            return Utils::queryCache($request, function () use ($epoch_id, $circle_id, $user, $has_note_attr) {
                 $query = $this->tokenModel->fromCircle($circle_id)->where(function ($q) use ($user) {
                     $q->where('sender_id', '<>', $user->id)->orWhere('recipient_id', '<>', $user->id);
                 });
@@ -39,8 +41,20 @@ class GiftRepository
                     $query->fromEpochId($epoch_id);
                     $queryUserGives->fromEpochId($epoch_id);
                 }
-                $givesWithoutUser = $query->selectWithoutNote()->get();
-                return $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
+                if($has_note_attr) {
+                    $givesWithoutUser = $query->selectWithNoteAddress()->get();
+                    $allGifts = $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
+                    foreach($allGifts as $gift) {
+                        $gift->has_note = !empty($gift->note);
+                        if($gift->recipient_id != $user->id && $gift->sender_id != $user->id)
+                            unset($gift->note);
+                    }
+                } else {
+                    $givesWithoutUser = $query->selectWithoutNote()->get();
+                    $allGifts = $givesWithoutUser->merge($queryUserGives->selectWithNoteAddress()->get());
+                }
+
+                return $allGifts;
             }, 60, $circle_id);
         } else if($profile->admin_view) {
             return $this->tokenModel->fromCircle($circle_id)->selectWithoutNote()->get();
