@@ -9,7 +9,12 @@ RUN apt-get update && apt-get install -y \
   zip \
   git \
   curl \
-  libpq-dev
+  libpq-dev \
+  libpng-dev \
+  libjpeg62-turbo-dev \
+  && docker-php-ext-configure gd --with-jpeg \
+  && docker-php-ext-install -j$(nproc) gd
+
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
