@@ -111,8 +111,9 @@ class Utils
 
     public static function purgeCache($tag)
     {
-        if (config('cache.default') == 'redis')
-            Cache::tags([$tag, 'default'])->flush();
+        if (config('cache.default') == 'redis') {
+            Cache::tags($tag)->flush();
+        }
     }
 
     public static function cleanStr($str): string

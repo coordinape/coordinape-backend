@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helper\Utils;
 use App\Models\Circle;
 use App\Models\Epoch;
 use App\Models\Profile;
@@ -67,6 +68,7 @@ class ProfileRepository
 
                 $profile->avatar = $new_file_name;
                 $profile->save();
+                Utils::purgeCache($profile->circle_ids());
                 return $profile;
             }
         }
