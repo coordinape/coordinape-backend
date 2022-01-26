@@ -44,7 +44,7 @@ MJP  oOO(_)      (_)OOo                   (__.--._____)_____)
 
 This repository contains the ape-backend codebase which serves the Coordinape API.
 
-This is a project written in PHP using the [Laravel](https://laravel.com/) PHP framework. The database is mysql. Docker is used to setup the environment.
+This is a project written in PHP using the [Laravel](https://laravel.com/) PHP framework. The database is postgresql. Docker is used to setup the environment.
 
 --- 
 
