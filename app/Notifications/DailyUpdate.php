@@ -61,7 +61,10 @@ class DailyUpdate extends Notification implements ShouldQueue
         if($alloc_str) {
             $alloc_str = "Users that made new allocations today:\n" . $alloc_str;
         }
-        $diff = $this->epoch->end_date->diffForHumans(Carbon::now());
+        $diff = $this->epoch->end_date->diffForHumans([
+            'parts' => 3,
+            'short' => true
+        ]);
         $start_date = $this->epoch->start_date->format('Y/m/d');
         $end_date = $this->epoch->end_date->format('Y/m/d');
 
