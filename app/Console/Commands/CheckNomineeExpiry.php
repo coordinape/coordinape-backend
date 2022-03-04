@@ -40,6 +40,9 @@ class CheckNomineeExpiry extends Command
      */
     public function handle()
     {
+        if(config("cron.{$this->signature}") === false)
+            return false;
+
         return $this->repo->checkExpiry();
     }
 }
