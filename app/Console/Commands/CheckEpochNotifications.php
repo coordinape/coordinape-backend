@@ -42,6 +42,9 @@ class CheckEpochNotifications extends Command
      */
     public function handle()
     {
+        if(config("cron.{$this->signature}") === false)
+            return false;
+
         $epoches = Epoch::with(['circle.protocol'])->isActiveDate()->where(function($q) {
              return $q->whereNull('notified_start')->orWhereNull('notified_before_end');
         })->get();

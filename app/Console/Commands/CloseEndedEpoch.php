@@ -42,6 +42,9 @@ class CloseEndedEpoch extends Command
      */
     public function handle()
     {
+        if(config("cron.{$this->signature}") === false)
+            return false;
+
         $circles = Circle::pluck('id');
         foreach($circles as $circle_id) {
             $this->repo->endEpoch($circle_id);
