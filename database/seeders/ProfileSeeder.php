@@ -16,7 +16,7 @@ class ProfileSeeder extends Seeder
      */
     public function run()
     {
-        $users = User::all();
+        $users = User::with('profile')->withTrashed()->get();
         foreach($users as $user) {
             if(!$user->profile) {
                 $profile = new Profile();
